@@ -32,5 +32,9 @@ include_directories(
 
 add_library(trajectory src/TrajectoryInterface.cpp src/ToppraTrajectory.cpp)
 target_link_libraries(trajectory ${catkin_LIBRARIES})
+
+add_library(map src/MapInterface.cpp)
+target_link_libraries(map ${catkin_LIBRARIES})
+
 add_executable(testing_node src/test.cpp)
 target_link_libraries(testing_node trajectory)
