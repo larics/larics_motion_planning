@@ -5,7 +5,7 @@
 #ifndef TOPPRA_TRAJECTORY_H
 #define TOPPRA_TRAJECTORY_H
 
-//#include "TrajectoryInterface.h"
+#include "MotionPlanningDatatypes.h"
 #include <iostream>
 #include <string>
 #include <eigen3/Eigen/Eigen>
@@ -17,17 +17,7 @@
 #include <std_msgs/Bool.h>
 #include <topp_ros/GenerateTrajectory.h>
 
-
 using namespace std;
-
-typedef struct{
-  Eigen::MatrixXd position;
-  Eigen::MatrixXd velocity;
-  Eigen::MatrixXd acceleration;
-  Eigen::MatrixXd jerk;
-  Eigen::MatrixXd split;
-  Eigen::VectorXd time;
-} Trajectory;
 
 /// This class handles the implementation of TOPP-RA trajectory. Since this
 /// algorithm is implemented in Python, this class will communicate with the 
