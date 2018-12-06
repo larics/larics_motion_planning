@@ -13,11 +13,13 @@ int main(int argc, char **argv)
   Eigen::MatrixXd waypoints(3, 4);
   waypoints << 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0;
 
+  TrajectoryInterface *interface = &a;
+
   //cout << waypoints << endl;
   //usleep(1000000);
   double t=ros::Time::now().toSec();
-  a.generateTrajectory(waypoints);
-  Trajectory temp_trajectory = a.getTrajectory();
+  interface->generateTrajectory(waypoints);
+  Trajectory temp_trajectory = interface->getTrajectory();
   cout << ros::Time::now().toSec()-t << endl;
   cout << "Starting testing program." << endl;
   return 0;

@@ -2,10 +2,5 @@
 
 TrajectoryInterface::TrajectoryInterface()
 {
-
-}
-
-TrajectoryInterface::~TrajectoryInterface()
-{
-  
+  // Empty for now
 }

@@ -6,6 +6,7 @@
 #define TOPPRA_TRAJECTORY_H
 
 #include "MotionPlanningDatatypes.h"
+#include "TrajectoryInterface.h"
 #include <iostream>
 #include <string>
 #include <eigen3/Eigen/Eigen>
@@ -24,7 +25,7 @@ using namespace std;
 /// ROS node that generates trajectory through service. Therefore, this class
 /// must be used within ROS node with valid ros::init statement before creating
 /// this object.
-class ToppraTrajectory
+class ToppraTrajectory : public TrajectoryInterface
 {
   public:
     ToppraTrajectory(string config_filename);
