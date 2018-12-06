@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(Eigen3 REQUIRED NO_MODULE)
+find_package(octomap REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include 
@@ -25,15 +26,15 @@ catkin_package(
 )
 
 include_directories( 
-  include ${catkin_INCLUDE_DIRS}
+  include ${catkin_INCLUDE_DIRS} ${OCTOMAP_INCLUDE_DIRS}
   )
 
-#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 add_library(trajectory src/TrajectoryInterface.cpp src/ToppraTrajectory.cpp)
 target_link_libraries(trajectory ${catkin_LIBRARIES})
 
-add_library(map src/MapInterface.cpp)
+add_library(map src/MapInterface.cpp src/OctomapMap.cpp)
 target_link_libraries(map ${catkin_LIBRARIES})
 
 add_executable(testing_node src/test.cpp)
