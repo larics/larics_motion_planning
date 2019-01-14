@@ -35,7 +35,7 @@ add_library(trajectory src/TrajectoryInterface.cpp src/ToppraTrajectory.cpp)
 target_link_libraries(trajectory ${catkin_LIBRARIES})
 
 add_library(map src/MapInterface.cpp src/OctomapMap.cpp)
-target_link_libraries(map ${catkin_LIBRARIES})
+target_link_libraries(map ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES})
 
 add_executable(testing_node src/test.cpp)
-target_link_libraries(testing_node trajectory)
+target_link_libraries(testing_node trajectory map)

@@ -15,6 +15,7 @@ class MapInterface
   public:
     MapInterface();
     virtual bool isStateValid(Eigen::VectorXd state) = 0;
+    virtual bool configureFromFile(string config_file) = 0;
 };
 
 #endif // MAP_INTERFACE_H
