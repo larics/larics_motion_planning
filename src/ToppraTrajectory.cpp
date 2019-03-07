@@ -2,7 +2,35 @@
 
 ToppraTrajectory::ToppraTrajectory(string config_filename)
 {
-  cout << "Initializing TOPP-RA trajectory with file config." << endl;
+  cout << "Initializing TOPP-RA trajectory with from file:" << endl;
+  cout << config_filename << endl;
+
+  // Open yaml file with configuration
+  YAML::Node config = YAML::LoadFile(config_filename);
+  std::vector<double> velocities, accelerations;
+
+  // Load everything from yaml file
+  velocities = config["velocities"].as<std::vector<double> >();
+  accelerations = config["accelerations"].as<std::vector<double> >();
+
+  if (velocities.size() == accelerations.size()){
+    // Set degrees of freedom number
+    n_dofs_ = velocities.size();
+    // Set up size of dynamic constraints.
+    dynamic_constraints_ = Eigen::MatrixXd(2,velocities.size());
+
+    // Fill the dynamic constraints
+    for (int i=0; i<velocities.size(); i++)
+    {
+      dynamic_constraints_(0,i) = velocities[i];
+      dynamic_constraints_(1,i) = accelerations[i];
+    }
+  }
+  else{
+    cout << "Error in config: Velocity and acceleration constraints must have ";
+    cout << "the same number of elements." << endl;
+    exit(0);
+  }
 }
 
 ToppraTrajectory::ToppraTrajectory(Eigen::MatrixXd config_matrix) :

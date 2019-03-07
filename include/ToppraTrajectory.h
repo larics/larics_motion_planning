@@ -15,6 +15,7 @@
 #include <std_msgs/Float64.h>
 #include <std_msgs/Bool.h>
 #include <topp_ros/GenerateTrajectory.h>
+#include "yaml-cpp/yaml.h"
 
 using namespace std;
 

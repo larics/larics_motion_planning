@@ -35,6 +35,7 @@
   <build_depend>roscpp</build_depend>
   <build_depend>roslib</build_depend>
   <build_depend>topp_ros</build_depend>
+  <build_depend>yaml-cpp</build_depend>
   <!-- build_depend>arducopter_trajectory_planner</build_depend-->
   <!-- Use buildtool_depend for build tool packages: -->
   <!--   <buildtool_depend>catkin</buildtool_depend> -->
@@ -42,6 +43,7 @@
   <run_depend>roscpp</run_depend>
   <run_depend>roslib</run_depend>
   <run_depend>topp_ros</run_depend>
+  <run_depend>yaml-cpp</run_depend>
   <!-- run_depend>arducopter_trajectory_planner</run_depend -->
   <!-- Use test_depend for packages you need only for testing: -->
   <!--   <test_depend>gtest</test_depend> -->

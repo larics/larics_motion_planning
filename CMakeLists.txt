@@ -32,7 +32,7 @@ include_directories(
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 add_library(trajectory src/TrajectoryInterface.cpp src/ToppraTrajectory.cpp)
-target_link_libraries(trajectory ${catkin_LIBRARIES})
+target_link_libraries(trajectory ${catkin_LIBRARIES} yaml-cpp)
 
 add_library(map src/MapInterface.cpp src/OctomapMap.cpp)
 target_link_libraries(map ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES})
