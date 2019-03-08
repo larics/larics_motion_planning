@@ -25,6 +25,9 @@ ToppraTrajectory::ToppraTrajectory(string config_filename)
       dynamic_constraints_(0,i) = velocities[i];
       dynamic_constraints_(1,i) = accelerations[i];
     }
+
+    // Set up sampling frequency
+    sampling_frequency_ = config["sampling_frequency"].as<double>();
   }
   else{
     cout << "Error in config: Velocity and acceleration constraints must have ";
@@ -33,9 +36,10 @@ ToppraTrajectory::ToppraTrajectory(string config_filename)
   }
 }
 
-ToppraTrajectory::ToppraTrajectory(Eigen::MatrixXd config_matrix) :
+ToppraTrajectory::ToppraTrajectory(Eigen::MatrixXd config_matrix, double sampling_frequency) :
   dynamic_constraints_(config_matrix),
-  n_dofs_(dynamic_constraints_.cols())
+  n_dofs_(dynamic_constraints_.cols()),
+  sampling_frequency_(sampling_frequency)
 {
   cout << "Initializing TOPP-RA trajectory with matrix config." << endl;
   nh_ = ros::NodeHandle();
@@ -77,7 +81,7 @@ bool ToppraTrajectory::generateTrajectory(Eigen::MatrixXd positions)
 
     srv.request.waypoints.points.push_back(current_waypoint);
   }
-  srv.request.sampling_frequency = 100.0;
+  srv.request.sampling_frequency = sampling_frequency_;
 
   // Call the service
   bool service_success = generate_trajectory_client_.call(srv);

@@ -40,7 +40,8 @@ class ToppraTrajectory : public TrajectoryInterface
     ///   contstraints. First row of matrix corresponds to velocity constraints, 
     ///   second row to acceleration constraints. Both rows must have the same
     ///   number of elements.
-    ToppraTrajectory(Eigen::MatrixXd config_matrix);
+    /// \param sampling_frequency Sampling frequency for the trajectory.
+    ToppraTrajectory(Eigen::MatrixXd config_matrix, double sampling_frequency);
 
     /// \brief Destructor.
     ~ToppraTrajectory();
@@ -63,6 +64,7 @@ class ToppraTrajectory : public TrajectoryInterface
     Trajectory sampled_trajectory_;
     Eigen::MatrixXd dynamic_constraints_;
     int n_dofs_;
+    double sampling_frequency_;
 
     void sampleTrajectory(
       trajectory_msgs::JointTrajectory joint_trajectory);
