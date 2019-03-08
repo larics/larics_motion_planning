@@ -38,10 +38,11 @@ bool OctomapMap::isStateValid(Eigen::VectorXd state, int depth)
   return !map_->isNodeOccupied(result);
 }
 
-bool OctomapMap::configureFromFile(string config_file)
+bool OctomapMap::configureFromFile(string octomap_file)
 {
-  cout << "Loading octomap from file " << config_file << endl;
-  map_ = make_unique<octomap::OcTree>(config_file);
+  cout << "Loading octomap from file: " << octomap_file << endl;
+  map_ = make_unique<octomap::OcTree>(octomap_file);
+  return true;
 }
 
 void OctomapMap::setDepth(int depth)

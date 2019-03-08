@@ -28,13 +28,45 @@ using namespace std;
 class OctomapMap : public MapInterface
 {
   public:
+    /// \brief Constructor input resolution. Generates empty map.
+    /// \param resolution Resolution of the octomap. This will probably be
+    ///   overwritten by loading the octomap.
     OctomapMap(double resolution);
+
+    /// \brief Opens the map from .binvox.bt file.
+    /// \param octomap_file Path to .binvox.bt file where the octomap is stored
+    /// \param depth Search depth of the octomap. Number from interval [1,16].
     OctomapMap(string octomap_file, int depth);
+
+    /// \brief Destructor
     ~OctomapMap();
+
+    /// \brief Checks if point in octomap is occupied or free.
+    /// \param state This is vector with (x,y,z) coordinates of query point. 
+    /// \return True if point is free, false if point is occupied.
     bool isStateValid(Eigen::VectorXd state);
+
+    /// \brief Checks if point in octomap is occupied or free.
+    /// \param state This is vector with (x,y,z) coordinates of query point. 
+    /// \param depth Search depth of the octomap. This will only be used with
+    ///   a single query.
+    /// \return True if point is free, false if point is occupied.
     bool isStateValid(Eigen::VectorXd state, int depth);
-    bool configureFromFile(string config_file);
+
+    /// \brief Loads octomap from file and uses it for querying validity.
+    /// \param octomap_file Path to .binvox.bt file containing octomap.
+    /// \return True if map loading was successful.
+    bool configureFromFile(string octomap_file);
+
+    /// \brief Sets search depth for octomap.
+    /// \param depth Depth for search, must be in interval [1,16]
     void setDepth(int depth);
+
+    /// \brief Converts ROS message Octomap to octomap::OcTree.
+    ///
+    /// This function can be used as a callback to octomap topic or as a
+    /// converter.
+    /// \param ros_octomap octomap_msgs::Octomap message.
     void setOctomapFromRosMessage(const octomap_msgs::Octomap::ConstPtr& ros_octomap);
 
   private:
