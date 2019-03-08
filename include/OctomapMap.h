@@ -22,7 +22,9 @@
 
 using namespace std;
 
-/// This class handles 
+/// \brief Provides implementation of octomap search and transform functions.
+/// This class uses Octomap for searching valid points in space. It supports
+/// loading the map from .binvox.bt file and changing the map through ROS topic
 class OctomapMap : public MapInterface
 {
   public:
@@ -30,6 +32,7 @@ class OctomapMap : public MapInterface
     OctomapMap(string octomap_file, int depth);
     ~OctomapMap();
     bool isStateValid(Eigen::VectorXd state);
+    bool isStateValid(Eigen::VectorXd state, int depth);
     bool configureFromFile(string config_file);
     void setDepth(int depth);
     void setOctomapFromRosMessage(const octomap_msgs::Octomap::ConstPtr& ros_octomap);

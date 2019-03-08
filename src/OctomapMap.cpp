@@ -30,6 +30,14 @@ bool OctomapMap::isStateValid(Eigen::VectorXd state)
   return !map_->isNodeOccupied(result);
 }
 
+bool OctomapMap::isStateValid(Eigen::VectorXd state, int depth)
+{
+  octomap::point3d query(state(0), state(1), state(2));
+  octomap::OcTreeNode* result = map_->search(query, depth);
+
+  return !map_->isNodeOccupied(result);
+}
+
 bool OctomapMap::configureFromFile(string config_file)
 {
   cout << "Loading octomap from file " << config_file << endl;
