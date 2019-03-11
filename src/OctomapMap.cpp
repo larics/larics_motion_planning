@@ -52,14 +52,6 @@ void OctomapMap::setDepth(int depth)
 
 void OctomapMap::setOctomapFromRosMessage(const octomap_msgs::Octomap::ConstPtr& ros_octomap)
 {
-  //auto temp = (unique_ptr<octomap::AbstractOcTree>)octomap_msgs::binaryMsgToMap(*ros_octomap);
-  //auto temp2 = make_unique<octomap::OcTree>(temp);
+  //cout << "Map received" << endl;
   map_.reset(dynamic_cast<octomap::OcTree*>(octomap_msgs::binaryMsgToMap(*ros_octomap)));
-  //octomap::OcTree* temp = (octomap::OcTree*)octomap_msgs::binaryMsgToMap(*ros_octomap);
-  //auto temp2 = unique_ptr<octomap::OcTree>(temp);
-  //cout << typeid(ros_octomap).name() << endl;
-  //cout << typeid(temp).name() << endl;
-  //cout << typeid(map_).name() << endl;
-  //cout << typeid(temp2).name() << endl;
-  //map_ = make_unique<octomap::OcTree>(octomap_msgs::binaryMsgToMap(ros_octomap));
 }
