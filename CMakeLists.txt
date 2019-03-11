@@ -37,5 +37,8 @@ target_link_libraries(trajectory ${catkin_LIBRARIES} yaml-cpp)
 add_library(map src/MapInterface.cpp src/OctomapMap.cpp)
 target_link_libraries(map ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES})
 
+add_library(path_planning src/PathPlanningInterface.cpp)
+target_link_libraries(map ${catkin_LIBRARIES})
+
 add_executable(testing_node src/test.cpp)
-target_link_libraries(testing_node trajectory map)
+target_link_libraries(testing_node trajectory map path_planning)
