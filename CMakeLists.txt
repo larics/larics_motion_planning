@@ -12,11 +12,13 @@ find_package(catkin REQUIRED COMPONENTS
     geometry_msgs
     trajectory_msgs
     topp_ros
-    cmake_modules 
+    cmake_modules
+    eigen_conversions
 )
 
 find_package(Eigen3 REQUIRED NO_MODULE)
 find_package(octomap REQUIRED)
+find_package(OMPL REQUIRED)
 
 catkin_package(
   INCLUDE_DIRS include 
@@ -26,7 +28,7 @@ catkin_package(
 )
 
 include_directories( 
-  include ${catkin_INCLUDE_DIRS} ${OCTOMAP_INCLUDE_DIRS}
+  include ${catkin_INCLUDE_DIRS} ${OCTOMAP_INCLUDE_DIRS} ${OMPL_INCLUDE_DIRS} ${Eigen_INCLUDE_DIRS}
   )
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
@@ -37,8 +39,8 @@ target_link_libraries(trajectory ${catkin_LIBRARIES} yaml-cpp)
 add_library(map src/MapInterface.cpp src/OctomapMap.cpp)
 target_link_libraries(map ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES})
 
-add_library(path_planning src/PathPlanningInterface.cpp)
-target_link_libraries(map ${catkin_LIBRARIES})
+add_library(path_planning src/PathPlanningInterface.cpp src/RrtPathPlanner.cpp)
+target_link_libraries(map ${catkin_LIBRARIES} ${OMPL_LIBRARIES} ${Eigen_LIBRARIES})
 
 add_executable(testing_node src/test.cpp)
 target_link_libraries(testing_node trajectory map path_planning)
