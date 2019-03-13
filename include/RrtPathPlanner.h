@@ -5,6 +5,7 @@
 
 #include "MotionPlanningDatatypes.h"
 #include "PathPlanningInterface.h"
+#include "MapInterface.h"
 
 #include <iostream>
 #include <string>
@@ -39,7 +40,7 @@ class RrtPathPlanner : public PathPlanningInterface
     /// \brief Constructor with filename.
     /// \param config_filename This constructor takes .yaml file for
     ///   planner configuration.
-    RrtPathPlanner(string config_filename);
+    RrtPathPlanner(string config_filename, shared_ptr<MapInterface> map);
 
     /// \brief Destructor.
     ~RrtPathPlanner();
@@ -57,6 +58,7 @@ class RrtPathPlanner : public PathPlanningInterface
 
   private:
     Eigen::MatrixXd path_;
+    shared_ptr<MapInterface> map_;
     bool isStateValid(const ob::State *state);
 };
 

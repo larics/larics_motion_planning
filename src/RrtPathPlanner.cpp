@@ -1,9 +1,10 @@
 #include <RrtPathPlanner.h>
 #include <ctime>
 
-RrtPathPlanner::RrtPathPlanner(string config_filename)
+RrtPathPlanner::RrtPathPlanner(string config_filename, 
+  shared_ptr<MapInterface> map)
 {
-
+  map_ = map;
 }
 
 RrtPathPlanner::~RrtPathPlanner()
@@ -30,12 +31,12 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   //      passed to validity checker. This might prove useful for checking 
   //      validity with manipulator attached to UAV.
   ob::RealVectorBounds bounds(3);
-  bounds.setLow(0, -1.0); // bounds for x axis
-  bounds.setHigh(0, 1.0);
-  bounds.setLow(1, -1.0); // bounds for y axis
-  bounds.setHigh(1, 1.0);
-  bounds.setLow(2, -1.0); // bounds for z axis
-  bounds.setHigh(2, 1.0);
+  bounds.setLow(0, -10.0); // bounds for x axis
+  bounds.setHigh(0, 3.0);
+  bounds.setLow(1, -14.0); // bounds for y axis
+  bounds.setHigh(1, 0.0);
+  bounds.setLow(2, 0.0); // bounds for z axis
+  bounds.setHigh(2, 2.7);
 
   // Set bounds
   state_space->as<ob::SE3StateSpace>()->setBounds(bounds);
@@ -124,10 +125,10 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   // Set up start and goal states.
   // TODO check if start and goal are 
   ob::ScopedState<ob::SE3StateSpace> start(state_space);
-  start->setXYZ(0.0, 0.0, 0.0);
+  start->setXYZ(-3.62, -1.94, 1.0);
   start->rotation().setAxisAngle(0, 0, 0, 1);
   ob::ScopedState<ob::SE3StateSpace> goal(state_space);
-  goal->setXYZ(1.0, 1.0, 1.0);
+  goal->setXYZ(-3.91, -12.5, 1.0);
   goal->rotation().setAxisAngle(0, 0, 0, 1);
 
   // Set up problem definition. That is basically setting start and goal states
@@ -143,6 +144,17 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   ob::PlannerStatus solved = planner->ob::Planner::solve(1.0);
   ob::PathPtr path = pdef->getSolutionPath();
   path->print(std::cout);
+
+  // Zajebancija sa stanjima.
+  /*
+  auto temp_space(std::make_shared<ob::CompoundStateSpace>());
+  temp_space->addSubspace(ob::StateSpacePtr(
+    make_shared<ob::SE3StateSpace>()),1.0);
+  temp_space->addSubspace(ob::StateSpacePtr(
+    make_shared<ob::RealVectorStateSpace>(5)), 1.0);
+  ob::ScopedState<ob::CompoundStateSpace> temp_state(temp_space);
+  //temp_space.printSettings(std::cout);
+  */
 }
 
 Eigen::MatrixXd RrtPathPlanner::getPath()
@@ -152,5 +164,9 @@ Eigen::MatrixXd RrtPathPlanner::getPath()
 
 bool RrtPathPlanner::isStateValid(const ob::State *state)
 {
-  return true;
+  Eigen::VectorXd state_vector(3);
+  state_vector(0) = state->as<ob::SE3StateSpace::StateType>()->getX();
+  state_vector(1) = state->as<ob::SE3StateSpace::StateType>()->getY();
+  state_vector(2) = state->as<ob::SE3StateSpace::StateType>()->getZ();
+  return map_->isStateValid(state_vector);
 }
