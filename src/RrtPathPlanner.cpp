@@ -143,7 +143,11 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   // Solve
   ob::PlannerStatus solved = planner->ob::Planner::solve(1.0);
   ob::PathPtr path = pdef->getSolutionPath();
-  path->print(std::cout);
+  og::PathGeometric path_geom(dynamic_cast<const og::PathGeometric&>(
+    *pdef->getSolutionPath()));
+  convertOmplPathToEigenMatrix(path_geom);
+  //*path_geom(dynamic_cast<og::PathGeometric>(pdef->getSolutionPath()));
+  //convertOmplPathToEigenMatrix(path);
 
   // Zajebancija sa stanjima.
   /*
@@ -157,9 +161,21 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   */
 }
 
+inline void RrtPathPlanner::convertOmplPathToEigenMatrix(og::PathGeometric path)
+{
+  path_ = Eigen::MatrixXd(path.getStateCount(), 3);
+  for (int i=0; i<path.getStateCount(); i++){
+    auto point = path.getState(i);
+    path_(i,0) = point->as<ob::SE3StateSpace::StateType>()->getX();
+    path_(i,1) = point->as<ob::SE3StateSpace::StateType>()->getY();
+    path_(i,2) = point->as<ob::SE3StateSpace::StateType>()->getZ();
+  }
+  cout << path_ << endl;
+}
+
 Eigen::MatrixXd RrtPathPlanner::getPath()
 {
-
+  return path_;
 }
 
 bool RrtPathPlanner::isStateValid(const ob::State *state)

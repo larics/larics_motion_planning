@@ -60,6 +60,7 @@ class RrtPathPlanner : public PathPlanningInterface
     Eigen::MatrixXd path_;
     shared_ptr<MapInterface> map_;
     bool isStateValid(const ob::State *state);
+    inline void convertOmplPathToEigenMatrix(og::PathGeometric path);
 };
 
 #endif // RRT_PATH_PLANNER
