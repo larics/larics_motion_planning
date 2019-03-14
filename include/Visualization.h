@@ -35,12 +35,29 @@ class Visualization
     /// \returns Path converted to ROS message nav_msgs::Path
     nav_msgs::Path getPath();
 
-    /// 
+    /// \brief Publishes converted path.
     void publishPath();
+
+    /// \brief Generates nav_msgs::Path suitable for displaying in RVIZ.
+    /// \param eigen_trajectory Trajectory represented as struct of eigen
+    ///   matrices. 
+    /// \param z If 2D trajectory is to be converted this provides height. The
+    ///   default value of this argument is 0.0
+    /// \returns 
+    bool eigenTrajectoryToNavMsgsPath(Trajectory eigen_trajectory, 
+      double z=0.0);
+
+    /// \brief Get trajectory represented as path generated with 
+    ///   eigenTrajectoryToNavMsgsPath function.
+    /// \returns Trajectory converted to ROS message nav_msgs::Path
+    nav_msgs::Path getTrajectory();
+
+    /// \brief Publishes trajectory as path message.
+    void publishTrajectory();
   private:
     ros::NodeHandle nh_;
-    nav_msgs::Path path_;
-    ros::Publisher path_publisher_;
+    nav_msgs::Path path_, trajectory_;
+    ros::Publisher path_publisher_, trajectory_publisher_;
 };
 
 #endif // VISUALIZATION_H
