@@ -31,12 +31,12 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   //      passed to validity checker. This might prove useful for checking 
   //      validity with manipulator attached to UAV.
   ob::RealVectorBounds bounds(3);
-  bounds.setLow(0, -10.0); // bounds for x axis
-  bounds.setHigh(0, 3.0);
-  bounds.setLow(1, -14.0); // bounds for y axis
-  bounds.setHigh(1, 0.0);
+  bounds.setLow(0, 0.0); // bounds for x axis
+  bounds.setHigh(0, 10.0);
+  bounds.setLow(1, -10.0); // bounds for y axis
+  bounds.setHigh(1, 10.0);
   bounds.setLow(2, 0.0); // bounds for z axis
-  bounds.setHigh(2, 2.7);
+  bounds.setHigh(2, 2.5);
 
   // Set bounds
   state_space->as<ob::SE3StateSpace>()->setBounds(bounds);
@@ -125,10 +125,10 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   // Set up start and goal states.
   // TODO check if start and goal are 
   ob::ScopedState<ob::SE3StateSpace> start(state_space);
-  start->setXYZ(-3.62, -1.94, 1.0);
+  start->setXYZ(1.57, -8.74, 1.0);
   start->rotation().setAxisAngle(0, 0, 0, 1);
   ob::ScopedState<ob::SE3StateSpace> goal(state_space);
-  goal->setXYZ(-3.91, -12.5, 1.0);
+  goal->setXYZ(8.68, 8.24, 1.0);
   goal->rotation().setAxisAngle(0, 0, 0, 1);
 
   // Set up problem definition. That is basically setting start and goal states
@@ -146,9 +146,14 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   og::PathGeometric path_geom(dynamic_cast<const og::PathGeometric&>(
     *pdef->getSolutionPath()));
   convertOmplPathToEigenMatrix(path_geom);
-  //*path_geom(dynamic_cast<og::PathGeometric>(pdef->getSolutionPath()));
-  //convertOmplPathToEigenMatrix(path);
-
+  
+  // Try to simplify path
+  cout << "Path geometric length: " << path_geom.getStateCount() << endl;
+  og::PathSimplifier path_simplifier(si);
+  //path_simplifier.reduceVertices(path_geom, path_geom.getStateCount()/4, 0);
+  path_simplifier.shortcutPath(path_geom);
+  cout << "Path geometric length: " << path_geom.getStateCount() << endl;
+  convertOmplPathToEigenMatrix(path_geom);
   // Zajebancija sa stanjima.
   /*
   auto temp_space(std::make_shared<ob::CompoundStateSpace>());
@@ -170,7 +175,6 @@ inline void RrtPathPlanner::convertOmplPathToEigenMatrix(og::PathGeometric path)
     path_(i,1) = point->as<ob::SE3StateSpace::StateType>()->getY();
     path_(i,2) = point->as<ob::SE3StateSpace::StateType>()->getZ();
   }
-  cout << path_ << endl;
 }
 
 Eigen::MatrixXd RrtPathPlanner::getPath()

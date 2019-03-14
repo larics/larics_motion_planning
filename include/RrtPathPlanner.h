@@ -25,6 +25,7 @@ using namespace std;
 #include <ompl/geometric/SimpleSetup.h>
 #include <ompl/geometric/planners/rrt/RRTstar.h>
 #include <ompl/geometric/PathGeometric.h>
+#include <ompl/geometric/PathSimplifier.h>
 #include <ompl/base/OptimizationObjective.h>
 namespace ob = ompl::base;
 namespace og = ompl::geometric;
