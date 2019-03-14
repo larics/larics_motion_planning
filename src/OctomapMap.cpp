@@ -26,8 +26,8 @@ bool OctomapMap::isStateValid(Eigen::VectorXd state)
 {
   octomap::point3d query(state(0), state(1), state(2));
   octomap::OcTreeNode* result = map_->search(query, search_depth_);
-
-  return !map_->isNodeOccupied(result);
+  if(result == nullptr) return true;
+  else return !map_->isNodeOccupied(result);
 }
 
 bool OctomapMap::isStateValid(Eigen::VectorXd state, int depth)
