@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
     std_msgs
     geometry_msgs
     trajectory_msgs
+    nav_msgs
     topp_ros
     cmake_modules
     eigen_conversions
@@ -42,5 +43,8 @@ target_link_libraries(map ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES})
 add_library(path_planning src/PathPlanningInterface.cpp src/RrtPathPlanner.cpp)
 target_link_libraries(map ${catkin_LIBRARIES} ${OMPL_LIBRARIES} ${Eigen_LIBRARIES})
 
+add_library(visualization src/Visualization.cpp)
+target_link_libraries(map ${catkin_LIBRARIES} ${Eigen_LIBRARIES})
+
 add_executable(testing_node src/test.cpp)
-target_link_libraries(testing_node trajectory map path_planning)
+target_link_libraries(testing_node trajectory map path_planning visualization)
