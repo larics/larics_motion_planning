@@ -71,7 +71,7 @@ int main(int argc, char **argv)
   map = make_shared<OctomapMap>(
     "/home/antun/catkin_ws/src/larics_gazebo_worlds/models/floor_plan_simple/model.binvox.bt", 14);
   shared_ptr<MapInterface> interface_map = map;
-  RrtPathPlanner path_planner("cfg", interface_map);
+  RrtPathPlanner path_planner("/home/antun/catkin_ws/src/larics_motion_planning/config/path_planner_config_example.yaml", interface_map);
   Eigen::MatrixXd waypoints;
   path_planner.planPath(waypoints);
   Visualization viz;
