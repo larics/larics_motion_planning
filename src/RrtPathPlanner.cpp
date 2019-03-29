@@ -5,11 +5,98 @@ RrtPathPlanner::RrtPathPlanner(string config_filename,
   shared_ptr<MapInterface> map)
 {
   map_ = map;
+  configFromFile(config_filename);
 }
 
 RrtPathPlanner::~RrtPathPlanner()
 {
 
+}
+
+bool RrtPathPlanner::configFromFile(string config_filename)
+{
+  cout << "Configuring from file: " << config_filename << endl;
+  // Open yaml file with configuration
+  YAML::Node config = YAML::LoadFile(config_filename);
+
+  // Load bounds 
+  planner_configuration_.bounds = 
+    config["path_planner"]["bounds"].as<std::vector< std::vector<double> > >();
+  // Longest valid segment
+  planner_configuration_.longest_valid_segment_is_used = 
+    config["path_planner"]["longest_valid_segment"]["is_used"].as<bool>();
+  planner_configuration_.longest_valid_segment_is_metric = 
+    config["path_planner"]["longest_valid_segment"]["is_metric"].as<bool>();
+  planner_configuration_.longest_valid_segment_value = 
+    config["path_planner"]["longest_valid_segment"]["value"].as<double>();
+
+  // Goal bias
+  planner_configuration_.goal_bias_is_used = 
+    config["path_planner"]["goal_bias"]["is_used"].as<bool>();
+  planner_configuration_.goal_bias_value = 
+    config["path_planner"]["goal_bias"]["value"].as<double>();
+
+  // Range
+  planner_configuration_.range_is_used = 
+    config["path_planner"]["range"]["is_used"].as<bool>();
+  planner_configuration_.range_value = 
+    config["path_planner"]["range"]["value"].as<double>();
+
+  // Rewire factor
+  planner_configuration_.rewire_factor_is_used = 
+    config["path_planner"]["rewire_factor"]["is_used"].as<bool>();
+  planner_configuration_.rewire_factor_value = 
+    config["path_planner"]["rewire_factor"]["value"].as<double>();
+
+  // Delay collision check
+  planner_configuration_.delay_cc_is_used = 
+    config["path_planner"]["delay_cc"]["is_used"].as<bool>();
+  planner_configuration_.delay_cc_value = 
+    config["path_planner"]["delay_cc"]["value"].as<bool>();
+
+  // Tree pruning
+  planner_configuration_.tree_pruning_is_used = 
+    config["path_planner"]["tree_pruning"]["is_used"].as<bool>();
+  planner_configuration_.tree_pruning_value = 
+    config["path_planner"]["tree_pruning"]["value"].as<bool>();
+
+  // Prune threshold
+  planner_configuration_.prune_threshold_is_used = 
+    config["path_planner"]["prune_threshold"]["is_used"].as<bool>();
+  planner_configuration_.prune_threshold_value = 
+    config["path_planner"]["prune_threshold"]["value"].as<double>();
+
+  // k nearest
+  planner_configuration_.k_nearest_is_used = 
+    config["path_planner"]["k_nearest"]["is_used"].as<bool>();
+  planner_configuration_.k_nearest_value = 
+    config["path_planner"]["k_nearest"]["value"].as<bool>();
+
+  // solve time
+  planner_configuration_.solve_time_is_incremental = 
+    config["path_planner"]["solve_time"]["is_incremental"].as<bool>();
+  planner_configuration_.solve_time = 
+    config["path_planner"]["solve_time"]["time"].as<double>();
+  planner_configuration_.solve_time_increment = 
+    config["path_planner"]["solve_time"]["increment"].as<double>();
+
+  // Reduce vertices
+  planner_configuration_.reduce_vertices_is_used = 
+    config["path_planner"]["path_simplifier"]["reduce_vertices"]["is_used"].as<bool>();
+  planner_configuration_.reduce_vertices_max_steps = 
+    config["path_planner"]["path_simplifier"]["reduce_vertices"]["max_steps"].as<double>();
+  planner_configuration_.reduce_vertices_max_empty_steps = 
+    config["path_planner"]["path_simplifier"]["reduce_vertices"]["max_empty_steps"].as<double>();
+  planner_configuration_.reduce_vertices_range_ratio = 
+    config["path_planner"]["path_simplifier"]["reduce_vertices"]["range_ratio"].as<double>();
+  planner_configuration_.reduce_vertices_use_as_fraction = 
+    config["path_planner"]["path_simplifier"]["reduce_vertices"]["use_as_fraction"].as<bool>();
+
+  // Smooth b-spline
+  planner_configuration_.smooth_bspline_is_used = 
+    config["path_planner"]["path_simplifier"]["smooth_b_spline"]["is_used"].as<bool>();
+  planner_configuration_.smooth_bspline_max_steps = 
+    config["path_planner"]["path_simplifier"]["smooth_b_spline"]["max_steps"].as<double>();
 }
 
 bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
@@ -118,10 +205,6 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   // sampling. Default is 100
   //planner->as<og::RRTstar>()->setNumSamplingAttempts(100);
 
-  // Set planner to simple setup
-  //ss.setPlanner(planner);
-  //cout << ss.getPlanner() << endl;
-
   // Set up start and goal states.
   // TODO check if start and goal are 
   ob::ScopedState<ob::SE3StateSpace> start(state_space);
@@ -150,9 +233,11 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   // Try to simplify path
   cout << "Path geometric length: " << path_geom.getStateCount() << endl;
   og::PathSimplifier path_simplifier(si);
-  //path_simplifier.reduceVertices(path_geom, path_geom.getStateCount()/4, 0);
-  path_simplifier.shortcutPath(path_geom);
-  cout << "Path geometric length: " << path_geom.getStateCount() << endl;
+  path_simplifier.reduceVertices(path_geom, path_geom.getStateCount()/4, 0);
+  cout << "Path geometric length after reduce vertices: " << path_geom.getStateCount() << endl;
+  //path_simplifier.shortcutPath(path_geom);
+  path_simplifier.smoothBSpline(path_geom, 5);
+  cout << "Path geometric length after bspline: " << path_geom.getStateCount() << endl;
   convertOmplPathToEigenMatrix(path_geom);
   // Zajebancija sa stanjima.
   /*
