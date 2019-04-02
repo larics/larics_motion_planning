@@ -29,7 +29,7 @@ path_planner:
     is_used: true
     value: true
   solve_time:
-    is_incremental: true
+    is_incremental: false
     time: 1.0
     increment: 0.5
   path_simplifier:

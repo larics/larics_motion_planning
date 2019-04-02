@@ -1,6 +1,46 @@
 #include <RrtPathPlanner.h>
 #include <ctime>
 
+void printRrtStarConfig(RrtStarConfig config)
+{
+  cout << "RRT Star planner configuration: " << endl;
+
+  // Print bounds
+  cout << " Bounds |    min    |    max    |" << endl;
+  for (int i = 0; i<config.bounds.size(); i++){
+    cout << " " <<  setfill('0') << setw(6) << i << " | " << 
+      boost::format("%9.2f") % config.bounds[i][0] << " | " <<
+      boost::format("%9.2f") % config.bounds[i][1] << " | " << endl;
+  }
+  cout << endl;
+  
+  cout << "       Parameter      | " << "Is used |  Value" << endl; 
+  cout << "Longest valid segment |    " << config.longest_valid_segment_is_used << "    | " << boost::format("%7.2f") % config.longest_valid_segment_value << endl;
+  cout << "       Goal bias      |    " << config.goal_bias_is_used <<             "    | " << boost::format("%7.2f") % config.goal_bias_value << endl;
+  cout << "         Range        |    " << config.range_is_used <<                 "    | " << boost::format("%7.2f") % config.range_value << endl;
+  cout << "     Rewire factor    |    " << config.rewire_factor_is_used <<         "    | " << boost::format("%7.2f") % config.rewire_factor_value << endl;
+  cout << "Delay collision check |    " << config.delay_cc_is_used <<              "    | B" << boost::format("%4d") % config.delay_cc_value << endl;
+  cout << "     Tree pruning     |    " << config.tree_pruning_is_used <<          "    | B" << boost::format("%4d") % config.tree_pruning_value << endl;
+  cout << "    Prune threshold   |    " << config.prune_threshold_is_used <<       "    | " << boost::format("%7.2f") % config.prune_threshold_value << endl;
+  cout << "    Pruned measure    |    " << config.pruned_measure_is_used <<        "    | B" << boost::format("%4d") % config.pruned_measure_value << endl;
+  cout << "      K nearest       |    " << config.k_nearest_is_used <<             "    | B" << boost::format("%4d") % config.k_nearest_value << endl;
+
+  cout  << "Solve time: " << config.solve_time << " Is incremental: " << 
+    config.solve_time_is_incremental << " Increment: " << 
+    config.solve_time_increment << endl;
+
+  cout << "Path simplification: " << endl;
+  cout << "Reduce vertices: " << endl;
+  cout << "  Is used: " << config.reduce_vertices_is_used << endl;
+  cout << "  Max steps: " << config.reduce_vertices_max_steps << endl;
+  cout << "  Max empty steps: " << config.reduce_vertices_max_empty_steps << endl;
+  cout << "  Range ratio: " << config.reduce_vertices_range_ratio << endl;
+  cout << "  Use as fraction: " << config.reduce_vertices_use_as_fraction << endl;
+  cout << "Smooth b spline: " << endl;
+  cout << "  Is used: " << config.smooth_bspline_is_used << endl;
+  cout << "  Max steps: " << config.smooth_bspline_max_steps << endl;
+}
+
 RrtPathPlanner::RrtPathPlanner(string config_filename, 
   shared_ptr<MapInterface> map)
 {
@@ -66,6 +106,12 @@ bool RrtPathPlanner::configFromFile(string config_filename)
   planner_configuration_.prune_threshold_value = 
     config["path_planner"]["prune_threshold"]["value"].as<double>();
 
+  // Pruned measure
+  planner_configuration_.pruned_measure_is_used = 
+    config["path_planner"]["pruned_measure"]["is_used"].as<bool>();
+  planner_configuration_.pruned_measure_value = 
+    config["path_planner"]["pruned_measure"]["value"].as<bool>();
+
   // k nearest
   planner_configuration_.k_nearest_is_used = 
     config["path_planner"]["k_nearest"]["is_used"].as<bool>();
@@ -97,6 +143,7 @@ bool RrtPathPlanner::configFromFile(string config_filename)
     config["path_planner"]["path_simplifier"]["smooth_b_spline"]["is_used"].as<bool>();
   planner_configuration_.smooth_bspline_max_steps = 
     config["path_planner"]["path_simplifier"]["smooth_b_spline"]["max_steps"].as<double>();
+  printRrtStarConfig(planner_configuration_);
 }
 
 bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)

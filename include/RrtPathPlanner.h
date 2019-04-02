@@ -10,6 +10,7 @@
 #include <iostream>
 #include <string>
 #include <boost/bind.hpp>
+#include <boost/format.hpp>
 #include <Eigen/Eigen>
 
 #include "yaml-cpp/yaml.h"
@@ -73,6 +74,8 @@ typedef struct{
   bool smooth_bspline_is_used;
   double smooth_bspline_max_steps;
 } RrtStarConfig;
+
+void printRrtStarConfig(RrtStarConfig config);
 
 /// \brief Contains the RRT path planning interface to the OMPL library.
 /// This class plans path in complex environments. It utilizes OMPL library,
