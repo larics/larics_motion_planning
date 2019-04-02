@@ -143,7 +143,7 @@ bool RrtPathPlanner::configFromFile(string config_filename)
     config["path_planner"]["path_simplifier"]["smooth_b_spline"]["is_used"].as<bool>();
   planner_configuration_.smooth_bspline_max_steps = 
     config["path_planner"]["path_simplifier"]["smooth_b_spline"]["max_steps"].as<double>();
-  printRrtStarConfig(planner_configuration_);
+  //printRrtStarConfig(planner_configuration_);
 }
 
 bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
@@ -164,13 +164,11 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   // TODO Check if there can be arbitrary number of bounds and how can they be
   //      passed to validity checker. This might prove useful for checking 
   //      validity with manipulator attached to UAV.
-  ob::RealVectorBounds bounds(3);
-  bounds.setLow(0, 0.0); // bounds for x axis
-  bounds.setHigh(0, 10.0);
-  bounds.setLow(1, -10.0); // bounds for y axis
-  bounds.setHigh(1, 10.0);
-  bounds.setLow(2, 0.0); // bounds for z axis
-  bounds.setHigh(2, 2.5);
+  ob::RealVectorBounds bounds(planner_configuration_.bounds.size());
+  for (int i=0; i<planner_configuration_.bounds.size(); i++){
+    bounds.setLow(i, planner_configuration_.bounds[i][0]);
+    bounds.setHigh(i, planner_configuration_.bounds[i][1]);
+  }
 
   // Set bounds
   state_space->as<ob::SE3StateSpace>()->setBounds(bounds);
@@ -178,8 +176,17 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   // The trick is that this is actually a fraction of state space maximum
   // extent. To transfer to metric we can divide our resolution with max extent
   // to get the fraction that corresponds to resolution in meters.
-  state_space->as<ob::SE3StateSpace>()->setLongestValidSegmentFraction(
-    0.01/state_space->as<ob::SE3StateSpace>()->getMaximumExtent());
+  if (planner_configuration_.longest_valid_segment_is_used){
+    if (planner_configuration_.longest_valid_segment_is_metric){
+      state_space->as<ob::SE3StateSpace>()->setLongestValidSegmentFraction(
+        planner_configuration_.longest_valid_segment_value/
+        state_space->as<ob::SE3StateSpace>()->getMaximumExtent());
+    }
+    else{
+      state_space->as<ob::SE3StateSpace>()->setLongestValidSegmentFraction(
+        planner_configuration_.longest_valid_segment_value);
+    }
+  }
   
   // Create simple setup. Here ob::SpaceInformation and ob::ProblemDefinition 
   // are both created internally. But we can override them with our code.
@@ -201,27 +208,44 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   // of interface class?
   ob::PlannerPtr planner(std::make_shared<og::RRTstar>(si));
   // Probability the planner will choose the goal state. Leave it as it is.
-  planner->as<og::RRTstar>()->setGoalBias(0.05);
+  if (planner_configuration_.goal_bias_is_used){
+    planner->as<og::RRTstar>()->setGoalBias(
+      planner_configuration_.goal_bias_value);
+  }
   // Maximum length of a motion added in the tree of motions.
-  planner->as<og::RRTstar>()->setRange(0.5);
+  if (planner_configuration_.range_is_used){
+    planner->as<og::RRTstar>()->setRange(planner_configuration_.range_value);
+  }
   // Rewiring scale factor, not sure what it is but default was 1.1
   //planner->as<og::RRTstar>()->setRewireFactor(1.1);
   // Delays collision checking procedures. If set to false this checks
   // collisions between neighbor nodes and tries to find the nearest. If set
   // to true it stops when it has found the first collision free neighbor which
   // in turn reduces computation time. Default was set to true.
-  planner->as<og::RRTstar>()->setDelayCC(true);
+  if (planner_configuration_.delay_cc_is_used){
+    planner->as<og::RRTstar>()->setDelayCC(
+      planner_configuration_.delay_cc_value);
+  }
   // Controls if the tree will be pruned or not. If set to true, pruning(
   // removing a vertex) will occur only if the vertex and all its decendants
   // satisfy the pruning condition. Default is false;
-  planner->as<og::RRTstar>()->setTreePruning(false);
+  if (planner_configuration_.tree_pruning_is_used){
+    planner->as<og::RRTstar>()->setTreePruning(
+      planner_configuration_.tree_pruning_value);
+  }
   // Prune only if the new solution is X% better than the old solution. 0 will
   // prune after every new solution, 1.0 will never prune. Default is 0.05.
-  planner->as<og::RRTstar>()->setPruneThreshold(0.1);
+  if (planner_configuration_.prune_threshold_is_used){
+    planner->as<og::RRTstar>()->setPruneThreshold(
+      planner_configuration_.prune_threshold_value);
+  }
   // Use the measure of the pruned subproblem instead of the measure of the
   // entire problem domain(if it exists). Sounds like it's best to leave that
   // on default value which is false.
-  planner->as<og::RRTstar>()->setPrunedMeasure(false);
+  if (planner_configuration_.pruned_measure_is_used){
+    planner->as<og::RRTstar>()->setPrunedMeasure(
+      planner_configuration_.pruned_measure_value);
+  }
   // COMMENTED PARAMETERS WE LEAVE AT DEFAULT
   // Use direct sampling of the heuristic for the generation of random samples 
   // (e.g., x_rand). If a direct sampling method is not defined for the 
@@ -247,7 +271,10 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   //planner->as<og::RRTstar>()->setFocusSearch(false);
   // Use a k-nearest search for rewiring instead of a r-disc search. Default is
   // true so we use k-nearest search.
-  planner->as<og::RRTstar>()->setKNearest(true);
+  if (planner_configuration_.k_nearest_is_used){
+    planner->as<og::RRTstar>()->setKNearest(
+      planner_configuration_.k_nearest_value);
+  }
   // Set the number of attempts to make while performing rejection or informed 
   // sampling. Default is 100
   //planner->as<og::RRTstar>()->setNumSamplingAttempts(100);
@@ -271,7 +298,27 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   planner->setup();
 
   // Solve
-  ob::PlannerStatus solved = planner->ob::Planner::solve(1.0);
+  ob::PlannerStatus solved;
+  if (planner_configuration_.solve_time_is_incremental == false){
+    // If we don't use increment simply solve with provided time to get the
+    // path
+    solved = planner->ob::Planner::solve(planner_configuration_.solve_time);
+  }
+  else{
+    // In this case start with some small time and increment it if planner
+    // does not solve. Terminate if valid path is provided.
+    bool plan_flag = true;
+    double dt = planner_configuration_.solve_time_increment;
+    double t = dt;
+
+    while (plan_flag == true){
+      solved = planner->ob::Planner::solve(t);
+      t += dt;
+      plan_flag = !pdef->hasExactSolution();
+      //cout << "Time: " << t << " Exact solution: " << !plan_flag << endl;
+    }
+  }
+
   ob::PathPtr path = pdef->getSolutionPath();
   og::PathGeometric path_geom(dynamic_cast<const og::PathGeometric&>(
     *pdef->getSolutionPath()));
@@ -280,7 +327,7 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   // Try to simplify path
   cout << "Path geometric length: " << path_geom.getStateCount() << endl;
   og::PathSimplifier path_simplifier(si);
-  path_simplifier.reduceVertices(path_geom, path_geom.getStateCount()/4, 0);
+  path_simplifier.reduceVertices(path_geom, path_geom.getStateCount()/4, 0, 0.33);
   cout << "Path geometric length after reduce vertices: " << path_geom.getStateCount() << endl;
   //path_simplifier.shortcutPath(path_geom);
   path_simplifier.smoothBSpline(path_geom, 5);
