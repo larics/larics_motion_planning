@@ -69,10 +69,11 @@ int main(int argc, char **argv)
   //map.configureFromFile("haha");
   shared_ptr<OctomapMap> map;
   map = make_shared<OctomapMap>(
-    "/home/antun/catkin_ws/src/larics_gazebo_worlds/models/floor_plan_simple/model.binvox.bt", 14);
+    "/home/antun/catkin_ws/src/larics_motion_planning/config/octomap_config_example.yaml");
   shared_ptr<MapInterface> interface_map = map;
   RrtPathPlanner path_planner("/home/antun/catkin_ws/src/larics_motion_planning/config/path_planner_config_example.yaml", interface_map);
-  Eigen::MatrixXd waypoints;
+  Eigen::MatrixXd waypoints(2,3);
+  waypoints << 1.57, -8.74, 1.0, 8.68, 8.24, 1.0;
   path_planner.planPath(waypoints);
   Visualization viz;
   viz.eigenPathToNavMsgsPath(path_planner.getPath());
