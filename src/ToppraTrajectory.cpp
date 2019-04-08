@@ -15,8 +15,10 @@ ToppraTrajectory::ToppraTrajectory(string config_filename)
   std::vector<double> velocities, accelerations;
 
   // Load everything from yaml file
-  velocities = config["velocities"].as<std::vector<double> >();
-  accelerations = config["accelerations"].as<std::vector<double> >();
+  velocities = config["toppra_trajectory"]["velocities"].as<
+    std::vector<double> >();
+  accelerations = config["toppra_trajectory"]["accelerations"].as<
+    std::vector<double> >();
 
   if (velocities.size() == accelerations.size()){
     // Set degrees of freedom number
@@ -32,7 +34,7 @@ ToppraTrajectory::ToppraTrajectory(string config_filename)
     }
 
     // Set up sampling frequency
-    sampling_frequency_ = config["sampling_frequency"].as<double>();
+    sampling_frequency_ = config["toppra_trajectory"]["sampling_frequency"].as<double>();
   }
   else{
     cout << "Error in config: Velocity and acceleration constraints must have ";
