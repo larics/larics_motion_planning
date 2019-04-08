@@ -14,6 +14,8 @@
 
 #include <eigen3/Eigen/Eigen>
 
+#include "yaml-cpp/yaml.h"
+
 #include <octomap/octomap.h>
 #include <octomap/OcTree.h>
 #include <octomap/math/Vector3.h>
@@ -36,7 +38,7 @@ class OctomapMap : public MapInterface
     /// \brief Opens the map from .binvox.bt file.
     /// \param octomap_file Path to .binvox.bt file where the octomap is stored
     /// \param depth Search depth of the octomap. Number from interval [1,16].
-    OctomapMap(string octomap_file, int depth);
+    OctomapMap(string octomap_config_file);
 
     /// \brief Destructor
     ~OctomapMap();
@@ -56,7 +58,7 @@ class OctomapMap : public MapInterface
     /// \brief Loads octomap from file and uses it for querying validity.
     /// \param octomap_file Path to .binvox.bt file containing octomap.
     /// \return True if map loading was successful.
-    bool configureFromFile(string octomap_file);
+    bool configureFromFile(string config_filename);
 
     /// \brief Sets search depth for octomap.
     /// \param depth Depth for search, must be in interval [1,16]

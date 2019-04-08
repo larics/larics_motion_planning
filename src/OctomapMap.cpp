@@ -10,11 +10,10 @@ map_(make_unique<octomap::OcTree>(resolution))
   cout << map_->getResolution() << endl;
 }
 
-OctomapMap::OctomapMap(string octomap_file, int depth) :
-  map_(make_unique<octomap::OcTree>(octomap_file)),
-  search_depth_(depth)
+OctomapMap::OctomapMap(string octomap_config_file)
 {
-  cout << "Loading map from file " << octomap_file << endl;
+  cout << "Loading map from file " << octomap_config_file << endl;
+  configureFromFile(octomap_config_file);
 }
 
 OctomapMap::~OctomapMap()
@@ -38,10 +37,13 @@ bool OctomapMap::isStateValid(Eigen::VectorXd state, int depth)
   return !map_->isNodeOccupied(result);
 }
 
-bool OctomapMap::configureFromFile(string octomap_file)
+bool OctomapMap::configureFromFile(string config_filename)
 {
-  cout << "Loading octomap from file: " << octomap_file << endl;
-  map_ = make_unique<octomap::OcTree>(octomap_file);
+  cout << "Loading octomap from file: " << config_filename << endl;
+  YAML::Node config = YAML::LoadFile(config_filename);
+  map_ = make_unique<octomap::OcTree>(
+    config["octomap"]["path_to_file"].as<string>());
+  search_depth_ = config["octomap"]["search_depth"].as<int>();
   return true;
 }
 
@@ -50,8 +52,10 @@ void OctomapMap::setDepth(int depth)
   search_depth_ = depth;
 }
 
-void OctomapMap::setOctomapFromRosMessage(const octomap_msgs::Octomap::ConstPtr& ros_octomap)
+void OctomapMap::setOctomapFromRosMessage(const 
+  octomap_msgs::Octomap::ConstPtr& ros_octomap)
 {
   cout << "Map received" << endl;
-  map_.reset(dynamic_cast<octomap::OcTree*>(octomap_msgs::binaryMsgToMap(*ros_octomap)));
+  map_.reset(dynamic_cast<octomap::OcTree*>(octomap_msgs::binaryMsgToMap(
+    *ros_octomap)));
 }
