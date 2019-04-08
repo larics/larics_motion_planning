@@ -282,10 +282,10 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   // Set up start and goal states.
   // TODO check if start and goal are 
   ob::ScopedState<ob::SE3StateSpace> start(state_space);
-  start->setXYZ(1.57, -8.74, 1.0);
+  start->setXYZ(positions(0,0), positions(0,1), positions(0,2));
   start->rotation().setAxisAngle(0, 0, 0, 1);
   ob::ScopedState<ob::SE3StateSpace> goal(state_space);
-  goal->setXYZ(8.68, 8.24, 1.0);
+  goal->setXYZ(positions(1,0), positions(1,1), positions(1,2));
   goal->rotation().setAxisAngle(0, 0, 0, 1);
 
   // Set up problem definition. That is basically setting start and goal states
