@@ -322,16 +322,31 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   ob::PathPtr path = pdef->getSolutionPath();
   og::PathGeometric path_geom(dynamic_cast<const og::PathGeometric&>(
     *pdef->getSolutionPath()));
-  convertOmplPathToEigenMatrix(path_geom);
   
   // Try to simplify path
-  cout << "Path geometric length: " << path_geom.getStateCount() << endl;
   og::PathSimplifier path_simplifier(si);
-  path_simplifier.reduceVertices(path_geom, path_geom.getStateCount()/4, 0, 0.33);
-  cout << "Path geometric length after reduce vertices: " << path_geom.getStateCount() << endl;
+  if (planner_configuration_.reduce_vertices_is_used){
+    //cout << "Path geometric length: " << path_geom.getStateCount() << endl;
+    if (planner_configuration_.reduce_vertices_use_as_fraction){
+      path_simplifier.reduceVertices(path_geom, 
+        path_geom.getStateCount()*planner_configuration_.reduce_vertices_max_steps, 
+        path_geom.getStateCount()*planner_configuration_.reduce_vertices_max_empty_steps, 
+        planner_configuration_.reduce_vertices_range_ratio);
+    }
+    else{
+      path_simplifier.reduceVertices(path_geom, 
+        planner_configuration_.reduce_vertices_max_steps, 
+        planner_configuration_.reduce_vertices_max_empty_steps, 
+        planner_configuration_.reduce_vertices_range_ratio);
+    }
+    //path_simplifier.reduceVertices(path_geom, path_geom.getStateCount()/4, 0, 0.33);
+    //cout << "Path geometric length after reduce vertices: " << path_geom.getStateCount() << endl;
+  }
   //path_simplifier.shortcutPath(path_geom);
-  path_simplifier.smoothBSpline(path_geom, 5);
-  cout << "Path geometric length after bspline: " << path_geom.getStateCount() << endl;
+  if (planner_configuration_.smooth_bspline_is_used){
+    path_simplifier.smoothBSpline(path_geom, planner_configuration_.smooth_bspline_max_steps);
+    //cout << "Path geometric length after bspline: " << path_geom.getStateCount() << endl;
+  }
   convertOmplPathToEigenMatrix(path_geom);
   // Zajebancija sa stanjima.
   /*
