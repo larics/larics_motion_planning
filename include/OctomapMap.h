@@ -30,14 +30,14 @@ using namespace std;
 class OctomapMap : public MapInterface
 {
   public:
-    /// \brief Constructor input resolution. Generates empty map.
+    /// \brief Constructs the empty map.
     /// \param resolution Resolution of the octomap. This will probably be
-    ///   overwritten by loading the octomap.
+    ///   overwritten by loading the octomap. Suitable for using the map
+    ///   through topic.
     OctomapMap(double resolution);
 
-    /// \brief Opens the map from .binvox.bt file.
-    /// \param octomap_file Path to .binvox.bt file where the octomap is stored
-    /// \param depth Search depth of the octomap. Number from interval [1,16].
+    /// \brief Configures the planner from .yaml file.
+    /// \param octomap_file Path to .yaml file where configuration is stored.
     OctomapMap(string octomap_config_file);
 
     /// \brief Destructor
