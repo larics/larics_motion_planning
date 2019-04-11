@@ -16,6 +16,7 @@ class PathPlanningInterface
     PathPlanningInterface();
     virtual bool planPath(Eigen::MatrixXd positions) = 0;
     virtual Eigen::MatrixXd getPath() = 0;
+    virtual bool configureFromFile(string config_filename) = 0;
 };
 
 #endif // PATH_PLANNING_INTERFACE_H

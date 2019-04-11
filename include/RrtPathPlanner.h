@@ -95,7 +95,7 @@ class RrtPathPlanner : public PathPlanningInterface
     /// \brief Configures planner from file. This is also called by constructor.
     /// \param config_filename Path to the .yaml file for configuration.
     /// \return True if configuration provided is valid.
-    bool configFromFile(string config_filename);
+    bool configureFromFile(string config_filename);
 
     /// \brief Generates obstacle free path between specified waypoints.
     /// \param positions The waypoints are passed through a matrix. Each row 

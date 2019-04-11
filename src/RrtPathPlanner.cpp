@@ -45,7 +45,7 @@ RrtPathPlanner::RrtPathPlanner(string config_filename,
   shared_ptr<MapInterface> map)
 {
   map_ = map;
-  configFromFile(config_filename);
+  configureFromFile(config_filename);
 }
 
 RrtPathPlanner::~RrtPathPlanner()
@@ -53,7 +53,7 @@ RrtPathPlanner::~RrtPathPlanner()
 
 }
 
-bool RrtPathPlanner::configFromFile(string config_filename)
+bool RrtPathPlanner::configureFromFile(string config_filename)
 {
   cout << "Configuring from file: " << config_filename << endl;
   // Open yaml file with configuration
