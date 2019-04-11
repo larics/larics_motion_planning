@@ -46,6 +46,11 @@ class ToppraTrajectory : public TrajectoryInterface
     /// \brief Destructor.
     ~ToppraTrajectory();
 
+    /// \brief Configures trajectory planner from file.
+    /// \param config_filename Path to the .yaml file for configuration.
+    /// \return True if configuration provided is valid.
+    bool configureFromFile(string config_filename);
+
     /// \brief Generates TOPP-RA trajectory through specified waypoints taking
     ///   constraints into consideration.
     /// \param positions The waypoints are passed through a matrix. Each row of matrix is one
