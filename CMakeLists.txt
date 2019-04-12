@@ -46,5 +46,8 @@ target_link_libraries(map ${catkin_LIBRARIES} ${OMPL_LIBRARIES} ${Eigen_LIBRARIE
 add_library(visualization src/Visualization.cpp)
 target_link_libraries(map ${catkin_LIBRARIES} ${Eigen_LIBRARIES})
 
+add_library(global_planner src/GlobalPlanner.cpp)
+target_link_libraries(global_planner trajectory map path_planning ${catkin_LIBRARIES} ${Eigen_LIBRARIES})
+
 add_executable(testing_node src/test.cpp)
-target_link_libraries(testing_node trajectory map path_planning visualization)
+target_link_libraries(testing_node trajectory map path_planning visualization global_planner)
