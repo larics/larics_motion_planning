@@ -46,7 +46,8 @@ bool OctomapMap::isStateValid(Eigen::VectorXd state, int depth)
 
 bool OctomapMap::configureFromFile(string config_filename)
 {
-  cout << "Loading octomap from file: " << config_filename << endl;
+  cout << "Loading octomap from file: " << endl; 
+  cout << "  " << config_filename << endl;
   YAML::Node config = YAML::LoadFile(config_filename);
 
   // Load map from path provided in file.

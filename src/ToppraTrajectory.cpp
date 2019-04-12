@@ -2,8 +2,8 @@
 
 ToppraTrajectory::ToppraTrajectory(string config_filename)
 {
-  cout << "Initializing TOPP-RA trajectory with from file:" << endl;
-  cout << config_filename << endl;
+  cout << "Initializing TOPP-RA trajectory from file:" << endl;
+  cout << "  " << config_filename << endl;
 
   // Set up node handle and create service
   nh_ = ros::NodeHandle();

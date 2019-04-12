@@ -55,7 +55,8 @@ RrtPathPlanner::~RrtPathPlanner()
 
 bool RrtPathPlanner::configureFromFile(string config_filename)
 {
-  cout << "Configuring from file: " << config_filename << endl;
+  cout << "Configuring path planner from file: " << endl;
+  cout << "  " << config_filename << endl;
   // Open yaml file with configuration
   YAML::Node config = YAML::LoadFile(config_filename);
 
