@@ -359,6 +359,7 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   ob::ScopedState<ob::CompoundStateSpace> temp_state(temp_space);
   //temp_space.printSettings(std::cout);
   */
+  return true;
 }
 
 inline void RrtPathPlanner::convertOmplPathToEigenMatrix(og::PathGeometric path)
