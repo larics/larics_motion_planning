@@ -51,13 +51,33 @@ class GlobalPlanner
     ///   desired waypoints.
     /// \param waypoints Multiple n-dimensional waypoints as input to
     ///   trajectory interpolation.
-    /// \return Success of collision free trajectory generation.
+    /// \return Success of trajectory generation.
     bool planTrajectory(Eigen::MatrixXd waypoints);
 
+    /// \brief Plans collision free path through provided waypoints. The path
+    ///   is then interpolated with trajectory and checked for collisions.
+    /// \param waypoints Two or more waypoints for path planning.
+    /// \return Success of collision free trajectory generation. Returns false
+    ///   if path is not collision free.
+    bool planPathAndTrajectory(Eigen::MatrixXd waypoints);
+
+    /// \brief Returns planned path.
+    /// \return Planned path as Eigen matrix.
+    Eigen::MatrixXd getPath();
+
+    /// \brief Returns planned trajectory.
+    /// \return Sampled trajectory
+    Trajectory getTrajectory();
+
   private:
-    shared_ptr<MapInterface> map_;
-    shared_ptr<TrajectoryInterface> trajectory_;
-    shared_ptr<PathPlanningInterface> path_planner_;
+    shared_ptr<MapInterface> map_interface_;
+    shared_ptr<TrajectoryInterface> trajectory_interface_;
+    shared_ptr<PathPlanningInterface> path_planner_interface_;
+
+    // Local copy of path
+    Eigen::MatrixXd path_;
+
+    bool planPathThroughTwoWaypoints(Eigen::MatrixXd waypoints);
 };
 
 #endif // GLOBAL_PLANNER_H
