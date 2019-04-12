@@ -4,9 +4,10 @@
 #include <OctomapMap.h>
 #include <RrtPathPlanner.h>
 #include <Visualization.h>
+#include <GlobalPlanner.h>
 using namespace std;
 
-void octomapCallback(const octomap_msgs::Octomap::ConstPtr& msg)
+/*void octomapCallback(const octomap_msgs::Octomap::ConstPtr& msg)
 {
   cout << "In octomap callback " << endl;
   OctomapMap map(0.10);
@@ -14,7 +15,7 @@ void octomapCallback(const octomap_msgs::Octomap::ConstPtr& msg)
   Eigen::VectorXd state(3);
   cout << state << endl;
   cout << map.isStateValid(state) << endl;
-}
+}*/
 
 int main(int argc, char **argv)
 {
@@ -67,7 +68,7 @@ int main(int argc, char **argv)
   //cout << state << endl;
   //cout << map.isStateValid(state) << endl;
   //map.configureFromFile("haha");
-  shared_ptr<OctomapMap> map;
+  /*shared_ptr<OctomapMap> map;
   map = make_shared<OctomapMap>(
     "/home/antun/catkin_ws/src/larics_motion_planning/config/octomap_config_example.yaml");
   shared_ptr<MapInterface> interface_map = map;
@@ -91,6 +92,24 @@ int main(int argc, char **argv)
     viz.publishTrajectory();
   }
   //cout << viz.getPath() << endl;
-  //cout << path_planner.getPath() << endl;
+  //cout << path_planner.getPath() << endl;*/
+
+  GlobalPlanner gp("haha");
+  Eigen::MatrixXd waypoints(2,3);
+  waypoints << 1.57, -8.74, 1.0, 8.68, 8.24, 1.0;
+  gp.planPathAndTrajectory(waypoints);
+
+  Visualization viz;
+  viz.eigenPathToNavMsgsPath(gp.getPath());
+  viz.eigenTrajectoryToNavMsgsPath(gp.getTrajectory());
+
+  // Setup some ros for publishing the path
+  ros::Rate r(10);
+  while (ros::ok()){
+    ros::spinOnce();
+    r.sleep();
+    viz.publishPath();
+    viz.publishTrajectory();
+  }
   return 0;
 }
