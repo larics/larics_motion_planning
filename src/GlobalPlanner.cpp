@@ -29,7 +29,35 @@ bool GlobalPlanner::collisionCheck(Eigen::MatrixXd path)
 
 bool GlobalPlanner::planPath(Eigen::MatrixXd waypoints)
 {
-  return this->planPathThroughTwoWaypoints(waypoints);
+  bool success = true;
+  path_.resize(0,0);
+
+  for (int i=1; i<waypoints.rows(); i++){
+    // Plan path through current two waypoints. Waypoints are taken out as a 
+    // block of size (2, num_columns) which takes two waypoints from the list.
+    success &= this->planPathThroughTwoWaypoints(
+      waypoints.block(i-1, 0, 2, waypoints.cols()));
+
+    // Remeber rows before resizing the path.
+    int rows = path_.rows();
+    // Resize the path so it can hold currently planned one.
+    path_.conservativeResize(
+      path_.rows()+path_planner_interface_->getPath().rows(), waypoints.cols());
+    // Insert currently planned path into path_. It is used as a block of size 
+    // of the new path and starts at rows where previous path has ended.
+    path_.block(rows, 0, path_planner_interface_->getPath().rows(), 
+      path_planner_interface_->getPath().cols()) << 
+      path_planner_interface_->getPath();
+
+    // Finally, cut the last row because if we have multiple waypoints the last
+    // point on current path will be the first point on next path. That's why 
+    // we simply remove that point, unless we are at the last waypoint.
+    if (i != waypoints.rows()-1){
+      path_.conservativeResize(path_.rows()-1, path_.cols());
+    }
+  }
+
+  return success;
 }
 
 bool GlobalPlanner::planTrajectory(Eigen::MatrixXd waypoints)
@@ -52,8 +80,7 @@ bool GlobalPlanner::planPathAndTrajectory(Eigen::MatrixXd waypoints)
     // First obtain collision free path.
     success = this->planPath(waypoints);
     // Next plan trajectory based on the path. 
-    // TODO: swap getPath with path_ when planPath is fully implemented.
-    success &= this->planTrajectory(path_planner_interface_->getPath());
+    success &= this->planTrajectory(path_);
     success &= this->collisionCheck(trajectory_interface_->getTrajectory().position);
   }
 
@@ -62,8 +89,7 @@ bool GlobalPlanner::planPathAndTrajectory(Eigen::MatrixXd waypoints)
 
 Eigen::MatrixXd GlobalPlanner::getPath()
 {
-  // TODO: swap getPath() with path_ when implemented.
-  return path_planner_interface_->getPath();
+  return path_;
 }
 
 Trajectory GlobalPlanner::getTrajectory()
@@ -95,7 +121,7 @@ bool GlobalPlanner::planPathThroughTwoWaypoints(Eigen::MatrixXd waypoints)
       success = path_planner_interface_->planPath(waypoints);
     }
     if (plan_path_collision_check==true){
-      success &= this->collisionCheck(path_planner_interface_->getPath());
+      success &= this->collisionCheck(path_);
     }
   }
   
