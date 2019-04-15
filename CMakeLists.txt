@@ -29,25 +29,44 @@ catkin_package(
 )
 
 include_directories( 
-  include ${catkin_INCLUDE_DIRS} ${OCTOMAP_INCLUDE_DIRS} ${OMPL_INCLUDE_DIRS} ${Eigen_INCLUDE_DIRS}
+  include ${catkin_INCLUDE_DIRS} ${OCTOMAP_INCLUDE_DIRS} 
+    ${OMPL_INCLUDE_DIRS} ${Eigen_INCLUDE_DIRS}
   )
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
-add_library(trajectory src/TrajectoryInterface.cpp src/ToppraTrajectory.cpp)
+set(TRAJECTORY_SOURCES src/TrajectoryInterface.cpp 
+  src/ToppraTrajectory.cpp)
+add_library(trajectory ${TRAJECTORY_SOURCES})
 target_link_libraries(trajectory ${catkin_LIBRARIES} yaml-cpp)
 
-add_library(map src/MapInterface.cpp src/OctomapMap.cpp)
+set(MAP_SOURCES src/MapInterface.cpp src/OctomapMap.cpp)
+add_library(map ${MAP_SOURCES})
 target_link_libraries(map ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES})
 
-add_library(path_planning src/PathPlanningInterface.cpp src/RrtPathPlanner.cpp)
-target_link_libraries(map ${catkin_LIBRARIES} ${OMPL_LIBRARIES} ${Eigen_LIBRARIES})
+set(PATH_PLANNING_SOURCES src/PathPlanningInterface.cpp 
+  src/RrtPathPlanner.cpp)
+add_library(path_planning ${PATH_PLANNING_SOURCES})
+target_link_libraries(map ${catkin_LIBRARIES} ${OMPL_LIBRARIES} 
+  ${Eigen_LIBRARIES})
 
-add_library(visualization src/Visualization.cpp)
+set(VISUALIZATION_SOURCES src/Visualization.cpp)
+add_library(visualization ${VISUALIZATION_SOURCES})
 target_link_libraries(map ${catkin_LIBRARIES} ${Eigen_LIBRARIES})
 
-add_library(global_planner src/GlobalPlanner.cpp)
-target_link_libraries(global_planner trajectory map path_planning ${catkin_LIBRARIES} ${Eigen_LIBRARIES})
+set(GLOBAL_PLANNER_SOURCES src/GlobalPlanner.cpp 
+  src/GlobalPlannerRosInterface.cpp)
+add_library(global_planner ${GLOBAL_PLANNER_SOURCES})
+target_link_libraries(global_planner trajectory map path_planning 
+  ${catkin_LIBRARIES} ${Eigen_LIBRARIES})
+
+add_library(larics_motion_planning ${TRAJECTORY_SOURCES} ${MAP_SOURCES}
+  ${PATH_PLANNING_SOURCES} ${VISUALIZATION_SOURCES} ${GLOBAL_PLANNER_SOURCES})
+target_link_libraries(larics_motion_planning trajectory map path_planning 
+  visualization global_planner ${catkin_LIBRARIES} ${Eigen_LIBRARIES} yaml-cpp)
 
 add_executable(testing_node src/test.cpp)
-target_link_libraries(testing_node trajectory map path_planning visualization global_planner)
+target_link_libraries(testing_node larics_motion_planning)
+
+add_executable(global_planner_node src/global_planner_node)
+target_link_libraries(global_planner_node larics_motion_planning)
