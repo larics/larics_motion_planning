@@ -149,6 +149,30 @@ bool RrtPathPlanner::configureFromFile(string config_filename)
 
 bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
 {
+  // Check if start, goal and size of positions is right.
+  bool initial_check = true;
+  // If less than two waypoints are provided
+  if (positions.rows() < 2) {
+    initial_check = false;
+    cout << "RrtPathPlanner->planPath: " << endl;
+    cout << "  You have to provide at least two waypoints." << endl;
+  }
+  Eigen::VectorXd temp_state(3);
+  temp_state << positions(0,0), positions(0,1), positions(0,2);
+  if (!map_->isStateValid(temp_state)){
+    initial_check = false;
+    cout << "RrtPathPlanner->planPath: " << endl;
+    cout << "  Start point is not valid: " << endl << temp_state << endl;
+  }
+  temp_state << positions(1,0), positions(1,1), positions(1,2);
+  if (!map_->isStateValid(temp_state)){
+    initial_check = false;
+    cout << "RrtPathPlanner->planPath: " << endl;
+    cout << "  Goal point is not valid: " << endl << temp_state << endl;
+  }
+
+  if (initial_check == false) return initial_check;
+
   // First create state space in which we will do planning. The type of this
   // can be auto.
   // TODO Check what exactly happens when this is auto since both types are
