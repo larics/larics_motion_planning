@@ -1,0 +1,15 @@
+global_planner:
+  map_config_file: "/home/antun/catkin_ws/src/larics_motion_planning/config/octomap_config_example.yaml"
+  trajectory_config_file: "/home/antun/catkin_ws/src/larics_motion_planning/config/toppra_config_example.yaml"
+  path_planner_config_file: "/home/antun/catkin_ws/src/larics_motion_planning/config/path_planner_config_example.yaml"
+
+  trajectory:
+    restarts: 5
+
+  path_and_trajectory:
+    restarts: 5
+
+  path:
+    restarts: 5
+    collision_check_restarts: 5
+    collision_check: true

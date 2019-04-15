@@ -14,6 +14,8 @@
 
 #include <eigen3/Eigen/Eigen>
 
+#include "yaml-cpp/yaml.h"
+
 #include <iostream>
 
 using namespace std;
@@ -76,6 +78,9 @@ class GlobalPlanner
 
     // Local copy of path
     Eigen::MatrixXd path_;
+    int num_trajectory_restarts_, num_path_and_trajectory_restarts_;
+    int num_path_restarts_, num_collision_check_restarts_;
+    bool plan_path_collision_check_;
 
     bool planPathThroughTwoWaypoints(Eigen::MatrixXd waypoints);
 };

@@ -10,14 +10,34 @@ GlobalPlanner::GlobalPlanner(string config_filename)
 
 bool GlobalPlanner::configureFromFile(string config_filename)
 {
+  cout << "Configuring global planner from file: " << endl;
+  cout << "  " << config_filename << endl;
+  // Open yaml file with configuration
+  YAML::Node config = YAML::LoadFile(config_filename);
+
   // Set up map, trajectory and path planner.
   map_interface_ = make_shared<OctomapMap>(
-    "/home/antun/catkin_ws/src/larics_motion_planning/config/octomap_config_example.yaml");
+    config["global_planner"]["map_config_file"].as<string>());
   trajectory_interface_ = make_shared<ToppraTrajectory>(
-    "/home/antun/catkin_ws/src/larics_motion_planning/config/toppra_config_example.yaml");
+    config["global_planner"]["trajectory_config_file"].as<string>());
   path_planner_interface_ = make_shared<RrtPathPlanner>(
-    "/home/antun/catkin_ws/src/larics_motion_planning/config/path_planner_config_example.yaml", 
+    config["global_planner"]["path_planner_config_file"].as<string>(), 
     map_interface_);
+
+  num_trajectory_restarts_ = 
+    config["global_planner"]["trajectory"]["restarts"].as<int>();
+  num_path_and_trajectory_restarts_ = 
+    config["global_planner"]["path_and_trajectory"]["restarts"].as<int>();
+
+  // Planner might not start properly so give it a few attampts. This does not
+  // happen a lot in practice, but just in case.
+  num_path_restarts_ = config["global_planner"]["path"]["restarts"].as<int>();
+  // If collision check fails how many times should planner restart.
+  num_collision_check_restarts_ = 
+    config["global_planner"]["path"]["collision_check_restarts"].as<int>();
+
+  plan_path_collision_check_ = 
+    config["global_planner"]["path"]["collision_check"].as<bool>();
 
   return true;
 }
@@ -63,8 +83,8 @@ bool GlobalPlanner::planPath(Eigen::MatrixXd waypoints)
 bool GlobalPlanner::planTrajectory(Eigen::MatrixXd waypoints)
 {
   bool success = false;
-  int num_trajectory_restarts = 5;
-  for (int i=0; i<num_trajectory_restarts && success==false; i++){
+
+  for (int i=0; i<num_trajectory_restarts_ && success==false; i++){
     success = trajectory_interface_->generateTrajectory(waypoints);
   }
   return success;
@@ -74,9 +94,7 @@ bool GlobalPlanner::planPathAndTrajectory(Eigen::MatrixXd waypoints)
 {
   bool success = false;
 
-  int num_path_and_trajectory_restarts = 5;
-
-  for (int i=0; i<num_path_and_trajectory_restarts && success==false; i++){
+  for (int i=0; i<num_path_and_trajectory_restarts_ && success==false; i++){
     // First obtain collision free path.
     success = this->planPath(waypoints);
     // Next plan trajectory based on the path. 
@@ -105,22 +123,17 @@ bool GlobalPlanner::planPathThroughTwoWaypoints(Eigen::MatrixXd waypoints)
     return false;
   }
   
-  bool success = false, plan_path_collision_check = true;
-  // Planner might not start properly so give it a few attampts. This does not
-  // happen a lot in practice, but just in case.
-  int num_restarts = 5;
-  // If collision check fails how many times should planner restart.
-  int num_collision_check_restarts = 5;
+  bool success = false;
 
   // Outer loop checks for collision and restarts if path is not collision
   // free. Inner loop restarts if planner configuration was unsuccessful
   // or something unexpected happend.
-  for (int i=0; i<num_collision_check_restarts && success==false && 
-    (plan_path_collision_check==true || i==0); i++){
-    for (int j=0; j<num_restarts && success==false; j++){
+  for (int i=0; i<num_collision_check_restarts_ && success==false && 
+    (plan_path_collision_check_==true || i==0); i++){
+    for (int j=0; j<num_path_restarts_ && success==false; j++){
       success = path_planner_interface_->planPath(waypoints);
     }
-    if (plan_path_collision_check==true){
+    if (plan_path_collision_check_==true){
       success &= this->collisionCheck(path_);
     }
   }
