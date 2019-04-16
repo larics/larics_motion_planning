@@ -15,11 +15,30 @@ find_package(catkin REQUIRED COMPONENTS
     topp_ros
     cmake_modules
     eigen_conversions
+    message_generation
 )
 
 find_package(Eigen3 REQUIRED NO_MODULE)
 find_package(octomap REQUIRED)
 find_package(OMPL REQUIRED)
+
+#add_message_files(
+#  FILES
+#)
+
+add_service_files(
+  FILES
+  CartesianTrajectory.srv
+)
+
+## Generate added messages and services with any dependencies listed here
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+  geometry_msgs
+  nav_msgs
+  trajectory_msgs
+)
 
 catkin_package(
   INCLUDE_DIRS include 
