@@ -7,6 +7,7 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface(string s)
   // Publishers
   multi_dof_trajectory_pub_ = nh_.advertise<trajectory_msgs::MultiDOFJointTrajectory>(
       "multi_dof_trajectory", 1);
+  cartesian_path_pub_ = nh_.advertise<nav_msgs::Path>("cartesian_path", 1);
 
   empty_service_server_ = nh_.advertiseService("empty_service_test",
     &GlobalPlannerRosInterface::emptyCallback, this);
@@ -38,14 +39,24 @@ bool GlobalPlannerRosInterface::cartesianTrajectoryCallback(
   larics_motion_planning::CartesianTrajectory::Response &res)
 {
   cout << "Cartesian Trajectory Callback" << endl;
-  Eigen::MatrixXd waypoints = this->navMsgsPathToEigenMatrixXd(req.path);
+  // Convert waypoints to planner message type
+  Eigen::MatrixXd waypoints = this->navMsgsPathToEigenMatrixXd(req.waypoints);
+  // Plan path and trajectory.
   bool success = global_planner_->planPathAndTrajectory(waypoints);
 
-  trajectory_msgs::MultiDOFJointTrajectory multi_dof_trajectory;
-  multi_dof_trajectory = this->trajectoryToMultiDofTrajectory(
+  // Get trajectory
+  res.trajectory = this->trajectoryToMultiDofTrajectory(
     global_planner_->getTrajectory());
-  res.trajectory = multi_dof_trajectory;
-  multi_dof_trajectory_pub_.publish(multi_dof_trajectory);
+
+  // Get path
+  res.path = this->eigenMatrixXdToNavMsgsPath(global_planner_->getPath());
+
+  if (req.publish_trajectory){
+    multi_dof_trajectory_pub_.publish(res.trajectory);
+  }
+  if (req.publish_path){
+    cartesian_path_pub_.publish(res.path);
+  }
 
   return success;
 }
@@ -63,6 +74,26 @@ Eigen::MatrixXd GlobalPlannerRosInterface::navMsgsPathToEigenMatrixXd(
 
   return eigen_path;
 }
+
+nav_msgs::Path GlobalPlannerRosInterface::eigenMatrixXdToNavMsgsPath(
+  Eigen::MatrixXd eigen_path)
+{
+  nav_msgs::Path nav_path;
+  geometry_msgs::PoseStamped current_pose;
+
+  for (int i=0; i<eigen_path.rows(); i++){
+    current_pose.pose.position.x = eigen_path(i,0);
+    current_pose.pose.position.y = eigen_path(i,1);
+    current_pose.pose.position.z = eigen_path(i,2);
+    current_pose.pose.orientation.w = 1.0;
+
+    nav_path.poses.push_back(current_pose);
+    nav_path.header.stamp = ros::Time::now();
+  }
+
+  return nav_path;
+}
+
 
 trajectory_msgs::MultiDOFJointTrajectory GlobalPlannerRosInterface::trajectoryToMultiDofTrajectory(
   Trajectory eigen_trajectory)

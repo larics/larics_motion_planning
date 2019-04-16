@@ -1,3 +1,6 @@
-nav_msgs/Path   path
+nav_msgs/Path   waypoints
+bool            publish_path
+bool            publish_trajectory
 ---
 trajectory_msgs/MultiDOFJointTrajectory   trajectory
+nav_msgs/Path                             path

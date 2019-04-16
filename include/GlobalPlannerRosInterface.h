@@ -27,6 +27,7 @@
 #include <trajectory_msgs/MultiDOFJointTrajectoryPoint.h>
 #include <geometry_msgs/Transform.h>
 #include <geometry_msgs/Twist.h>
+#include <geometry_msgs/PoseStamped.h>
 // Services
 #include <std_srvs/Empty.h>
 #include <larics_motion_planning/CartesianTrajectory.h>
@@ -45,7 +46,7 @@ class GlobalPlannerRosInterface
     ros::NodeHandle nh_;
     shared_ptr<GlobalPlanner> global_planner_;
 
-    ros::Publisher multi_dof_trajectory_pub_;
+    ros::Publisher multi_dof_trajectory_pub_, cartesian_path_pub_;
 
     ros::ServiceServer empty_service_server_;
     bool emptyCallback(std_srvs::Empty::Request &req, 
@@ -57,6 +58,7 @@ class GlobalPlannerRosInterface
       larics_motion_planning::CartesianTrajectory::Response &res);
 
     Eigen::MatrixXd navMsgsPathToEigenMatrixXd(nav_msgs::Path nav_path);
+    nav_msgs::Path eigenMatrixXdToNavMsgsPath(Eigen::MatrixXd eigen_path);
     trajectory_msgs::MultiDOFJointTrajectory trajectoryToMultiDofTrajectory(
       Trajectory eigen_trajectory);
 };
