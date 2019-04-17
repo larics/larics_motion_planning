@@ -4,8 +4,8 @@ Visualization::Visualization()
 {
   path_publisher_ = nh_.advertise<nav_msgs::Path>("path", 1);
   trajectory_publisher_ = nh_.advertise<nav_msgs::Path>("trajectory", 1);
-  //waypoints_publisher_ = nh_.advertise<visualization_msgs::Marker>(
-  //  "waypoints", 1);
+  waypoints_publisher_ = nh_.advertise<visualization_msgs::Marker>(
+    "waypoints", 1);
 }
 
 void Visualization::setPath(Eigen::MatrixXd eigen_path, bool projection)
@@ -54,6 +54,22 @@ void Visualization::publishTrajectory()
  trajectory_publisher_.publish(trajectory_);
 }
 
+void Visualization::setWaypoints(Eigen::MatrixXd waypoints)
+{
+  waypoints_ = this->navMsgsPathToVisualizationMsgsMarker(
+    this->eigenMatrixXdToNavMsgsPath(waypoints));
+}
+
+visualization_msgs::Marker Visualization::getWaypoints()
+{
+  return waypoints_;
+}
+
+void Visualization::publishWaypoints()
+{
+  waypoints_publisher_.publish(waypoints_);
+}
+
 nav_msgs::Path Visualization::eigenMatrixXdToNavMsgsPath(
   Eigen::MatrixXd eigen_path, bool projection)
 {
@@ -63,8 +79,8 @@ nav_msgs::Path Visualization::eigenMatrixXdToNavMsgsPath(
 
   geometry_msgs::PoseStamped current_pose;
 
-  // If number of degrees of freedom is 2 then use z from arguments.
-  if(projection == true){
+  // If number of degrees of freedom is 2 then project path to z=0 plane.
+  if(projection == true || n_dofs <= 2){
     for(int i=0; i<n_points; i++){
       current_pose.pose.position.x = eigen_path(i,0);
       current_pose.pose.position.y = eigen_path(i,1);
@@ -83,4 +99,39 @@ nav_msgs::Path Visualization::eigenMatrixXdToNavMsgsPath(
   path.header.stamp = ros::Time::now();
   path.header.frame_id = "world";
   return path;
+}
+
+visualization_msgs::Marker Visualization::navMsgsPathToVisualizationMsgsMarker(
+  nav_msgs::Path path)
+{
+  visualization_msgs::Marker marker;
+
+  // Setup how marker looks.
+  marker.header.stamp = ros::Time::now();
+  marker.header.frame_id = "world";
+  marker.ns = "waypoints";
+  marker.id = 0;
+  marker.type = visualization_msgs::Marker::SPHERE_LIST;
+  marker.action = visualization_msgs::Marker::ADD;
+  marker.scale.x = 0.2;
+  marker.scale.y = 0.2;
+  marker.scale.z = 0.2;
+  marker.lifetime = ros::Duration(0);
+
+  geometry_msgs::Point current_point;
+  std_msgs::ColorRGBA point_color;
+  point_color.r = 0.91;
+  point_color.g = 0.43;
+  point_color.b = 0.15;
+  point_color.a = 1.0;
+  for (int i=0; i<path.poses.size(); i++){
+    current_point.x = path.poses[i].pose.position.x;
+    current_point.y = path.poses[i].pose.position.y;
+    current_point.z = path.poses[i].pose.position.z;
+
+    marker.points.push_back(current_point);
+    marker.colors.push_back(point_color);
+  }
+
+  return marker;
 }

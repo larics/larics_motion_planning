@@ -11,7 +11,9 @@
 
 #include <nav_msgs/Path.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/Point.h>
 #include <visualization_msgs/Marker.h>
+#include <std_msgs/ColorRGBA.h>
 
 using namespace std;
 
@@ -62,20 +64,30 @@ class Visualization
 
     /// \brief Publishes trajectory as path message.
     void publishTrajectory();
+
+    /// \brief Generates visualization_msgs::Marker to visualize waypoints.
+    /// \param waypoints Eigen matrix of waypoints to be visualized.
+    void setWaypoints(Eigen::MatrixXd waypoints);
+
+    /// \brief Get waypoints represented as visualization_msgs::Marker
+    /// \return Waypoints converted to ROS message.
+    visualization_msgs::Marker getWaypoints();
+
+    /// \brief Publishes waypoints as marker message
+    void publishWaypoints();
+
   private:
     ros::NodeHandle nh_;
     nav_msgs::Path path_, trajectory_;
+    visualization_msgs::Marker waypoints_;
     ros::Publisher path_publisher_, trajectory_publisher_, waypoints_publisher_;
 
-    /// \brief Generates nav_msgs::Path suitable for displaying in RVIZ.
-    /// \param eigen_path Path represented as Eigen::MatrixXd. Must have more
-    ///   than one degree of freedom.
-    /// \param z If 2D path is to be converted this provides height. The
-    ///   default value of this argument is 0.0.
-    /// \returns Success of conversion. If unsuccessful previous path will not
-    ///   be overwritten.
+
     nav_msgs::Path eigenMatrixXdToNavMsgsPath(Eigen::MatrixXd eigen_path, 
       bool projection=false);
+
+    visualization_msgs::Marker navMsgsPathToVisualizationMsgsMarker(
+      nav_msgs::Path path);
 };
 
 #endif // VISUALIZATION_H
