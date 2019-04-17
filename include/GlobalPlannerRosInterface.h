@@ -35,28 +35,39 @@
 #include <iostream>
 using namespace std;
 
+/// \brief Interfaces global planner with ros through services and topics.
 class GlobalPlannerRosInterface
 {
   public:
+    /// \brief Constructor initializes planner, publishers, subscribers and
+    ///   services.
     GlobalPlannerRosInterface(string s);
 
+    /// \brief Starts the ros loop with rate defined ros params.
     void run();
 
   private:
-    ros::NodeHandle nh_;
+    // Instance of global planner
     shared_ptr<GlobalPlanner> global_planner_;
 
+    // ROS stuff. First node handle for accessing topics and services.
+    ros::NodeHandle nh_;
+
+    // Publishers
     ros::Publisher multi_dof_trajectory_pub_, cartesian_path_pub_;
 
+    // Empty service
     ros::ServiceServer empty_service_server_;
     bool emptyCallback(std_srvs::Empty::Request &req, 
       std_srvs::Empty::Response &res);
 
+    // Cartesian trajectory service
     ros::ServiceServer cartesian_trajectory_server_;
     bool cartesianTrajectoryCallback(
       larics_motion_planning::CartesianTrajectory::Request &req, 
       larics_motion_planning::CartesianTrajectory::Response &res);
 
+    // Conversions between GlobalPlanner and ROS messages.
     Eigen::MatrixXd navMsgsPathToEigenMatrixXd(nav_msgs::Path nav_path);
     nav_msgs::Path eigenMatrixXdToNavMsgsPath(Eigen::MatrixXd eigen_path);
     trajectory_msgs::MultiDOFJointTrajectory trajectoryToMultiDofTrajectory(
