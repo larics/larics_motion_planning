@@ -44,7 +44,15 @@ bool GlobalPlanner::configureFromFile(string config_filename)
 
 bool GlobalPlanner::collisionCheck(Eigen::MatrixXd path)
 {
-  return true;
+  bool success = true;
+
+  // Go through all points along path and check is state valid on map. This
+  // also works for trajectory.positions
+  for (int i=0; i<path.rows(); i++){
+    success &= map_interface_->isStateValid(path.block(i,0,1,path.cols()));
+  }
+
+  return success;
 }
 
 bool GlobalPlanner::planPath(Eigen::MatrixXd waypoints)
