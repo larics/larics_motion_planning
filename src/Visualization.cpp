@@ -2,10 +2,11 @@
 
 Visualization::Visualization()
 {
-  path_publisher_ = nh_.advertise<nav_msgs::Path>("path", 1);
-  trajectory_publisher_ = nh_.advertise<nav_msgs::Path>("trajectory", 1);
+  path_publisher_ = nh_.advertise<nav_msgs::Path>("visualization/path", 1);
+  trajectory_publisher_ = nh_.advertise<nav_msgs::Path>(
+    "visualization/trajectory", 1);
   waypoints_publisher_ = nh_.advertise<visualization_msgs::Marker>(
-    "waypoints", 1);
+    "visualization/waypoints", 1);
 }
 
 void Visualization::setPath(Eigen::MatrixXd eigen_path, bool projection)
