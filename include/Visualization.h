@@ -76,6 +76,9 @@ class Visualization
     /// \brief Publishes waypoints as marker message
     void publishWaypoints();
 
+    /// \brief Publishes path, trajectory and waypoints.
+    void publishAll();
+
   private:
     ros::NodeHandle nh_;
     nav_msgs::Path path_, trajectory_;

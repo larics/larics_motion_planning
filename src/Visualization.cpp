@@ -70,6 +70,16 @@ void Visualization::publishWaypoints()
   waypoints_publisher_.publish(waypoints_);
 }
 
+void Visualization::publishAll()
+{
+  this->publishPath();
+  this->publishTrajectory();
+  this->publishWaypoints();
+}
+
+
+
+
 nav_msgs::Path Visualization::eigenMatrixXdToNavMsgsPath(
   Eigen::MatrixXd eigen_path, bool projection)
 {
