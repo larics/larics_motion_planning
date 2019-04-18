@@ -12,6 +12,7 @@
 #include <TrajectoryInterface.h>
 #include <ToppraTrajectory.h>
 #include <GlobalPlanner.h>
+#include <Visualization.h>
 
 #include <eigen3/Eigen/Eigen>
 
@@ -49,7 +50,10 @@ class GlobalPlannerRosInterface
   private:
     // Instance of global planner
     shared_ptr<GlobalPlanner> global_planner_;
-
+    // Instance of visualization and flag to track if visualization has changed
+    Visualization visualization_;
+    bool visualization_changed_;
+    
     // ROS stuff. First node handle for accessing topics and services.
     ros::NodeHandle nh_;
 

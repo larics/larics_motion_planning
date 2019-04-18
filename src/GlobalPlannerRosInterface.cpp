@@ -4,6 +4,7 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface(string s)
 {
   // TODO: Read config file path from ros param.
   global_planner_ = make_shared<GlobalPlanner>(s);
+  visualization_changed_ = false;
 
   // Publishers
   // Multi degree of freedom trajectory
@@ -26,6 +27,10 @@ void GlobalPlannerRosInterface::run()
 
   while (ros::ok()){
     ros::spinOnce();
+    if (visualization_changed_ == true){
+      visualization_.publishAll();
+      visualization_changed_ = false;
+    }
     loop_rate.sleep();
   }
 }
@@ -42,18 +47,22 @@ bool GlobalPlannerRosInterface::cartesianTrajectoryCallback(
   larics_motion_planning::CartesianTrajectory::Request &req, 
   larics_motion_planning::CartesianTrajectory::Response &res)
 {
+  visualization_changed_ = true;
   cout << "Cartesian Trajectory Callback" << endl;
   // Convert waypoints to planner message type
   Eigen::MatrixXd waypoints = this->navMsgsPathToEigenMatrixXd(req.waypoints);
+  visualization_.setWaypoints(waypoints);
   // Plan path and trajectory.
   bool success = global_planner_->planPathAndTrajectory(waypoints);
 
   // Get trajectory
   res.trajectory = this->trajectoryToMultiDofTrajectory(
     global_planner_->getTrajectory());
+  visualization_.setTrajectory(global_planner_->getTrajectory());
 
   // Get path
   res.path = this->eigenMatrixXdToNavMsgsPath(global_planner_->getPath());
+  visualization_.setPath(global_planner_->getPath());
 
   // If path or trajectory are to be published, then publish them.
   if (req.publish_trajectory){
