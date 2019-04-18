@@ -79,6 +79,9 @@ class Visualization
     /// \brief Publishes path, trajectory and waypoints.
     void publishAll();
 
+    /// \brief Clears all visualization.
+    void clearAll();
+
   private:
     ros::NodeHandle nh_;
     nav_msgs::Path path_, trajectory_;

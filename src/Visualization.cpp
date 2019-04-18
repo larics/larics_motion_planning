@@ -78,6 +78,13 @@ void Visualization::publishAll()
   this->publishWaypoints();
 }
 
+void Visualization::clearAll()
+{
+  path_.poses.clear();
+  trajectory_.poses.clear();
+  waypoints_.points.clear();
+  waypoints_.colors.clear();
+}
 
 
 
