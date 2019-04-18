@@ -42,7 +42,7 @@ class GlobalPlannerRosInterface
   public:
     /// \brief Constructor initializes planner, publishers, subscribers and
     ///   services.
-    GlobalPlannerRosInterface(string s);
+    GlobalPlannerRosInterface();
 
     /// \brief Starts the ros loop with rate defined ros params.
     void run();
@@ -53,7 +53,9 @@ class GlobalPlannerRosInterface
     // Instance of visualization and flag to track if visualization has changed
     Visualization visualization_;
     bool visualization_changed_;
-    
+    // Loop rate
+    int rate_;
+
     // ROS stuff. First node handle for accessing topics and services.
     ros::NodeHandle nh_;
 

@@ -1,9 +1,17 @@
 #include <GlobalPlannerRosInterface.h>
 
-GlobalPlannerRosInterface::GlobalPlannerRosInterface(string s)
+GlobalPlannerRosInterface::GlobalPlannerRosInterface()
 {
-  // TODO: Read config file path from ros param.
-  global_planner_ = make_shared<GlobalPlanner>(s);
+  string global_planner_config_file;
+
+  ros::NodeHandle nh_private = ros::NodeHandle("~");
+
+  nh_private.param("global_planner_config_file", global_planner_config_file, 
+    string("/home/antun/catkin_ws/src/larics_motion_planning/config/one_file_config_example.yaml"));
+  nh_private.param("rate", rate_, int(10));
+
+  // Global planner config
+  global_planner_ = make_shared<GlobalPlanner>(global_planner_config_file);
   visualization_changed_ = false;
 
   // Publishers
@@ -23,7 +31,7 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface(string s)
 
 void GlobalPlannerRosInterface::run()
 {
-  ros::Rate loop_rate(10);
+  ros::Rate loop_rate(rate_);
 
   while (ros::ok()){
     ros::spinOnce();

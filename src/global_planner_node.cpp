@@ -10,7 +10,7 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "global_planner_node");
 
-  GlobalPlannerRosInterface gp("/home/antun/catkin_ws/src/larics_motion_planning/config/one_file_config_example.yaml");
+  GlobalPlannerRosInterface gp;
   gp.run();
 
   return 0;
