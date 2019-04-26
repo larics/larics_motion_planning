@@ -15,11 +15,11 @@ global_planner:
     collision_check: true
 
 octomap:
-  path_to_file: "/home/antun/catkin_ws/src/larics_gazebo_worlds/models/floor_plan_simple/model.binvox.bt"
-  search_depth: 14
+  path_to_file: "/home/antun/catkin_ws/src/larics_gazebo_worlds/models/greenhouse/greenhouse4096.binvox.bt"
+  search_depth: 16
 
 path_planner:
-  bounds: [[0, 10.0], [-10.0, 10.0], [0.0, 2.5]]
+  bounds: [[0, 10.0], [-20.0, 0.0], [0.95, 1.05]]
   longest_valid_segment:
     is_used: true
     is_metric: true
@@ -51,7 +51,7 @@ path_planner:
   solve_time:
     is_incremental: true
     time: 1.0
-    increment: 0.05
+    increment: 0.1
   path_simplifier:
     reduce_vertices:
       is_used: true
