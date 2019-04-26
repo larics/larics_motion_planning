@@ -94,14 +94,19 @@ int main(int argc, char **argv)
   //cout << viz.getPath() << endl;
   //cout << path_planner.getPath() << endl;*/
 
-  GlobalPlanner gp("haha");
-  Eigen::MatrixXd waypoints(2,3);
-  waypoints << 1.57, -8.74, 1.0, 8.68, 8.24, 1.0;
+  GlobalPlanner gp("/home/antun/catkin_ws/src/larics_motion_planning/config/global_planner_config_example.yaml");
+  Eigen::MatrixXd waypoints(5,3);
+  waypoints << 1.57, -8.74, 1.0, 
+               8.86, -2.23, 1.0,
+               8.68, 8.24, 1.0,
+               1.16, 8.01, 1.0,
+               1.7, 2.65, 1.0;
   gp.planPathAndTrajectory(waypoints);
 
   Visualization viz;
-  viz.eigenPathToNavMsgsPath(gp.getPath());
-  viz.eigenTrajectoryToNavMsgsPath(gp.getTrajectory());
+  viz.setPath(gp.getPath());
+  viz.setTrajectory(gp.getTrajectory().position, true);
+  viz.setWaypoints(waypoints);
 
   // Setup some ros for publishing the path
   ros::Rate r(10);
@@ -110,6 +115,7 @@ int main(int argc, char **argv)
     r.sleep();
     viz.publishPath();
     viz.publishTrajectory();
+    viz.publishWaypoints();
   }
   return 0;
 }
