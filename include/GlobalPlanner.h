@@ -67,6 +67,10 @@ class GlobalPlanner
     /// \return Planned path as Eigen matrix.
     Eigen::MatrixXd getPath();
 
+    /// \brief Returns length of the planned path.
+    /// \return Path length
+    double getPathLength();
+
     /// \brief Returns planned trajectory.
     /// \return Sampled trajectory
     Trajectory getTrajectory();

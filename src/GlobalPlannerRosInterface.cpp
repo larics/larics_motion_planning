@@ -73,12 +73,14 @@ bool GlobalPlannerRosInterface::cartesianTrajectoryCallback(
 
     // Get path
     res.path = this->eigenMatrixXdToNavMsgsPath(global_planner_->getPath());
+    res.path_length = global_planner_->getPathLength();
     visualization_.setPath(global_planner_->getPath());
   }
   else if (req.plan_path == true && req.plan_trajectory == false){
     success = global_planner_->planPath(waypoints);
     // Get path
     res.path = this->eigenMatrixXdToNavMsgsPath(global_planner_->getPath());
+    res.path_length = global_planner_->getPathLength();
     visualization_.setPath(global_planner_->getPath());
   }
   else if (req.plan_path == false && req.plan_trajectory == true){

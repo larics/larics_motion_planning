@@ -46,6 +46,7 @@ RrtPathPlanner::RrtPathPlanner(string config_filename,
 {
   map_ = map;
   configureFromFile(config_filename);
+  path_length_ = 0.0;
 }
 
 RrtPathPlanner::~RrtPathPlanner()
@@ -373,6 +374,7 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
     //cout << "Path geometric length after bspline: " << path_geom.getStateCount() << endl;
   }
   convertOmplPathToEigenMatrix(path_geom);
+  path_length_ = path_geom.length();
   // Zajebancija sa stanjima.
   /*
   auto temp_space(std::make_shared<ob::CompoundStateSpace>());
@@ -400,6 +402,11 @@ inline void RrtPathPlanner::convertOmplPathToEigenMatrix(og::PathGeometric path)
 Eigen::MatrixXd RrtPathPlanner::getPath()
 {
   return path_;
+}
+
+double RrtPathPlanner::getPathLength()
+{
+  return path_length_;
 }
 
 bool RrtPathPlanner::isStateValid(const ob::State *state)

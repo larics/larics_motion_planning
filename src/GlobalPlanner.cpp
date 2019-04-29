@@ -118,6 +118,11 @@ Eigen::MatrixXd GlobalPlanner::getPath()
   return path_;
 }
 
+double GlobalPlanner::getPathLength()
+{
+  return path_planner_interface_->getPathLength();
+}
+
 Trajectory GlobalPlanner::getTrajectory()
 {
   return trajectory_interface_->getTrajectory();

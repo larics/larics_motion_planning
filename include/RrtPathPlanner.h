@@ -109,8 +109,14 @@ class RrtPathPlanner : public PathPlanningInterface
     /// \return Sampled trajectory.
     Eigen::MatrixXd getPath();
 
+    /// \brief Returns length of the path.
+    ///
+    /// \return Path length.
+    double getPathLength();
+
   private:
     Eigen::MatrixXd path_;
+    double path_length_;
     shared_ptr<MapInterface> map_;
     RrtStarConfig planner_configuration_;
     bool isStateValid(const ob::State *state);
