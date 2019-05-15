@@ -27,6 +27,9 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
   // Service for planning the cartesian trajectory.
   cartesian_trajectory_server_ = nh_.advertiseService("cartesian_trajectory",
     &GlobalPlannerRosInterface::cartesianTrajectoryCallback, this);
+  // Service for planning the multi dof trajectory.
+  multi_dof_trajectory_server_ = nh_.advertiseService("multi_dof_trajectory",
+    &GlobalPlannerRosInterface::multiDofTrajectoryCallback, this);
 }
 
 void GlobalPlannerRosInterface::run()
@@ -104,6 +107,65 @@ bool GlobalPlannerRosInterface::cartesianTrajectoryCallback(
 
   return success;
 }
+
+bool GlobalPlannerRosInterface::multiDofTrajectoryCallback(
+  larics_motion_planning::MultiDofTrajectory::Request &req, 
+  larics_motion_planning::MultiDofTrajectory::Response &res)
+{
+  visualization_changed_ = true;
+  bool success = false;
+  cout << "Multi DOF Trajectory Callback" << endl;
+  // Convert waypoints to planner message type
+  if (req.waypoints.points.size() < 2){
+    cout << "At least two points required for generating trajectory." << endl;
+    return success;
+  }
+  Eigen::MatrixXd waypoints = this->jointTrajectoryToEigenMatrixXd(req.waypoints);
+  visualization_.setWaypoints(waypoints);
+    
+  // Plan path and trajectory.
+  if (req.plan_path == true && req.plan_trajectory == true){
+    cout << success << endl;
+    success = global_planner_->planPathAndTrajectory(waypoints);
+    cout << success << endl;
+    // Get trajectory
+    res.trajectory = this->trajectoryToJointTrajectory(
+      global_planner_->getTrajectory());
+    visualization_.setTrajectory(global_planner_->getTrajectory());
+
+    // Get path
+    res.path = this->eigenMatrixXdToJointTrajectory(global_planner_->getPath());
+    res.path_length = global_planner_->getPathLength();
+    visualization_.setPath(global_planner_->getPath());
+  }
+  else if (req.plan_path == true && req.plan_trajectory == false){
+    success = global_planner_->planPath(waypoints);
+    // Get path
+    res.path = this->eigenMatrixXdToJointTrajectory(global_planner_->getPath());
+    res.path_length = global_planner_->getPathLength();
+    visualization_.setPath(global_planner_->getPath());
+  }
+  else if (req.plan_path == false && req.plan_trajectory == true){
+    success = global_planner_->planTrajectory(waypoints);
+    // Get trajectory
+    res.trajectory = this->trajectoryToJointTrajectory(
+      global_planner_->getTrajectory());
+    visualization_.setTrajectory(global_planner_->getTrajectory());
+  }
+  else{
+    return success;
+  }
+
+  // If path or trajectory are to be published, then publish them.
+  /*if (req.publish_trajectory){
+    multi_dof_trajectory_pub_.publish(res.trajectory);
+  }
+  if (req.publish_path){
+    cartesian_path_pub_.publish(res.path);
+  }*/
+  return success;
+}
+
 
 Eigen::MatrixXd GlobalPlannerRosInterface::navMsgsPathToEigenMatrixXd(
   nav_msgs::Path nav_path)
@@ -186,4 +248,67 @@ trajectory_msgs::MultiDOFJointTrajectory GlobalPlannerRosInterface::trajectoryTo
   ros_trajectory.header.stamp = ros::Time::now();
 
   return ros_trajectory;
+}
+
+Eigen::MatrixXd GlobalPlannerRosInterface::jointTrajectoryToEigenMatrixXd(
+  trajectory_msgs::JointTrajectory joint_trajectory)
+{
+  Eigen::MatrixXd eigen_matrix(joint_trajectory.points.size(), 
+    joint_trajectory.points[0].positions.size());
+
+  // Go through the whole path and set it to Eigen::MatrixXd.
+  for (int i=0; i<joint_trajectory.points.size(); i++){
+    for (int j=0; j<joint_trajectory.points[0].positions.size(); j++){
+      eigen_matrix(i,j) = joint_trajectory.points[i].positions[j];
+    }
+  }
+
+  return eigen_matrix;
+}
+
+trajectory_msgs::JointTrajectory GlobalPlannerRosInterface::eigenMatrixXdToJointTrajectory(
+  Eigen::MatrixXd eigen_path)
+{
+  trajectory_msgs::JointTrajectory joint_trajectory;
+  int n_dofs = eigen_path.cols();
+
+  // Go through all points in trajectory
+  for (int i=0; i<eigen_path.rows(); i++){
+    trajectory_msgs::JointTrajectoryPoint current_point;
+
+    // Go through all degrees of freedom
+    for (int j=0; j<n_dofs; j++){
+      current_point.positions.push_back(eigen_path(i,j));
+    }
+
+    // Add current point to trajectory
+    joint_trajectory.points.push_back(current_point);
+  }
+
+  return joint_trajectory;
+}
+
+trajectory_msgs::JointTrajectory GlobalPlannerRosInterface::trajectoryToJointTrajectory(
+  Trajectory eigen_trajectory)
+{
+  trajectory_msgs::JointTrajectory joint_trajectory;
+  int n_dofs = eigen_trajectory.position.cols();
+
+  // Go through all points in trajectory
+  for (int i=0; i<eigen_trajectory.position.rows(); i++){
+    trajectory_msgs::JointTrajectoryPoint current_point;
+
+    // Go through all degrees of freedom
+    for (int j=0; j<n_dofs; j++){
+      current_point.positions.push_back(eigen_trajectory.position(i,j));
+      current_point.velocities.push_back(eigen_trajectory.velocity(i,j));
+      current_point.accelerations.push_back(eigen_trajectory.acceleration(i,j));
+      current_point.time_from_start = ros::Duration(eigen_trajectory.time(i));
+    }
+
+    // Add current point to trajectory
+    joint_trajectory.points.push_back(current_point);
+  }
+
+  return joint_trajectory;
 }

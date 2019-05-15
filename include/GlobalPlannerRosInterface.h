@@ -26,12 +26,15 @@
 #include <nav_msgs/Path.h>
 #include <trajectory_msgs/MultiDOFJointTrajectory.h>
 #include <trajectory_msgs/MultiDOFJointTrajectoryPoint.h>
+#include <trajectory_msgs/JointTrajectory.h>
+#include <trajectory_msgs/JointTrajectoryPoint.h>
 #include <geometry_msgs/Transform.h>
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/PoseStamped.h>
 // Services
 #include <std_srvs/Empty.h>
 #include <larics_motion_planning/CartesianTrajectory.h>
+#include <larics_motion_planning/MultiDofTrajectory.h>
 
 #include <iostream>
 using namespace std;
@@ -73,11 +76,23 @@ class GlobalPlannerRosInterface
       larics_motion_planning::CartesianTrajectory::Request &req, 
       larics_motion_planning::CartesianTrajectory::Response &res);
 
+    // Joint trajectory service with n dimensions
+    ros::ServiceServer multi_dof_trajectory_server_;
+    bool multiDofTrajectoryCallback(
+      larics_motion_planning::MultiDofTrajectory::Request &req, 
+      larics_motion_planning::MultiDofTrajectory::Response &res);
+
     // Conversions between GlobalPlanner and ROS messages.
     Eigen::MatrixXd navMsgsPathToEigenMatrixXd(nav_msgs::Path nav_path);
     nav_msgs::Path eigenMatrixXdToNavMsgsPath(Eigen::MatrixXd eigen_path);
     trajectory_msgs::MultiDOFJointTrajectory trajectoryToMultiDofTrajectory(
       Trajectory eigen_trajectory);
+    Eigen::MatrixXd jointTrajectoryToEigenMatrixXd(
+      trajectory_msgs::JointTrajectory joint_trajectory);
+    trajectory_msgs::JointTrajectory eigenMatrixXdToJointTrajectory(
+      Eigen::MatrixXd path);
+    trajectory_msgs::JointTrajectory trajectoryToJointTrajectory(
+      Trajectory eigen_trajectory);  
 };
 
 #endif // GLOBAL_PLANNER_ROS_INTERFACE_H

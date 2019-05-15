@@ -105,6 +105,7 @@ bool GlobalPlanner::planPathAndTrajectory(Eigen::MatrixXd waypoints)
   for (int i=0; i<num_path_and_trajectory_restarts_ && success==false; i++){
     // First obtain collision free path.
     success = this->planPath(waypoints);
+    cout << path_ << endl;
     // Next plan trajectory based on the path. 
     success &= this->planTrajectory(path_);
     success &= this->collisionCheck(trajectory_interface_->getTrajectory().position);

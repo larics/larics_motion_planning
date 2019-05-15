@@ -29,6 +29,7 @@ find_package(OMPL REQUIRED)
 add_service_files(
   FILES
   CartesianTrajectory.srv
+  MultiDofTrajectory.srv
 )
 
 ## Generate added messages and services with any dependencies listed here
