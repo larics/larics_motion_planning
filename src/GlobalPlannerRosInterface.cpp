@@ -63,7 +63,7 @@ bool GlobalPlannerRosInterface::cartesianTrajectoryCallback(
   bool success = false;
   cout << "Cartesian Trajectory Callback" << endl;
   // Convert waypoints to planner message type
-  Eigen::MatrixXd waypoints = this->navMsgsPathToEigenMatrixXd(req.waypoints);
+  Eigen::MatrixXd waypoints = this->navMsgsPathToEigenPath(req.waypoints);
   visualization_.setWaypoints(waypoints);
     
   // Plan path and trajectory.
@@ -75,14 +75,14 @@ bool GlobalPlannerRosInterface::cartesianTrajectoryCallback(
     visualization_.setTrajectory(global_planner_->getTrajectory());
 
     // Get path
-    res.path = this->eigenMatrixXdToNavMsgsPath(global_planner_->getPath());
+    res.path = this->eigenPathToNavMsgsPath(global_planner_->getPath());
     res.path_length = global_planner_->getPathLength();
     visualization_.setPath(global_planner_->getPath());
   }
   else if (req.plan_path == true && req.plan_trajectory == false){
     success = global_planner_->planPath(waypoints);
     // Get path
-    res.path = this->eigenMatrixXdToNavMsgsPath(global_planner_->getPath());
+    res.path = this->eigenPathToNavMsgsPath(global_planner_->getPath());
     res.path_length = global_planner_->getPathLength();
     visualization_.setPath(global_planner_->getPath());
   }
@@ -120,7 +120,7 @@ bool GlobalPlannerRosInterface::multiDofTrajectoryCallback(
     cout << "At least two points required for generating trajectory." << endl;
     return success;
   }
-  Eigen::MatrixXd waypoints = this->jointTrajectoryToEigenMatrixXd(req.waypoints);
+  Eigen::MatrixXd waypoints = this->jointTrajectoryToEigenWaypoints(req.waypoints);
   visualization_.setWaypoints(waypoints);
     
   // Plan path and trajectory.
@@ -134,14 +134,14 @@ bool GlobalPlannerRosInterface::multiDofTrajectoryCallback(
     visualization_.setTrajectory(global_planner_->getTrajectory());
 
     // Get path
-    res.path = this->eigenMatrixXdToJointTrajectory(global_planner_->getPath());
+    res.path = this->eigenPathToJointTrajectory(global_planner_->getPath());
     res.path_length = global_planner_->getPathLength();
     visualization_.setPath(global_planner_->getPath());
   }
   else if (req.plan_path == true && req.plan_trajectory == false){
     success = global_planner_->planPath(waypoints);
     // Get path
-    res.path = this->eigenMatrixXdToJointTrajectory(global_planner_->getPath());
+    res.path = this->eigenPathToJointTrajectory(global_planner_->getPath());
     res.path_length = global_planner_->getPathLength();
     visualization_.setPath(global_planner_->getPath());
   }
@@ -167,7 +167,7 @@ bool GlobalPlannerRosInterface::multiDofTrajectoryCallback(
 }
 
 
-Eigen::MatrixXd GlobalPlannerRosInterface::navMsgsPathToEigenMatrixXd(
+Eigen::MatrixXd GlobalPlannerRosInterface::navMsgsPathToEigenPath(
   nav_msgs::Path nav_path)
 {
   Eigen::MatrixXd eigen_path(nav_path.poses.size(), 3);
@@ -182,7 +182,7 @@ Eigen::MatrixXd GlobalPlannerRosInterface::navMsgsPathToEigenMatrixXd(
   return eigen_path;
 }
 
-nav_msgs::Path GlobalPlannerRosInterface::eigenMatrixXdToNavMsgsPath(
+nav_msgs::Path GlobalPlannerRosInterface::eigenPathToNavMsgsPath(
   Eigen::MatrixXd eigen_path)
 {
   nav_msgs::Path nav_path;
@@ -250,7 +250,7 @@ trajectory_msgs::MultiDOFJointTrajectory GlobalPlannerRosInterface::trajectoryTo
   return ros_trajectory;
 }
 
-Eigen::MatrixXd GlobalPlannerRosInterface::jointTrajectoryToEigenMatrixXd(
+Eigen::MatrixXd GlobalPlannerRosInterface::jointTrajectoryToEigenWaypoints(
   trajectory_msgs::JointTrajectory joint_trajectory)
 {
   Eigen::MatrixXd eigen_matrix(joint_trajectory.points.size(), 
@@ -266,7 +266,7 @@ Eigen::MatrixXd GlobalPlannerRosInterface::jointTrajectoryToEigenMatrixXd(
   return eigen_matrix;
 }
 
-trajectory_msgs::JointTrajectory GlobalPlannerRosInterface::eigenMatrixXdToJointTrajectory(
+trajectory_msgs::JointTrajectory GlobalPlannerRosInterface::eigenPathToJointTrajectory(
   Eigen::MatrixXd eigen_path)
 {
   trajectory_msgs::JointTrajectory joint_trajectory;

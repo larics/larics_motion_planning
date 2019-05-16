@@ -83,13 +83,13 @@ class GlobalPlannerRosInterface
       larics_motion_planning::MultiDofTrajectory::Response &res);
 
     // Conversions between GlobalPlanner and ROS messages.
-    Eigen::MatrixXd navMsgsPathToEigenMatrixXd(nav_msgs::Path nav_path);
-    nav_msgs::Path eigenMatrixXdToNavMsgsPath(Eigen::MatrixXd eigen_path);
+    Eigen::MatrixXd navMsgsPathToEigenPath(nav_msgs::Path nav_path);
+    nav_msgs::Path eigenPathToNavMsgsPath(Eigen::MatrixXd eigen_path);
     trajectory_msgs::MultiDOFJointTrajectory trajectoryToMultiDofTrajectory(
       Trajectory eigen_trajectory);
-    Eigen::MatrixXd jointTrajectoryToEigenMatrixXd(
+    Eigen::MatrixXd jointTrajectoryToEigenWaypoints(
       trajectory_msgs::JointTrajectory joint_trajectory);
-    trajectory_msgs::JointTrajectory eigenMatrixXdToJointTrajectory(
+    trajectory_msgs::JointTrajectory eigenPathToJointTrajectory(
       Eigen::MatrixXd path);
     trajectory_msgs::JointTrajectory trajectoryToJointTrajectory(
       Trajectory eigen_trajectory);  
