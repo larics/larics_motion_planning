@@ -184,32 +184,41 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   //        St10shared_ptrIN4ompl4base10StateSpaceEE
   //        Both are okay, with latter we will have to use as<ob::Se3StateSpace>
   //        to specify the space in which we are planning.
-  ob::StateSpacePtr state_space(std::make_shared<ob::SE3StateSpace>());
+  //ob::StateSpacePtr state_space(std::make_shared<ob::SE3StateSpace>());
+  ob::StateSpacePtr state_space;
+  int num_spaces = 1;
+  for (int j=0; j<num_spaces; j++){
+    auto current_space(ob::StateSpacePtr(
+      make_shared<ob::RealVectorStateSpace>(3)));
 
-  // Set bounds for spatial axes. Our path planner will not go outside these.
-  // TODO Check if there can be arbitrary number of bounds and how can they be
-  //      passed to validity checker. This might prove useful for checking 
-  //      validity with manipulator attached to UAV.
-  ob::RealVectorBounds bounds(planner_configuration_.bounds.size());
-  for (int i=0; i<planner_configuration_.bounds.size(); i++){
-    bounds.setLow(i, planner_configuration_.bounds[i][0]);
-    bounds.setHigh(i, planner_configuration_.bounds[i][1]);
+    // Set bounds for spatial axes. Our path planner will not go outside these.
+    // TODO Check if there can be arbitrary number of bounds and how can they be
+    //      passed to validity checker. This might prove useful for checking
+    //      validity with manipulator attached to UAV.
+    ob::RealVectorBounds bounds(planner_configuration_.bounds.size());
+    for (int i=0; i<planner_configuration_.bounds.size(); i++){
+      bounds.setLow(i, planner_configuration_.bounds[i][0]);
+      bounds.setHigh(i, planner_configuration_.bounds[i][1]);
+    }
+    // Set bounds
+    current_space->as<ob::RealVectorStateSpace>()->setBounds(bounds);
+    state_space = state_space + current_space;
   }
-
   // Set bounds
-  state_space->as<ob::SE3StateSpace>()->setBounds(bounds);
+  //state_space->as<ob::SE3StateSpace>()->setBounds(bounds);
+
   // This sets longest segment that does not need to be checked for collisions.
   // The trick is that this is actually a fraction of state space maximum
   // extent. To transfer to metric we can divide our resolution with max extent
   // to get the fraction that corresponds to resolution in meters.
   if (planner_configuration_.longest_valid_segment_is_used){
     if (planner_configuration_.longest_valid_segment_is_metric){
-      state_space->as<ob::SE3StateSpace>()->setLongestValidSegmentFraction(
+      state_space->setLongestValidSegmentFraction(
         planner_configuration_.longest_valid_segment_value/
-        state_space->as<ob::SE3StateSpace>()->getMaximumExtent());
+        state_space->getMaximumExtent());
     }
     else{
-      state_space->as<ob::SE3StateSpace>()->setLongestValidSegmentFraction(
+      state_space->setLongestValidSegmentFraction(
         planner_configuration_.longest_valid_segment_value);
     }
   }
@@ -307,12 +316,10 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
 
   // Set up start and goal states.
   // TODO check if start and goal are 
-  ob::ScopedState<ob::SE3StateSpace> start(state_space);
-  start->setXYZ(positions(0,0), positions(0,1), positions(0,2));
-  start->rotation().setAxisAngle(0, 0, 0, 1);
-  ob::ScopedState<ob::SE3StateSpace> goal(state_space);
-  goal->setXYZ(positions(1,0), positions(1,1), positions(1,2));
-  goal->rotation().setAxisAngle(0, 0, 0, 1);
+  ob::ScopedState<ob::CompoundStateSpace> start(state_space);
+  start[0] = positions(0,0); start[1] = positions(0,1); start[2] = positions(0,2);
+  ob::ScopedState<ob::CompoundStateSpace> goal(state_space);
+  goal[0] = positions(1,0); goal[1] = positions(1,1); goal[2] = positions(1,2);
 
   // Set up problem definition. That is basically setting start and goal states
   // to one object.
@@ -375,16 +382,7 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   }
   convertOmplPathToEigenMatrix(path_geom);
   path_length_ = path_geom.length();
-  // Zajebancija sa stanjima.
-  /*
-  auto temp_space(std::make_shared<ob::CompoundStateSpace>());
-  temp_space->addSubspace(ob::StateSpacePtr(
-    make_shared<ob::SE3StateSpace>()),1.0);
-  temp_space->addSubspace(ob::StateSpacePtr(
-    make_shared<ob::RealVectorStateSpace>(5)), 1.0);
-  ob::ScopedState<ob::CompoundStateSpace> temp_state(temp_space);
-  //temp_space.printSettings(std::cout);
-  */
+
   return true;
 }
 
@@ -393,9 +391,18 @@ inline void RrtPathPlanner::convertOmplPathToEigenMatrix(og::PathGeometric path)
   path_ = Eigen::MatrixXd(path.getStateCount(), 3);
   for (int i=0; i<path.getStateCount(); i++){
     auto point = path.getState(i);
-    path_(i,0) = point->as<ob::SE3StateSpace::StateType>()->getX();
-    path_(i,1) = point->as<ob::SE3StateSpace::StateType>()->getY();
-    path_(i,2) = point->as<ob::SE3StateSpace::StateType>()->getZ();
+    //cout << point->as<ob::RealVectorStateSpace::StateType>()->values[0] << endl;
+    //auto point1 = point->as<ob::CompoundState>();
+    //auto point2 = point1[0];
+    //cout << "point " << point1[0][0].as<ob::RealVectorStateSpace::StateType>(0)->values[0] << endl;
+    //path.print(std::cout);
+    //exit(0);
+    //path_(i,0) = point->as<ob::SE3StateSpace::StateType>()->getX();
+    //path_(i,1) = point->as<ob::SE3StateSpace::StateType>()->getY();
+    //path_(i,2) = point->as<ob::SE3StateSpace::StateType>()->getZ();
+    path_(i,0) = point->as<ob::RealVectorStateSpace::StateType>()->values[0];
+    path_(i,1) = point->as<ob::RealVectorStateSpace::StateType>()->values[1];
+    path_(i,2) = point->as<ob::RealVectorStateSpace::StateType>()->values[2];
   }
 }
 
