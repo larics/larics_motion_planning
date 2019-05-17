@@ -412,8 +412,11 @@ double RrtPathPlanner::getPathLength()
 bool RrtPathPlanner::isStateValid(const ob::State *state)
 {
   Eigen::VectorXd state_vector(3);
-  state_vector(0) = state->as<ob::SE3StateSpace::StateType>()->getX();
-  state_vector(1) = state->as<ob::SE3StateSpace::StateType>()->getY();
-  state_vector(2) = state->as<ob::SE3StateSpace::StateType>()->getZ();
+  //state_vector(0) = state->as<ob::SE3StateSpace::StateType>()->getX();
+  //state_vector(1) = state->as<ob::SE3StateSpace::StateType>()->getY();
+  //state_vector(2) = state->as<ob::SE3StateSpace::StateType>()->getZ();
+  state_vector(0) = state->as<ob::RealVectorStateSpace::StateType>()->values[0];
+  state_vector(1) = state->as<ob::RealVectorStateSpace::StateType>()->values[1];
+  state_vector(2) = state->as<ob::RealVectorStateSpace::StateType>()->values[2];
   return map_->isStateValid(state_vector);
 }
