@@ -125,9 +125,7 @@ bool GlobalPlannerRosInterface::multiDofTrajectoryCallback(
     
   // Plan path and trajectory.
   if (req.plan_path == true && req.plan_trajectory == true){
-    cout << success << endl;
     success = global_planner_->planPathAndTrajectory(waypoints);
-    cout << success << endl;
     // Get trajectory
     res.trajectory = this->trajectoryToJointTrajectory(
       global_planner_->getTrajectory());
