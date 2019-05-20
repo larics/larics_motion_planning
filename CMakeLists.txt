@@ -67,12 +67,12 @@ target_link_libraries(map ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES})
 set(PATH_PLANNING_SOURCES src/PathPlanningInterface.cpp 
   src/RrtPathPlanner.cpp)
 add_library(path_planning ${PATH_PLANNING_SOURCES})
-target_link_libraries(map ${catkin_LIBRARIES} ${OMPL_LIBRARIES} 
+target_link_libraries(path_planning ${catkin_LIBRARIES} ${OMPL_LIBRARIES} 
   ${Eigen_LIBRARIES})
 
 set(VISUALIZATION_SOURCES src/Visualization.cpp)
 add_library(visualization ${VISUALIZATION_SOURCES})
-target_link_libraries(map ${catkin_LIBRARIES} ${Eigen_LIBRARIES})
+target_link_libraries(visualization ${catkin_LIBRARIES} ${Eigen_LIBRARIES})
 
 set(GLOBAL_PLANNER_SOURCES src/GlobalPlanner.cpp 
   src/GlobalPlannerRosInterface.cpp)
