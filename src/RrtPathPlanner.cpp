@@ -7,11 +7,11 @@ void printRrtStarConfig(RrtStarConfig config)
 
   // Print bounds
   cout << " Bounds |    min    |    max    |" << endl;
-  for (int i = 0; i<config.bounds.size(); i++){
+  /*for (int i = 0; i<config.bounds.size(); i++){
     cout << " " <<  setfill('0') << setw(6) << i << " | " << 
       boost::format("%9.2f") % config.bounds[i][0] << " | " <<
       boost::format("%9.2f") % config.bounds[i][1] << " | " << endl;
-  }
+  }*/
   cout << endl;
   
   cout << "       Parameter      | " << "Is used |  Value" << endl; 
@@ -61,9 +61,22 @@ bool RrtPathPlanner::configureFromFile(string config_filename)
   // Open yaml file with configuration
   YAML::Node config = YAML::LoadFile(config_filename);
 
+  // Load spaces configuration
+  planner_configuration_.number_of_spaces = 
+    config["path_planner"]["spaces"]["number"].as<int>();
+  planner_configuration_.spaces_dimensions = 
+    config["path_planner"]["spaces"]["dimensions"].as< std::vector<int> >();
+  planner_configuration_.total_dof_number = accumulate(
+    planner_configuration_.spaces_dimensions.begin(), 
+    planner_configuration_.spaces_dimensions.end(), 0);
+  planner_configuration_.spaces_weights = 
+    config["path_planner"]["spaces"]["weights"].as< std::vector<double> >();
+  planner_configuration_.spaces_bounds = 
+    config["path_planner"]["spaces"]["bounds"].as< std::vector< std::vector< std::vector<double> > > >();
+
   // Load bounds 
-  planner_configuration_.bounds = 
-    config["path_planner"]["bounds"].as<std::vector< std::vector<double> > >();
+  //planner_configuration_.bounds = 
+  //  config["path_planner"]["bounds"].as<std::vector< std::vector<double> > >();
   // Longest valid segment
   planner_configuration_.longest_valid_segment_is_used = 
     config["path_planner"]["longest_valid_segment"]["is_used"].as<bool>();
@@ -185,24 +198,32 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   //        Both are okay, with latter we will have to use as<ob::Se3StateSpace>
   //        to specify the space in which we are planning.
   //ob::StateSpacePtr state_space(std::make_shared<ob::SE3StateSpace>());
-  ob::StateSpacePtr state_space;
-  int num_spaces = 1;
-  for (int j=0; j<num_spaces; j++){
+  auto state_space(ob::StateSpacePtr(
+      make_shared<ob::CompoundStateSpace>()));
+  for (int i=0; i<planner_configuration_.number_of_spaces; i++){
     auto current_space(ob::StateSpacePtr(
-      make_shared<ob::RealVectorStateSpace>(3)));
+      make_shared<ob::RealVectorStateSpace>(
+      planner_configuration_.spaces_dimensions[i])));
 
     // Set bounds for spatial axes. Our path planner will not go outside these.
     // TODO Check if there can be arbitrary number of bounds and how can they be
     //      passed to validity checker. This might prove useful for checking
     //      validity with manipulator attached to UAV.
-    ob::RealVectorBounds bounds(planner_configuration_.bounds.size());
-    for (int i=0; i<planner_configuration_.bounds.size(); i++){
-      bounds.setLow(i, planner_configuration_.bounds[i][0]);
-      bounds.setHigh(i, planner_configuration_.bounds[i][1]);
+    /*ob::RealVectorBounds bounds(planner_configuration_.bounds.size());
+    for (int j=0; j<planner_configuration_.bounds.size(); j++){
+      bounds.setLow(j, planner_configuration_.bounds[j][0]);
+      bounds.setHigh(j, planner_configuration_.bounds[j][1]);
+    }*/
+    ob::RealVectorBounds bounds(planner_configuration_.spaces_bounds[i].size());
+    for (int j=0; j<planner_configuration_.spaces_bounds[i].size(); j++){
+      bounds.setLow(j, planner_configuration_.spaces_bounds[i][j][0]);
+      bounds.setHigh(j, planner_configuration_.spaces_bounds[i][j][1]);
     }
     // Set bounds
     current_space->as<ob::RealVectorStateSpace>()->setBounds(bounds);
-    state_space = state_space + current_space;
+    state_space->as<ob::CompoundStateSpace>()->addSubspace(
+      current_space, planner_configuration_.spaces_weights[i]);
+    //state_space->setSubspaceWeight(i, 1.0);
   }
   // Set bounds
   //state_space->as<ob::SE3StateSpace>()->setBounds(bounds);
@@ -231,7 +252,9 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   //  boost::bind(&RrtPathPlanner::isStateValid, this, _1));
 
   // Set up space information
-  ob::SpaceInformationPtr si(std::make_shared<ob::SpaceInformation>(
+  //ob::SpaceInformationPtr si(std::make_shared<ob::SpaceInformation>(
+  //  state_space));
+  si = ob::SpaceInformationPtr(std::make_shared<ob::SpaceInformation>(
     state_space));
   //ob::SpaceInformationPtr si = ss.getSpaceInformation();
   si->setStateValidityChecker(
@@ -317,9 +340,13 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   // Set up start and goal states.
   // TODO check if start and goal are 
   ob::ScopedState<ob::CompoundStateSpace> start(state_space);
-  start[0] = positions(0,0); start[1] = positions(0,1); start[2] = positions(0,2);
+  //start[0] = positions(0,0); start[1] = positions(0,1); start[2] = positions(0,2);
   ob::ScopedState<ob::CompoundStateSpace> goal(state_space);
-  goal[0] = positions(1,0); goal[1] = positions(1,1); goal[2] = positions(1,2);
+  //goal[0] = positions(1,0); goal[1] = positions(1,1); goal[2] = positions(1,2);
+  for (int i=0; i<positions.cols(); i++){
+    start[i] = positions(0, i);
+    goal[i] = positions(1, i);
+  }
 
   // Set up problem definition. That is basically setting start and goal states
   // to one object.
@@ -343,7 +370,6 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
     bool plan_flag = true;
     double dt = planner_configuration_.solve_time_increment;
     double t = dt;
-
     while (plan_flag == true){
       solved = planner->ob::Planner::solve(t);
       t += dt;
@@ -380,17 +406,22 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
     path_simplifier.smoothBSpline(path_geom, planner_configuration_.smooth_bspline_max_steps);
     //cout << "Path geometric length after bspline: " << path_geom.getStateCount() << endl;
   }
+  //path_geom.print(cout);
   convertOmplPathToEigenMatrix(path_geom);
   path_length_ = path_geom.length();
+  //cout << "Planning successful" << endl;
 
   return true;
 }
 
 inline void RrtPathPlanner::convertOmplPathToEigenMatrix(og::PathGeometric path)
 {
-  path_ = Eigen::MatrixXd(path.getStateCount(), 3);
+  path_ = Eigen::MatrixXd(path.getStateCount(), planner_configuration_.total_dof_number);
   for (int i=0; i<path.getStateCount(); i++){
     auto point = path.getState(i);
+    ob::ScopedState<ob::CompoundStateSpace> temp(si);
+    temp = point;
+    for (int j=0; j<planner_configuration_.total_dof_number; j++) path_(i,j) = temp[j];
     //cout << point->as<ob::RealVectorStateSpace::StateType>()->values[0] << endl;
     //auto point1 = point->as<ob::CompoundState>();
     //auto point2 = point1[0];
@@ -400,9 +431,9 @@ inline void RrtPathPlanner::convertOmplPathToEigenMatrix(og::PathGeometric path)
     //path_(i,0) = point->as<ob::SE3StateSpace::StateType>()->getX();
     //path_(i,1) = point->as<ob::SE3StateSpace::StateType>()->getY();
     //path_(i,2) = point->as<ob::SE3StateSpace::StateType>()->getZ();
-    path_(i,0) = point->as<ob::RealVectorStateSpace::StateType>()->values[0];
-    path_(i,1) = point->as<ob::RealVectorStateSpace::StateType>()->values[1];
-    path_(i,2) = point->as<ob::RealVectorStateSpace::StateType>()->values[2];
+    //path_(i,0) = point->as<ob::RealVectorStateSpace::StateType>()->values[0];
+    //path_(i,1) = point->as<ob::RealVectorStateSpace::StateType>()->values[1];
+    //path_(i,2) = point->as<ob::RealVectorStateSpace::StateType>()->values[2];
   }
 }
 
@@ -418,12 +449,20 @@ double RrtPathPlanner::getPathLength()
 
 bool RrtPathPlanner::isStateValid(const ob::State *state)
 {
-  Eigen::VectorXd state_vector(3);
+  Eigen::VectorXd state_vector(planner_configuration_.total_dof_number);
   //state_vector(0) = state->as<ob::SE3StateSpace::StateType>()->getX();
   //state_vector(1) = state->as<ob::SE3StateSpace::StateType>()->getY();
   //state_vector(2) = state->as<ob::SE3StateSpace::StateType>()->getZ();
-  state_vector(0) = state->as<ob::RealVectorStateSpace::StateType>()->values[0];
-  state_vector(1) = state->as<ob::RealVectorStateSpace::StateType>()->values[1];
-  state_vector(2) = state->as<ob::RealVectorStateSpace::StateType>()->values[2];
+  ob::ScopedState<ob::CompoundStateSpace> temp(si);
+  temp = state;
+  //cout << temp[5] << endl;
+  //cout << state->as<ob::CompoundStateSpace::StateType>()->as<ob::RealVectorStateSpace::StateType>(0)->values[0] << endl;
+  //state_vector(0) = state->as<ob::RealVectorStateSpace::StateType>()->values[0];
+  //state_vector(1) = state->as<ob::RealVectorStateSpace::StateType>()->values[1];
+  //state_vector(2) = state->as<ob::RealVectorStateSpace::StateType>()->values[2];
+  for (int i=0; i<planner_configuration_.total_dof_number; i++) state_vector(i) = temp[i];
+  //cout << state_vector << endl;
+  //cout << state << endl;
+  //exit(0);
   return map_->isStateValid(state_vector);
 }
