@@ -32,7 +32,13 @@ namespace ob = ompl::base;
 namespace og = ompl::geometric;
 
 typedef struct{
-  std::vector< std::vector<double> > bounds;
+  int number_of_spaces;
+  std::vector<int> spaces_dimensions;
+  int total_dof_number;
+  std::vector<double> spaces_weights;
+  std::vector< std::vector< std::vector<double> > > spaces_bounds;
+
+  //std::vector< std::vector<double> > bounds;
   bool longest_valid_segment_is_used;
   bool longest_valid_segment_is_metric;
   double longest_valid_segment_value;
@@ -117,6 +123,7 @@ class RrtPathPlanner : public PathPlanningInterface
   private:
     Eigen::MatrixXd path_;
     double path_length_;
+    ob::SpaceInformationPtr si;
     shared_ptr<MapInterface> map_;
     RrtStarConfig planner_configuration_;
     bool isStateValid(const ob::State *state);
