@@ -16,14 +16,14 @@ global_planner:
 
 octomap:
   path_to_file: "/home/antun/catkin_ws/src/larics_gazebo_worlds/models/greenhouse/greenhouse4096.binvox.bt"
-  search_depth: 16
+  search_depth: 11
 
 path_planner:
   spaces:
     number: 2
-    dimensions: [3, 5]
+    dimensions: [4, 5]
     weights: [1.0, 1.0]
-    bounds: [[[0, 10.0], [-20.0, 0.0], [0.95, 1.05]], [[-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57]]]
+    bounds: [[[0, 10.0], [-20.0, 0.0], [0.95, 1.05], [-3.14, 3.14]], [[-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57]]]
     #bounds: [[[0, 10.0], [-20.0, 0.0], [0.95, 1.05]], [[-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57]]]
   bounds: [[0, 10.0], [-20.0, 0.0], [0.95, 1.05]]
   longest_valid_segment:
@@ -70,6 +70,6 @@ path_planner:
       max_steps: 5
 
 toppra_trajectory:
-  velocities: [1.3, 1.3, 1.3, 1.0, 1.0, 1.0, 1.0, 1.0]
-  accelerations: [2.0, 2.0, 2.0, 1.2, 1.2, 1.2, 1.2, 1.2]
+  velocities: [0.5, 0.5, 0.5, 0.3, 1.0, 1.0, 1.0, 1.0, 1.0]
+  accelerations: [0.4, 0.4, 0.4, 0.3, 1.2, 1.2, 1.2, 1.2, 1.2]
   sampling_frequency: 100.0
