@@ -1,0 +1,11 @@
+<launch>
+  <arg name="rate" default="10" />
+  <arg name="namespace" default="pioneer" />
+
+  <group ns="$(arg namespace)">
+    <node name="global_planner" pkg="larics_motion_planning" type="global_planner_node" output="screen">
+      <param name="rate" value="$(arg rate)" />
+      <param name="global_planner_config_file" value="$(find larics_motion_planning)/config/pioneer_config.yaml" />
+    </node>
+  </group>
+</launch>

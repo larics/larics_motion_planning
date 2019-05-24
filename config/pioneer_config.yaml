@@ -1,0 +1,74 @@
+global_planner:
+  map_config_file: "/home/antun/catkin_ws/src/larics_motion_planning/config/pioneer_config.yaml"
+  trajectory_config_file: "/home/antun/catkin_ws/src/larics_motion_planning/config/pioneer_config.yaml"
+  path_planner_config_file: "/home/antun/catkin_ws/src/larics_motion_planning/config/pioneer_config.yaml"
+
+  trajectory:
+    restarts: 5
+
+  path_and_trajectory:
+    restarts: 5
+
+  path:
+    restarts: 5
+    collision_check_restarts: 5
+    collision_check: true
+
+octomap:
+  path_to_file: "/home/antun/catkin_ws/src/larics_gazebo_worlds/models/greenhouse/greenhouse4096.binvox.bt"
+  search_depth: 11
+
+path_planner:
+  spaces:
+    number: 1
+    dimensions: [4]
+    weights: [1.0]
+    bounds: [[[0, 10.0], [-20.0, 0.0], [1.0, 1.0], [-3.14, 3.14]]]
+    #bounds: [[[0, 10.0], [-20.0, 0.0], [0.95, 1.05]], [[-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57]]]
+  longest_valid_segment:
+    is_used: true
+    is_metric: true
+    value: 0.01
+  goal_bias:
+    is_used: true
+    value: 0.05
+  range:
+    is_used: true
+    value: 0.5
+  rewire_factor:
+    is_used: false
+    value: 1.1
+  delay_cc:
+    is_used: true
+    value: true
+  tree_pruning: 
+    is_used: true
+    value: false
+  prune_threshold:
+    is_used: true
+    value: 0.1
+  pruned_measure:
+    is_used: true
+    value: false
+  k_nearest:
+    is_used: true
+    value: true
+  solve_time:
+    is_incremental: true
+    time: 1.0
+    increment: 0.1
+  path_simplifier:
+    reduce_vertices:
+      is_used: true
+      max_steps: 0.25
+      max_empty_steps: 0
+      range_ratio: 0.33
+      use_as_fraction: true
+    smooth_b_spline:
+      is_used: true
+      max_steps: 5
+
+toppra_trajectory:
+  velocities: [0.5, 0.5, 0.5, 0.3]
+  accelerations: [0.4, 0.4, 0.4, 0.3]
+  sampling_frequency: 100.0
