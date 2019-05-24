@@ -21,9 +21,9 @@ octomap:
 path_planner:
   spaces:
     number: 1
-    dimensions: [4]
+    dimensions: [3]
     weights: [1.0]
-    bounds: [[[0, 10.0], [-20.0, 0.0], [1.0, 1.0], [-3.14, 3.14]]]
+    bounds: [[[0, 10.0], [-20.0, 0.0], [1.0, 1.0]]]
     #bounds: [[[0, 10.0], [-20.0, 0.0], [0.95, 1.05]], [[-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57]]]
   longest_valid_segment:
     is_used: true
@@ -69,6 +69,6 @@ path_planner:
       max_steps: 5
 
 toppra_trajectory:
-  velocities: [0.5, 0.5, 0.5, 0.3]
-  accelerations: [0.4, 0.4, 0.4, 0.3]
+  velocities: [0.5, 0.5, 0.5]
+  accelerations: [0.4, 0.4, 0.4]
   sampling_frequency: 100.0
