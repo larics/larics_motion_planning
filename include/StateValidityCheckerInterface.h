@@ -16,7 +16,7 @@ class StateValidityCheckerInterface
 {
   public:
     StateValidityCheckerInterface();
-    virtual bool isStateValid(Eigen::MatrixXd state) = 0;
+    virtual bool isStateValid(Eigen::VectorXd state) = 0;
 };
 
 #endif // STATE_VALIDITY_CHECKER_INTERFACE_H
