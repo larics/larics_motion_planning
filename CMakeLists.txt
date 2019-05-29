@@ -64,6 +64,10 @@ set(MAP_SOURCES src/MapInterface.cpp src/OctomapMap.cpp)
 add_library(map ${MAP_SOURCES})
 target_link_libraries(map ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES})
 
+set(STATE_VALIDITY_CHECKING_SOURCES src/StateValidityCheckerInterface.cpp)
+add_library(state_validity_checking ${STATE_VALIDITY_CHECKING_SOURCES})
+target_link_libraries(state_validity_checking map ${catkin_LIBRARIES})
+
 set(PATH_PLANNING_SOURCES src/PathPlanningInterface.cpp 
   src/RrtPathPlanner.cpp)
 add_library(path_planning ${PATH_PLANNING_SOURCES})
