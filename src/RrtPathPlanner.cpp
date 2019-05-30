@@ -42,9 +42,9 @@ void printRrtStarConfig(RrtStarConfig config)
 }
 
 RrtPathPlanner::RrtPathPlanner(string config_filename, 
-  shared_ptr<MapInterface> map)
+  shared_ptr<StateValidityCheckerInterface> validity_checker)
 {
-  map_ = map;
+  state_validity_checker_ = validity_checker;
   configureFromFile(config_filename);
   path_length_ = 0.0;
 }
@@ -171,15 +171,14 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
     cout << "RrtPathPlanner->planPath: " << endl;
     cout << "  You have to provide at least two waypoints." << endl;
   }
-  Eigen::VectorXd temp_state(3);
-  temp_state << positions(0,0), positions(0,1), positions(0,2);
-  if (!map_->isStateValid(temp_state)){
+  Eigen::VectorXd temp_state = (positions.block(0, 0, 1, positions.cols())).transpose();
+  if (!state_validity_checker_->isStateValid(temp_state)){
     initial_check = false;
     cout << "RrtPathPlanner->planPath: " << endl;
     cout << "  Start point is not valid: " << endl << temp_state << endl;
   }
-  temp_state << positions(1,0), positions(1,1), positions(1,2);
-  if (!map_->isStateValid(temp_state)){
+  temp_state = (positions.block(1, 0, 2, positions.cols())).transpose();
+  if (!state_validity_checker_->isStateValid(temp_state)){
     initial_check = false;
     cout << "RrtPathPlanner->planPath: " << endl;
     cout << "  Goal point is not valid: " << endl << temp_state << endl;
@@ -464,5 +463,5 @@ bool RrtPathPlanner::isStateValid(const ob::State *state)
   //cout << state_vector << endl;
   //cout << state << endl;
   //exit(0);
-  return map_->isStateValid(state_vector);
+  return state_validity_checker_->isStateValid(state_vector);
 }

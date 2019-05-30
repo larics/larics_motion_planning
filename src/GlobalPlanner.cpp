@@ -20,9 +20,11 @@ bool GlobalPlanner::configureFromFile(string config_filename)
     config["global_planner"]["map_config_file"].as<string>());
   trajectory_interface_ = make_shared<ToppraTrajectory>(
     config["global_planner"]["trajectory_config_file"].as<string>());
+  state_validity_checker_interface_ = make_shared<PointStateValidityChecker>(
+    map_interface_);
   path_planner_interface_ = make_shared<RrtPathPlanner>(
     config["global_planner"]["path_planner_config_file"].as<string>(), 
-    map_interface_);
+    state_validity_checker_interface_);
 
   num_trajectory_restarts_ = 
     config["global_planner"]["trajectory"]["restarts"].as<int>();
@@ -49,7 +51,7 @@ bool GlobalPlanner::collisionCheck(Eigen::MatrixXd path)
   // Go through all points along path and check is state valid on map. This
   // also works for trajectory.positions
   for (int i=0; i<path.rows(); i++){
-    success &= map_interface_->isStateValid(path.block(i,0,1,path.cols()));
+    success &= state_validity_checker_interface_->isStateValid(path.block(i,0,1,path.cols()));
   }
 
   return success;

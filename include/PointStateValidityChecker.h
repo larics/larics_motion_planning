@@ -7,21 +7,31 @@
 
 // #include "MotionPlanningDatatypes.h"
 #include <StateValidityCheckerInterface.h>
+#include <MapInterface.h>
+
 #include <iostream>
 #include <string>
 #include <memory>
 #include <eigen3/Eigen/Eigen>
-#include <MapInterface.h>
 
 using namespace std;
 
-/// This is an interface class for path planning.
+/// This class check if a single point is in obstacle or not.
 class PointStateValidityChecker : public StateValidityCheckerInterface
 {
   public:
-    PointStateValidityChecker(string config_filename, 
-      shared_ptr<MapInterface> map);
+    /// \brief Constructor.
+    /// \param map Map interface that is used for checking validity of a point.
+    PointStateValidityChecker(shared_ptr<MapInterface> map);
+
+    /// \brief Validity of a robot state.
+    /// \param state Vector of robot state.
+    /// \return True if robot state does not interfere with obstacles. False
+    ///   otherwise.
     bool isStateValid(Eigen::VectorXd state);
+
+  private:
+    shared_ptr<MapInterface> map_;
 };
 
 #endif // POINT_STATE_VALIDITY_CHECKER_H

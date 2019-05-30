@@ -5,7 +5,7 @@
 
 #include "MotionPlanningDatatypes.h"
 #include "PathPlanningInterface.h"
-#include "MapInterface.h"
+#include "StateValidityCheckerInterface.h"
 
 #include <iostream>
 #include <string>
@@ -93,7 +93,11 @@ class RrtPathPlanner : public PathPlanningInterface
     /// \brief Constructor with filename.
     /// \param config_filename This constructor takes .yaml file for
     ///   planner configuration.
-    RrtPathPlanner(string config_filename, shared_ptr<MapInterface> map);
+    /// \param validity_checker Validity checker for robot state. Validity
+    ///   checking is all done in class so different types of robots can be
+    ///   used.
+    RrtPathPlanner(string config_filename, 
+      shared_ptr<StateValidityCheckerInterface> validity_checker);
 
     /// \brief Destructor.
     ~RrtPathPlanner();
@@ -124,7 +128,7 @@ class RrtPathPlanner : public PathPlanningInterface
     Eigen::MatrixXd path_;
     double path_length_;
     ob::SpaceInformationPtr si;
-    shared_ptr<MapInterface> map_;
+    shared_ptr<StateValidityCheckerInterface> state_validity_checker_;
     RrtStarConfig planner_configuration_;
     bool isStateValid(const ob::State *state);
     inline void convertOmplPathToEigenMatrix(og::PathGeometric path);
