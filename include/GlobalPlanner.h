@@ -11,6 +11,8 @@
 #include <RrtPathPlanner.h>
 #include <TrajectoryInterface.h>
 #include <ToppraTrajectory.h>
+#include <StateValidityCheckerInterface.h>
+#include <PointStateValidityChecker.h>
 
 #include <eigen3/Eigen/Eigen>
 
@@ -78,6 +80,7 @@ class GlobalPlanner
   private:
     shared_ptr<MapInterface> map_interface_;
     shared_ptr<TrajectoryInterface> trajectory_interface_;
+    shared_ptr<StateValidityCheckerInterface> state_validity_checker_interface_;
     shared_ptr<PathPlanningInterface> path_planner_interface_;
 
     // Local copy of path

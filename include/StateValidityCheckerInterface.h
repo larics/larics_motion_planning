@@ -11,7 +11,7 @@
 
 using namespace std;
 
-/// This is an interface class for path planning.
+/// This is an interface class for state validity checking.
 class StateValidityCheckerInterface
 {
   public:

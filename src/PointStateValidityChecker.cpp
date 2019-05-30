@@ -1,12 +1,12 @@
 #include <PointStateValidityChecker.h>
 
 PointStateValidityChecker::PointStateValidityChecker(
-  string config_filename, shared_ptr<MapInterface> map)
+  shared_ptr<MapInterface> map)
 {
-
+  map_ = map;
 }
 
 bool PointStateValidityChecker::isStateValid(Eigen::VectorXd state)
 {
-  return true;
+  return map_->isStateValid(state);
 }

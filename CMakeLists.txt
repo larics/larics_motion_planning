@@ -72,8 +72,8 @@ target_link_libraries(state_validity_checking map ${catkin_LIBRARIES})
 set(PATH_PLANNING_SOURCES src/PathPlanningInterface.cpp 
   src/RrtPathPlanner.cpp)
 add_library(path_planning ${PATH_PLANNING_SOURCES})
-target_link_libraries(path_planning ${catkin_LIBRARIES} ${OMPL_LIBRARIES} 
-  ${Eigen_LIBRARIES})
+target_link_libraries(path_planning state_validity_checking ${catkin_LIBRARIES} 
+  ${OMPL_LIBRARIES} ${Eigen_LIBRARIES})
 
 set(VISUALIZATION_SOURCES src/Visualization.cpp)
 add_library(visualization ${VISUALIZATION_SOURCES})
