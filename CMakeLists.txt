@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
     cmake_modules
     eigen_conversions
     message_generation
+    aerial_manipulators_control
 )
 
 find_package(Eigen3 REQUIRED NO_MODULE)
@@ -42,8 +43,8 @@ generate_messages(
 )
 
 catkin_package(
-  INCLUDE_DIRS include 
-  LIBRARIES 
+  INCLUDE_DIRS include include ${catkin_INCLUDE_DIRS}
+  LIBRARIES ManipulatorControl
   CATKIN_DEPENDS
   DEPENDS
 )
@@ -65,7 +66,8 @@ add_library(map ${MAP_SOURCES})
 target_link_libraries(map ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES})
 
 set(STATE_VALIDITY_CHECKING_SOURCES src/StateValidityCheckerInterface.cpp 
-  src/PointStateValidityChecker.cpp)
+  src/PointStateValidityChecker.cpp
+  src/UavWpManipulatorStateValidityChecker.cpp)
 add_library(state_validity_checking ${STATE_VALIDITY_CHECKING_SOURCES})
 target_link_libraries(state_validity_checking map ${catkin_LIBRARIES})
 

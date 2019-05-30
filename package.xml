@@ -39,6 +39,7 @@
   <build_depend>eigen3</build_depend>
   <build_depend>eigen_conversions</build_depend>
   <build_depend>message_generation</build_depend>
+  <build_depend>aerial_manipulators_control</build_depend>
   <!-- build_depend>arducopter_trajectory_planner</build_depend-->
   <!-- Use buildtool_depend for build tool packages: -->
   <!--   <buildtool_depend>catkin</buildtool_depend> -->
@@ -50,6 +51,7 @@
   <run_depend>eigen3</run_depend>
   <run_depend>eigen_conversions</run_depend>
   <run_depend>message_generation</run_depend>
+  <run_depend>aerial_manipulators_control</run_depend>
   <!-- run_depend>arducopter_trajectory_planner</run_depend -->
   <!-- Use test_depend for packages you need only for testing: -->
   <!--   <test_depend>gtest</test_depend> -->
