@@ -43,8 +43,8 @@ generate_messages(
 )
 
 catkin_package(
-  INCLUDE_DIRS include include ${catkin_INCLUDE_DIRS}
-  LIBRARIES ManipulatorControl
+  INCLUDE_DIRS include ${catkin_INCLUDE_DIRS}
+  LIBRARIES
   CATKIN_DEPENDS
   DEPENDS
 )
