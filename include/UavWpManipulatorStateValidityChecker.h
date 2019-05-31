@@ -41,6 +41,7 @@ class UavWpManipulatorStateValidityChecker : public StateValidityCheckerInterfac
 
   private:
     shared_ptr<MapInterface> map_;
+    ManipulatorControl wp_control;
 };
 
 #endif // UAV_WP_MANIPULATOR_STATE_VALIDITY_CHECKER

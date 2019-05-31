@@ -13,6 +13,7 @@
 #include <ToppraTrajectory.h>
 #include <StateValidityCheckerInterface.h>
 #include <PointStateValidityChecker.h>
+#include <UavWpManipulatorStateValidityChecker.h>
 
 #include <eigen3/Eigen/Eigen>
 
