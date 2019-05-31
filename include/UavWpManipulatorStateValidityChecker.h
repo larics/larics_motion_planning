@@ -15,7 +15,9 @@
 #include <iostream>
 #include <string>
 #include <memory>
-#include <eigen3/Eigen/Eigen>
+#include <Eigen/Eigen>
+#include <Eigen/Geometry>
+#include <Eigen/Core>
 
 using namespace std;
 
@@ -39,9 +41,11 @@ class UavWpManipulatorStateValidityChecker : public StateValidityCheckerInterfac
     ///   otherwise.
     bool isStateValid(Eigen::VectorXd state);
 
+    void testDirectKinematics();
+
   private:
     shared_ptr<MapInterface> map_;
-    ManipulatorControl wp_control;
+    ManipulatorControl manipulator_;
 };
 
 #endif // UAV_WP_MANIPULATOR_STATE_VALIDITY_CHECKER
