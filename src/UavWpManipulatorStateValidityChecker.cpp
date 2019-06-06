@@ -34,12 +34,15 @@ void UavWpManipulatorStateValidityChecker::testDirectKinematics()
   Eigen::Affine3d t_world_manipulator = t_world_uav*t_uav_manipulator;
   cout << t_uav_manipulator.rotation() << endl;
 
-  std::vector<double> q{0.0, 0.0, 0.0, 0.0, 0.0};
+  std::vector<double> q{0.787, 0.787, 0.0, 0.0, 0.0};
   Eigen::Affine3d t_manipulator_end_effector;
   t_manipulator_end_effector = manipulator_.getEndEffectorPosition(q);
 
   Eigen::Affine3d t_world_end_effector = t_world_manipulator*t_manipulator_end_effector;
   cout << t_world_end_effector.translation() << endl;
+
+  Eigen::Quaterniond quat(t_world_end_effector.rotation());
+  cout << quat.coeffs() << endl;
 
   exit(0);
 }
