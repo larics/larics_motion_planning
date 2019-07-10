@@ -76,6 +76,18 @@ class Visualization
     /// \brief Publishes waypoints as marker message
     void publishWaypoints();
 
+    /// \brief Generates visualization_msgs::Marker to visualise a set of 
+    ///   points that are checked by state validity checker.
+    /// \param points A set of points that define state of the robot.
+    void setStatePoints(Eigen::MatrixXd points);
+
+    /// \brief Returns points that are visualized
+    /// \return Points converted to ROS message.
+    visualization_msgs::Marker getStatePoints();
+
+    /// \brief Publishes state points as marker message
+    void publishStatePoints();
+
     /// \brief Publishes path, trajectory and waypoints.
     void publishAll();
 
@@ -85,8 +97,9 @@ class Visualization
   private:
     ros::NodeHandle nh_;
     nav_msgs::Path path_, trajectory_;
-    visualization_msgs::Marker waypoints_;
-    ros::Publisher path_publisher_, trajectory_publisher_, waypoints_publisher_;
+    visualization_msgs::Marker waypoints_, state_points_;
+    ros::Publisher path_publisher_, trajectory_publisher_, waypoints_publisher_, 
+      state_points_publisher_;
 
 
     nav_msgs::Path eigenMatrixXdToNavMsgsPath(Eigen::MatrixXd eigen_path, 

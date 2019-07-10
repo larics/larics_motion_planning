@@ -46,6 +46,11 @@ class UavWpManipulatorStateValidityChecker : public StateValidityCheckerInterfac
   private:
     shared_ptr<MapInterface> map_;
     ManipulatorControl manipulator_;
+    Eigen::MatrixXd link_dimensions_;
+    std::vector<string> link_directions_;
+
+    Eigen::MatrixXd generatePrism(double x, double y, double z, 
+      double resolution, string direction);
 };
 
 #endif // UAV_WP_MANIPULATOR_STATE_VALIDITY_CHECKER
