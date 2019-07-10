@@ -43,6 +43,8 @@ void GlobalPlannerRosInterface::run()
       visualization_changed_ = false;
       visualization_.clearAll();
     }
+    visualization_.setStatePoints(global_planner_->getRobotStatePoints());
+    visualization_.publishStatePoints();
     loop_rate.sleep();
   }
 }

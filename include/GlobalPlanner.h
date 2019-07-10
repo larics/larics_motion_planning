@@ -78,6 +78,10 @@ class GlobalPlanner
     /// \return Sampled trajectory
     Trajectory getTrajectory();
 
+    /// \brief Returns robot state points
+    /// \return State Points
+    Eigen::MatrixXd getRobotStatePoints();
+
   private:
     shared_ptr<MapInterface> map_interface_;
     shared_ptr<TrajectoryInterface> trajectory_interface_;

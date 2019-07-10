@@ -7,6 +7,8 @@ Visualization::Visualization()
     "visualization/trajectory", 1);
   waypoints_publisher_ = nh_.advertise<visualization_msgs::Marker>(
     "visualization/waypoints", 1);
+  state_points_publisher_ = nh_.advertise<visualization_msgs::Marker>(
+    "visualization/state_points", 1);
 }
 
 void Visualization::setPath(Eigen::MatrixXd eigen_path, bool projection)
@@ -71,11 +73,37 @@ void Visualization::publishWaypoints()
   waypoints_publisher_.publish(waypoints_);
 }
 
+void Visualization::setStatePoints(Eigen::MatrixXd points)
+{
+  state_points_ = this->navMsgsPathToVisualizationMsgsMarker(
+    this->eigenMatrixXdToNavMsgsPath(points));
+
+  state_points_.header.stamp = ros::Time::now();
+  state_points_.header.frame_id = "world";
+  state_points_.ns = "state_points";
+  state_points_.id = 0;
+  state_points_.scale.x = 0.01;
+  state_points_.scale.y = 0.01;
+  state_points_.scale.z = 0.01;
+  state_points_.lifetime = ros::Duration(0);
+}
+
+visualization_msgs::Marker Visualization::getStatePoints()
+{
+  return state_points_;
+}
+
+void Visualization::publishStatePoints()
+{
+  state_points_publisher_.publish(state_points_);
+}
+
 void Visualization::publishAll()
 {
   this->publishPath();
   this->publishTrajectory();
   this->publishWaypoints();
+  this->publishStatePoints();
 }
 
 void Visualization::clearAll()
@@ -84,6 +112,8 @@ void Visualization::clearAll()
   trajectory_.poses.clear();
   waypoints_.points.clear();
   waypoints_.colors.clear();
+  //state_points_.points.clear();
+  //state_points_.colors.clear();
 }
 
 

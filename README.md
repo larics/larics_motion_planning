@@ -19,3 +19,25 @@ rosrun aerial_manipulators_control wp_manipulator_control __ns:=uav
 [-20, -35.9957, -0.0211357, 1] - [20, 4.00428, 4.44961, 1]
 
 binvox2bt --bb -20.0 -35.0 0.0 20 4.0 2.0 greenhouse.binvox
+
+rosservice call /uav/multi_dof_trajectory "waypoints:
+  header:
+    seq: 0
+    stamp: {secs: 0, nsecs: 0}
+    frame_id: ''
+  joint_names: ['']
+  points:
+  - positions: [0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [4.61, -4.30, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+publish_path: false
+publish_trajectory: false
+plan_path: false
+plan_trajectory: true" 
