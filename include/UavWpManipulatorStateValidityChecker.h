@@ -35,6 +35,11 @@ class UavWpManipulatorStateValidityChecker : public StateValidityCheckerInterfac
     UavWpManipulatorStateValidityChecker(string config_filename, 
       shared_ptr<MapInterface> map);
 
+    /// \brief Configures state validity checker from yaml file
+    /// \param config_filename Path to configuration filename.
+    /// \return False if configuration is unsuccessful, true otherwise.
+    bool configureFromFile(string config_filename);
+
     /// \brief Validity of a robot state.
     /// \param state Vector of robot state.
     /// \return True if robot state does not interfere with obstacles. False
@@ -48,6 +53,10 @@ class UavWpManipulatorStateValidityChecker : public StateValidityCheckerInterfac
     ManipulatorControl manipulator_;
     Eigen::MatrixXd link_dimensions_;
     std::vector<string> link_directions_;
+    Eigen::Vector3d uav_dimensions_;
+    double uav_sampling_resolution_, manipulator_sampling_resolution_;
+
+    Eigen::Affine3d t_uav_manipulator_;
 
     Eigen::MatrixXd generatePrism(double x, double y, double z, 
       double resolution, string direction);

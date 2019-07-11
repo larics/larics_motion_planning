@@ -1,0 +1,16 @@
+state_validity_checker:
+  uav_wp_manipulator:
+    robot_model_name: "wp_manipulator"
+    joint_group_name: "wp_manipulator_arm"
+    dh_parameters_file: "/home/antun/catkin_ws/src/aerial_manipulators/aerial_manipulators_control/config/wp_manipulator_dh_parameters.yaml"
+
+    manipulator_link_dimensions: [[0.0340, 0.1225, 0.0285], [0.1365, 0.0340, 0.0285], [0.0755, 0.0285, 0.0340], [0.0725, 0.0285, 0.0340], [0.0453, 0.0285, 0.0340]]
+    manipulator_link_directions: ["y", "x", "x", "x", "x"]
+
+    uav_dimensions: [0.4, 0.4, 0.17]
+
+    uav_manipulator_transform: [0, 0, 0.075, 1.57079632679, 0, 3.14159265359]
+
+    checker_resolution:
+      manipulator: 0.01
+      uav: 0.03

@@ -2,6 +2,7 @@ global_planner:
   map_config_file: "/home/antun/catkin_ws/src/larics_motion_planning/config/one_file_config_example.yaml"
   trajectory_config_file: "/home/antun/catkin_ws/src/larics_motion_planning/config/one_file_config_example.yaml"
   path_planner_config_file: "/home/antun/catkin_ws/src/larics_motion_planning/config/one_file_config_example.yaml"
+  state_validity_checker_config_file: "/home/antun/catkin_ws/src/larics_motion_planning/config/state_validity_checker_config_example.yaml"
 
   trajectory:
     restarts: 5
