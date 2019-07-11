@@ -5,44 +5,84 @@ UavWpManipulatorStateValidityChecker::UavWpManipulatorStateValidityChecker(
 {
   map_ = map;
 
-  string robot_model_name = "wp_manipulator";
-  string joint_group_name = "wp_manipulator_arm";
-
-  manipulator_.setManipulatorName(robot_model_name, joint_group_name);
-  manipulator_.LoadParameters(
-    "/home/antun/catkin_ws/src/aerial_manipulators/aerial_manipulators_control/config/wp_manipulator_dh_parameters.yaml");
-  manipulator_.init();
-
-  link_dimensions_ = Eigen::MatrixXd(5, 3);
-  link_dimensions_ << 0.0340, 0.1225, 0.0285,
-                      0.1365, 0.0340, 0.0285,
-                      0.0755, 0.0285, 0.0340,
-                      0.0725, 0.0285, 0.0340,
-                      0.0453, 0.0285, 0.0340;
-  link_directions_ = {"y", "x", "x", "x", "x"};
-  cout << "link dimensions:" << endl << link_dimensions_ << endl;
-  cout << "link directions: " << link_directions_[0] << endl;
+  configureFromFile(config_filename);
 
   testDirectKinematics();
 }
 
+bool UavWpManipulatorStateValidityChecker::configureFromFile(
+  string config_filename)
+{
+  cout << "Configuring state validity checker from file: " << endl;
+  cout << "  " << config_filename << endl;
+
+  // Open yaml file with configuration
+  YAML::Node config = YAML::LoadFile(config_filename);
+
+  // Load manipulator configuration
+  string robot_model_name, joint_group_name, dh_parameters_file;
+  robot_model_name = config["state_validity_checker"]["uav_wp_manipulator"]["robot_model_name"].as<string>();
+  joint_group_name = config["state_validity_checker"]["uav_wp_manipulator"]["joint_group_name"].as<string>();
+  dh_parameters_file = config["state_validity_checker"]["uav_wp_manipulator"]["dh_parameters_file"].as<string>();
+  // Configure manipulator
+  manipulator_.setManipulatorName(robot_model_name, joint_group_name);
+  manipulator_.LoadParameters(dh_parameters_file);
+  manipulator_.init();
+
+  // Load link dimensions and directions
+  std::vector< std::vector<double> > link_dimensions_vector;
+  link_dimensions_vector = config["state_validity_checker"]["uav_wp_manipulator"]["manipulator_link_dimensions"].as< std::vector< std::vector<double> > >();
+  link_directions_ = config["state_validity_checker"]["uav_wp_manipulator"]["manipulator_link_directions"].as< std::vector<string> >();
+  // Check sizes
+  if (link_directions_.size() != link_dimensions_vector.size()){
+    cout << "ERROR: Link directions and dimensions must have the same size." << endl;
+    cout << "  Size of link dimensions: " << link_dimensions_vector.size() << endl;
+    cout << "  Size of link directions: " << link_directions_.size() << endl;
+    exit(0);
+  }
+  link_dimensions_ = Eigen::MatrixXd(link_dimensions_vector.size(), link_dimensions_vector[0].size());
+  for (int i=0; i<link_dimensions_vector.size(); i++){
+    if (link_dimensions_vector[i].size() != 3){
+      cout << "ERROR: All links must have exactly 3 dimensions." << endl;
+      cout << "  Link " << i+1 << " has " << link_dimensions_vector[i].size() << " dimensions." << endl;
+      exit(0);
+    }
+    else{
+      link_dimensions_(i, 0) = link_dimensions_vector[i][0];
+      link_dimensions_(i, 1) = link_dimensions_vector[i][1];
+      link_dimensions_(i, 2) = link_dimensions_vector[i][2];
+    }
+  }
+
+  // Get UAV dimensions
+  std::vector<double> uav_dimensions;
+  uav_dimensions = config["state_validity_checker"]["uav_wp_manipulator"]["uav_dimensions"].as< std::vector<double> >();
+  for (int i=0; i<3; i++) uav_dimensions_(i) = uav_dimensions[i];
+
+  // Get resolutions for uav and manipulator state sampling.
+  uav_sampling_resolution_ = config["state_validity_checker"]["uav_wp_manipulator"]["checker_resolution"]["uav"].as<double>();
+  manipulator_sampling_resolution_ = config["state_validity_checker"]["uav_wp_manipulator"]["checker_resolution"]["manipulator"].as<double>();
+
+  // Get fixed transform between UAV and manipulator
+  std::vector<double> temp_transf;
+  temp_transf = config["state_validity_checker"]["uav_wp_manipulator"]["uav_manipulator_transform"].as< std::vector<double> >();
+  // Set up a fixed transform between UAV and manipulator
+  t_uav_manipulator_ = Eigen::Affine3d::Identity();
+  Eigen::Matrix3d rot_uav_manipulator;
+  rot_uav_manipulator = Eigen::AngleAxisd(temp_transf[5], Eigen::Vector3d::UnitZ())
+    * Eigen::AngleAxisd(temp_transf[4],  Eigen::Vector3d::UnitY())
+    * Eigen::AngleAxisd(temp_transf[3], Eigen::Vector3d::UnitX());
+  t_uav_manipulator_.translate(Eigen::Vector3d(temp_transf[0], temp_transf[1], temp_transf[2]));
+  t_uav_manipulator_.rotate(rot_uav_manipulator);
+}
+
 void UavWpManipulatorStateValidityChecker::testDirectKinematics()
 {
-  //Eigen::VectorXd state << 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0;
-  // This one is fixed transformation
-  Eigen::Affine3d t_uav_manipulator(Eigen::Affine3d::Identity());
-  Eigen::Matrix3d rot_uav_manipulator;
-  rot_uav_manipulator = Eigen::AngleAxisd(1.0*M_PI, Eigen::Vector3d::UnitZ())
-    * Eigen::AngleAxisd(0*M_PI,  Eigen::Vector3d::UnitY())
-    * Eigen::AngleAxisd(0.5*M_PI, Eigen::Vector3d::UnitX());
-  t_uav_manipulator.translate(Eigen::Vector3d(0, 0, 0.075));
-  t_uav_manipulator.rotate(rot_uav_manipulator);
-  
   // This one will have to be constructed each time
   Eigen::Affine3d t_world_uav(Eigen::Affine3d::Identity());
   t_world_uav.translate(Eigen::Vector3d(0, 0, 1.0));
 
-  Eigen::Affine3d t_world_manipulator = t_world_uav*t_uav_manipulator;
+  Eigen::Affine3d t_world_manipulator = t_world_uav*t_uav_manipulator_;
   //cout << t_uav_manipulator.rotation() << endl;
 
   /*std::vector<double> q{0.787, 0.787, 0.0, 0.0, 0.0};
@@ -91,12 +131,11 @@ void UavWpManipulatorStateValidityChecker::testDirectKinematics()
   for (int i=0; i<5; i++){
     Eigen::Affine3d t_world_link = t_world_manipulator*link_positions[i+2];
     Eigen::MatrixXd points_link = generatePrism(link_dimensions_(i,0), 
-      link_dimensions_(i,1), link_dimensions_(i,2), 0.01, link_directions_[i]);
+      link_dimensions_(i,1), link_dimensions_(i,2), 
+      manipulator_sampling_resolution_, link_directions_[i]);
     //points_ = Eigen::MatrixXd(points_link.rows(), points_link.cols());
     double points_size = points_.rows();
-    cout << "Size before: " << points_size << endl;
     points_.conservativeResize(points_.rows() + points_link.rows(), 3);
-    cout << "Size after: " << points_.rows() << endl;
     for (int j=0; j<points_link.rows(); j++){
       Eigen::Affine3d current_point(Eigen::Affine3d::Identity());
       //cout << (points_link.row(i)).transpose() << endl;
@@ -107,12 +146,11 @@ void UavWpManipulatorStateValidityChecker::testDirectKinematics()
   }
 
   Eigen::Affine3d t_world_link = t_world_uav;
-  Eigen::MatrixXd points_link = generatePrism(0.4, 0.4, 0.17, 0.03, "n");
+  Eigen::MatrixXd points_link = generatePrism(uav_dimensions_(0), 
+    uav_dimensions_(1), uav_dimensions_(2), uav_sampling_resolution_, "n");
   //points_ = Eigen::MatrixXd(points_link.rows(), points_link.cols());
   double points_size = points_.rows();
-  cout << "Size before: " << points_size << endl;
   points_.conservativeResize(points_.rows() + points_link.rows(), 3);
-  cout << "Size after: " << points_.rows() << endl;
   for (int j=0; j<points_link.rows(); j++){
     Eigen::Affine3d current_point(Eigen::Affine3d::Identity());
     //cout << (points_link.row(i)).transpose() << endl;

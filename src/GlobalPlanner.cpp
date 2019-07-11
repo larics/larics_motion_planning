@@ -23,7 +23,7 @@ bool GlobalPlanner::configureFromFile(string config_filename)
   //state_validity_checker_interface_ = make_shared<PointStateValidityChecker>(
    // map_interface_);
   state_validity_checker_interface_ = make_shared<UavWpManipulatorStateValidityChecker>(
-    config["global_planner"]["map_config_file"].as<string>(), 
+    config["global_planner"]["state_validity_checker_config_file"].as<string>(), 
     map_interface_);
   path_planner_interface_ = make_shared<RrtPathPlanner>(
     config["global_planner"]["path_planner_config_file"].as<string>(), 
