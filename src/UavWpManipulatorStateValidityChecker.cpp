@@ -7,7 +7,7 @@ UavWpManipulatorStateValidityChecker::UavWpManipulatorStateValidityChecker(
 
   configureFromFile(config_filename);
 
-  testDirectKinematics();
+  //testDirectKinematics();
 }
 
 bool UavWpManipulatorStateValidityChecker::configureFromFile(
@@ -81,6 +81,11 @@ void UavWpManipulatorStateValidityChecker::testDirectKinematics()
   // This one will have to be constructed each time
   Eigen::Affine3d t_world_uav(Eigen::Affine3d::Identity());
   t_world_uav.translate(Eigen::Vector3d(0, 0, 1.0));
+  Eigen::Matrix3d rot_uav;
+  rot_uav = Eigen::AngleAxisd(0, Eigen::Vector3d::UnitZ())
+    * Eigen::AngleAxisd(0,  Eigen::Vector3d::UnitY())
+    * Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX());
+  t_world_uav.rotate(rot_uav);
 
   Eigen::Affine3d t_world_manipulator = t_world_uav*t_uav_manipulator_;
   //cout << t_uav_manipulator.rotation() << endl;
@@ -163,7 +168,65 @@ void UavWpManipulatorStateValidityChecker::testDirectKinematics()
 
 bool UavWpManipulatorStateValidityChecker::isStateValid(Eigen::VectorXd state)
 {
-  return map_->isStateValid(state);
+  // First create transformation of the UAV with respect to the world.
+  Eigen::Affine3d t_world_uav(Eigen::Affine3d::Identity());
+  t_world_uav.translate(Eigen::Vector3d(state(0), state(1), state(2)));
+  Eigen::Matrix3d rot_uav;
+  rot_uav = Eigen::AngleAxisd(state(3), Eigen::Vector3d::UnitZ())
+    * Eigen::AngleAxisd(0,  Eigen::Vector3d::UnitY())
+    * Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX());
+  t_world_uav.rotate(rot_uav);
+
+  // Create transformation from world to manipulator. Here we have UAV in world
+  //  frame and we multiply it by fixed transformation of the manipulator in
+  //  UAV frame.
+  Eigen::Affine3d t_world_manipulator = t_world_uav*t_uav_manipulator_;
+
+  // Extract joint references and get link positions.
+  //cout << state << endl;
+  Eigen::VectorXd q(5);
+  q << state(4), state(5), state(6), state(7), state(8);
+  std::vector<Eigen::Affine3d> link_positions;
+  link_positions = manipulator_.getLinkPositions(q);
+
+  // Get sampled points to be checked in octomap
+  points_ = Eigen::MatrixXd(0,3);
+  for (int i=0; i<5; i++){
+    Eigen::Affine3d t_world_link = t_world_manipulator*link_positions[i+2];
+    Eigen::MatrixXd points_link = generatePrism(link_dimensions_(i,0), 
+      link_dimensions_(i,1), link_dimensions_(i,2), 
+      manipulator_sampling_resolution_, link_directions_[i]);
+    //points_ = Eigen::MatrixXd(points_link.rows(), points_link.cols());
+    double points_size = points_.rows();
+    points_.conservativeResize(points_.rows() + points_link.rows(), 3);
+    for (int j=0; j<points_link.rows(); j++){
+      Eigen::Affine3d current_point(Eigen::Affine3d::Identity());
+      //cout << (points_link.row(i)).transpose() << endl;
+      //exit(0);
+      current_point.translate(Eigen::Vector3d((points_link.row(j)).transpose()));
+      points_.row(j+points_size) = ((t_world_link*current_point).translation()).transpose();
+    }
+  }
+  Eigen::Affine3d t_world_link = t_world_uav;
+  Eigen::MatrixXd points_link = generatePrism(uav_dimensions_(0), 
+    uav_dimensions_(1), uav_dimensions_(2), uav_sampling_resolution_, "n");
+  //points_ = Eigen::MatrixXd(points_link.rows(), points_link.cols());
+  double points_size = points_.rows();
+  points_.conservativeResize(points_.rows() + points_link.rows(), 3);
+  for (int j=0; j<points_link.rows(); j++){
+    Eigen::Affine3d current_point(Eigen::Affine3d::Identity());
+    //cout << (points_link.row(i)).transpose() << endl;
+    //exit(0);
+    current_point.translate(Eigen::Vector3d((points_link.row(j)).transpose()));
+    points_.row(j+points_size) = ((t_world_link*current_point).translation()).transpose();
+  }
+  // Check for validity
+  bool valid_flag = true;
+  for (int i=0; i<points_.rows() && valid_flag==true; i++){
+    valid_flag &= map_->isStateValid((points_.row(i)).transpose());
+  }
+
+  return valid_flag;
 }
 
 Eigen::MatrixXd UavWpManipulatorStateValidityChecker::generatePrism(
