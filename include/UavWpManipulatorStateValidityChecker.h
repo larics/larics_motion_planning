@@ -46,6 +46,17 @@ class UavWpManipulatorStateValidityChecker : public StateValidityCheckerInterfac
     ///   otherwise.
     bool isStateValid(Eigen::VectorXd state);
 
+    //bool isStateValid(Eigen::VectorXd state, double roll=0.0, double pitch=0.0);
+
+    /// \brief Generates points that are to be checked based on the state of
+    ///   the aerial manipulator.
+    /// \param state Robot state with (x, y, z, yaw, q(5))
+    /// \param roll UAV roll angle. Default is zero.
+    /// \param pitch UAV pitch angle. Default iz zero.
+    /// \return Matrix of points for collision checking.
+    Eigen::MatrixXd generateValidityPoints(Eigen::VectorXd state, 
+      double roll=0.0, double pitch=0.0);
+
     void testDirectKinematics();
 
   private:

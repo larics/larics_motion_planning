@@ -167,14 +167,29 @@ void UavWpManipulatorStateValidityChecker::testDirectKinematics()
 }
 
 bool UavWpManipulatorStateValidityChecker::isStateValid(Eigen::VectorXd state)
+{ 
+  // Get points to be checked.
+  Eigen::MatrixXd state_points = generateValidityPoints(state);
+
+  // Check for validity
+  bool valid_flag = true;
+  for (int i=0; i<state_points.rows() && valid_flag==true; i++){
+    valid_flag &= map_->isStateValid((state_points.row(i)).transpose());
+  }
+
+  return valid_flag;
+}
+
+Eigen::MatrixXd UavWpManipulatorStateValidityChecker::generateValidityPoints(
+  Eigen::VectorXd state, double roll, double pitch)
 {
   // First create transformation of the UAV with respect to the world.
   Eigen::Affine3d t_world_uav(Eigen::Affine3d::Identity());
   t_world_uav.translate(Eigen::Vector3d(state(0), state(1), state(2)));
   Eigen::Matrix3d rot_uav;
   rot_uav = Eigen::AngleAxisd(state(3), Eigen::Vector3d::UnitZ())
-    * Eigen::AngleAxisd(0,  Eigen::Vector3d::UnitY())
-    * Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX());
+    * Eigen::AngleAxisd(pitch,  Eigen::Vector3d::UnitY())
+    * Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX());
   t_world_uav.rotate(rot_uav);
 
   // Create transformation from world to manipulator. Here we have UAV in world
@@ -220,13 +235,8 @@ bool UavWpManipulatorStateValidityChecker::isStateValid(Eigen::VectorXd state)
     current_point.translate(Eigen::Vector3d((points_link.row(j)).transpose()));
     points_.row(j+points_size) = ((t_world_link*current_point).translation()).transpose();
   }
-  // Check for validity
-  bool valid_flag = true;
-  for (int i=0; i<points_.rows() && valid_flag==true; i++){
-    valid_flag &= map_->isStateValid((points_.row(i)).transpose());
-  }
 
-  return valid_flag;
+  return points_;
 }
 
 Eigen::MatrixXd UavWpManipulatorStateValidityChecker::generatePrism(
