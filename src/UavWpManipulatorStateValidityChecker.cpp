@@ -199,8 +199,12 @@ Eigen::MatrixXd UavWpManipulatorStateValidityChecker::generateValidityPoints(
 
   // Extract joint references and get link positions.
   //cout << state << endl;
-  Eigen::VectorXd q(5);
-  q << state(4), state(5), state(6), state(7), state(8);
+  //Eigen::VectorXd q(5);
+  //q << state(4), state(5), state(6), state(7), state(8);
+
+  Eigen::VectorXd q(int(state.size()-4));
+  for (int i=0; i<q.size(); i++) q(i) = state(i+4);
+
   std::vector<Eigen::Affine3d> link_positions;
   link_positions = manipulator_.getLinkPositions(q);
 
