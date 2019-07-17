@@ -17,7 +17,7 @@ global_planner:
 
 octomap:
   path_to_file: "/home/antun/catkin_ws/src/larics_gazebo_worlds/models/greenhouse/greenhouse4096.binvox.bt"
-  search_depth: 11
+  search_depth: 16
 
 path_planner:
   spaces:
