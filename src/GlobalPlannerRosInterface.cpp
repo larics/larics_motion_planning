@@ -43,8 +43,8 @@ void GlobalPlannerRosInterface::run()
       visualization_changed_ = false;
       visualization_.clearAll();
     }
-    visualization_.setStatePoints(global_planner_->getRobotStatePoints());
-    visualization_.publishStatePoints();
+    //visualization_.setStatePoints(global_planner_->getRobotStatePoints());
+    //visualization_.publishStatePoints();
     loop_rate.sleep();
   }
 }
@@ -52,8 +52,17 @@ void GlobalPlannerRosInterface::run()
 bool GlobalPlannerRosInterface::emptyCallback(std_srvs::Empty::Request &req, 
   std_srvs::Empty::Response &res)
 {
-  cout << "Empty servce working" << endl;
+  cout << "Empty service working" << endl;
+  Trajectory trajectory = global_planner_->getTrajectory();
 
+  cout << "Cols: " << trajectory.position.cols() << " Rows: " << trajectory.position.rows() << endl;
+
+  for (int i=0; i<trajectory.position.rows(); i++){
+    visualization_.setStatePoints(
+      global_planner_->getRobotStatePoints((trajectory.position.row(i)).transpose()));
+    visualization_.publishStatePoints();
+    usleep(10000);
+  }
   return true;
 }
 

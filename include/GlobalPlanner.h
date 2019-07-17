@@ -80,7 +80,7 @@ class GlobalPlanner
 
     /// \brief Returns robot state points
     /// \return State Points
-    Eigen::MatrixXd getRobotStatePoints();
+    Eigen::MatrixXd getRobotStatePoints(Eigen::VectorXd state);
 
   private:
     shared_ptr<MapInterface> map_interface_;
