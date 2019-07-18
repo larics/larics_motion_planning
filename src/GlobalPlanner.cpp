@@ -54,7 +54,7 @@ bool GlobalPlanner::collisionCheck(Eigen::MatrixXd path)
   // Go through all points along path and check is state valid on map. This
   // also works for trajectory.positions
   for (int i=0; i<path.rows(); i++){
-    success &= state_validity_checker_interface_->isStateValid(path.block(i,0,1,path.cols()));
+    success &= state_validity_checker_interface_->isStateValid((path.row(i)).transpose());
   }
 
   return success;
