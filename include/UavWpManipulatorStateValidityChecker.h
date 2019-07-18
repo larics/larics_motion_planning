@@ -54,8 +54,7 @@ class UavWpManipulatorStateValidityChecker : public StateValidityCheckerInterfac
     /// \param roll UAV roll angle. Default is zero.
     /// \param pitch UAV pitch angle. Default iz zero.
     /// \return Matrix of points for collision checking.
-    Eigen::MatrixXd generateValidityPoints(Eigen::VectorXd state, 
-      double roll=0.0, double pitch=0.0);
+    Eigen::MatrixXd generateValidityPoints(Eigen::VectorXd state);
 
     void testDirectKinematics();
 

@@ -18,8 +18,7 @@ class StateValidityCheckerInterface
     StateValidityCheckerInterface();
     virtual bool isStateValid(Eigen::VectorXd state) = 0;
     Eigen::MatrixXd getStatePoints() {return points_;}
-    virtual Eigen::MatrixXd generateValidityPoints(Eigen::VectorXd state, 
-      double roll=0.0, double pitch=0.0) {return points_;}
+    virtual Eigen::MatrixXd generateValidityPoints(Eigen::VectorXd state) {return points_;}
 
   protected:
     Eigen::MatrixXd points_;

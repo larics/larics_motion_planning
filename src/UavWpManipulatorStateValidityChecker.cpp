@@ -181,15 +181,15 @@ bool UavWpManipulatorStateValidityChecker::isStateValid(Eigen::VectorXd state)
 }
 
 Eigen::MatrixXd UavWpManipulatorStateValidityChecker::generateValidityPoints(
-  Eigen::VectorXd state, double roll, double pitch)
+  Eigen::VectorXd state)
 {
   // First create transformation of the UAV with respect to the world.
   Eigen::Affine3d t_world_uav(Eigen::Affine3d::Identity());
   t_world_uav.translate(Eigen::Vector3d(state(0), state(1), state(2)));
   Eigen::Matrix3d rot_uav;
-  rot_uav = Eigen::AngleAxisd(state(3), Eigen::Vector3d::UnitZ())
-    * Eigen::AngleAxisd(pitch,  Eigen::Vector3d::UnitY())
-    * Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX());
+  rot_uav = Eigen::AngleAxisd(state(5), Eigen::Vector3d::UnitZ())
+    * Eigen::AngleAxisd(state(4),  Eigen::Vector3d::UnitY())
+    * Eigen::AngleAxisd(state(3), Eigen::Vector3d::UnitX());
   t_world_uav.rotate(rot_uav);
 
   // Create transformation from world to manipulator. Here we have UAV in world
@@ -202,8 +202,8 @@ Eigen::MatrixXd UavWpManipulatorStateValidityChecker::generateValidityPoints(
   //Eigen::VectorXd q(5);
   //q << state(4), state(5), state(6), state(7), state(8);
 
-  Eigen::VectorXd q(int(state.size()-4));
-  for (int i=0; i<q.size(); i++) q(i) = state(i+4);
+  Eigen::VectorXd q(int(state.size()-6));
+  for (int i=0; i<q.size(); i++) q(i) = state(i+6);
 
   std::vector<Eigen::Affine3d> link_positions;
   link_positions = manipulator_.getLinkPositions(q);
