@@ -58,10 +58,10 @@ bool GlobalPlannerRosInterface::emptyCallback(std_srvs::Empty::Request &req,
   cout << "Cols: " << trajectory.position.cols() << " Rows: " << trajectory.position.rows() << endl;
 
   for (int i=0; i<trajectory.position.rows(); i++){
-    double roll = -trajectory.acceleration(i, 1)/9.81;
-    double pitch = trajectory.acceleration(i, 0)/9.81;
+    trajectory.position(i, 3) = -trajectory.acceleration(i, 1)/9.81;
+    trajectory.position(i, 4) = trajectory.acceleration(i, 0)/9.81;
     visualization_.setStatePoints(
-      global_planner_->getRobotStatePoints((trajectory.position.row(i)).transpose(), roll, pitch));
+      global_planner_->getRobotStatePoints((trajectory.position.row(i)).transpose()));
     visualization_.publishStatePoints();
     usleep(10000);
   }

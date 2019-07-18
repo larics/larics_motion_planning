@@ -133,10 +133,9 @@ Trajectory GlobalPlanner::getTrajectory()
   return trajectory_interface_->getTrajectory();
 }
 
-Eigen::MatrixXd GlobalPlanner::getRobotStatePoints(Eigen::VectorXd state, 
-  double roll, double pitch)
+Eigen::MatrixXd GlobalPlanner::getRobotStatePoints(Eigen::VectorXd state)
 {
-  return state_validity_checker_interface_->generateValidityPoints(state, roll, pitch);
+  return state_validity_checker_interface_->generateValidityPoints(state);
 }
 
 bool GlobalPlanner::planPathThroughTwoWaypoints(Eigen::MatrixXd waypoints)
