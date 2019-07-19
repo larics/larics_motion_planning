@@ -30,6 +30,9 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
   // Service for planning the multi dof trajectory.
   multi_dof_trajectory_server_ = nh_.advertiseService("multi_dof_trajectory",
     &GlobalPlannerRosInterface::multiDofTrajectoryCallback, this);
+  // Service for visualizing arbitrary robot state
+  visualize_state_server_ = nh_.advertiseService("visualize_state", 
+    &GlobalPlannerRosInterface::visualizeStateCallback, this);
 }
 
 void GlobalPlannerRosInterface::run()
@@ -177,6 +180,20 @@ bool GlobalPlannerRosInterface::multiDofTrajectoryCallback(
   return success;
 }
 
+bool GlobalPlannerRosInterface::visualizeStateCallback(
+  larics_motion_planning::VisualizeState::Request &req, 
+  larics_motion_planning::VisualizeState::Response &res)
+{
+  Eigen::VectorXd state(req.state.data.size());
+  for (int i=0; i<req.state.data.size(); i++){
+    state(i) = req.state.data[i];
+  }
+  visualization_.setStatePoints(global_planner_->getRobotStatePoints(state));
+  visualization_.publishStatePoints();
+
+  cout << req.state.data.size() << endl;
+  return true;
+}
 
 Eigen::MatrixXd GlobalPlannerRosInterface::navMsgsPathToEigenPath(
   nav_msgs::Path nav_path)

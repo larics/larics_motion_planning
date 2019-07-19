@@ -35,6 +35,7 @@
 #include <std_srvs/Empty.h>
 #include <larics_motion_planning/CartesianTrajectory.h>
 #include <larics_motion_planning/MultiDofTrajectory.h>
+#include <larics_motion_planning/VisualizeState.h>
 
 #include <iostream>
 using namespace std;
@@ -81,6 +82,13 @@ class GlobalPlannerRosInterface
     bool multiDofTrajectoryCallback(
       larics_motion_planning::MultiDofTrajectory::Request &req, 
       larics_motion_planning::MultiDofTrajectory::Response &res);
+
+    // Visualize state service
+    ros::ServiceServer visualize_state_server_;
+    bool visualizeStateCallback(
+      larics_motion_planning::VisualizeState::Request &req, 
+      larics_motion_planning::VisualizeState::Response &res);
+
 
     // Conversions between GlobalPlanner and ROS messages.
     Eigen::MatrixXd navMsgsPathToEigenPath(nav_msgs::Path nav_path);
