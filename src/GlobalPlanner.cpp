@@ -125,7 +125,21 @@ bool GlobalPlanner::planPathAndTrajectory(Eigen::MatrixXd waypoints)
     success = this->planPath(waypoints);
     // Next plan trajectory based on the path. 
     success &= this->planTrajectory(path_);
-    success &= this->collisionCheck(trajectory_interface_->getTrajectory().position);
+    // Depending on the state validity checker type, check the collisions.
+    if (state_validity_checker_type_ == "point"){
+      success &= this->collisionCheck(trajectory_interface_->getTrajectory().position);
+    }
+    else if (state_validity_checker_type_ == "uav_and_wp_manipulator"){
+      Trajectory trajectory = trajectory_interface_->getTrajectory();
+      for (int j=0; j<trajectory.position.rows(); j++){
+        // We don't plan for roll and pitch. However we can estimate them from
+        // accelerations. Add roll and pitch to the trajectory and check if it
+        // is valid when the uav exerts angles.
+        trajectory.position(j, 3) = -trajectory.acceleration(j, 1)/9.81;
+        trajectory.position(j, 4) = trajectory.acceleration(j, 0)/9.81;
+      }
+      success &= this->collisionCheck(trajectory.position);
+    }
   }
 
   return success;
