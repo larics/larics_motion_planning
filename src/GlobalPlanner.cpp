@@ -20,11 +20,24 @@ bool GlobalPlanner::configureFromFile(string config_filename)
     config["global_planner"]["map_config_file"].as<string>());
   trajectory_interface_ = make_shared<ToppraTrajectory>(
     config["global_planner"]["trajectory_config_file"].as<string>());
-  //state_validity_checker_interface_ = make_shared<PointStateValidityChecker>(
-   // map_interface_);
-  state_validity_checker_interface_ = make_shared<UavWpManipulatorStateValidityChecker>(
-    config["global_planner"]["state_validity_checker_config_file"].as<string>(), 
-    map_interface_);
+  YAML::Node state_config = YAML::LoadFile(config["global_planner"]["state_validity_checker_config_file"].as<string>());
+  state_validity_checker_type_ = state_config["state_validity_checker"]["type"].as<string>();
+  if (state_validity_checker_type_ == "point"){
+    state_validity_checker_interface_ = make_shared<PointStateValidityChecker>(
+      map_interface_);
+    cout << "State validity checker type is: point" << endl;
+  }
+  else if (state_validity_checker_type_ == "uav_and_wp_manipulator"){
+    state_validity_checker_interface_ = make_shared<UavWpManipulatorStateValidityChecker>(
+      config["global_planner"]["state_validity_checker_config_file"].as<string>(), 
+      map_interface_);
+    cout << "State validity checker type is: uav_and_wp_manipulator" << endl;
+  }
+  else{
+    cout << "State validity checker type is: " << state_validity_checker_type_ << endl;
+    cout << "  This type is not supported!" << endl;
+    exit(0);
+  }
   path_planner_interface_ = make_shared<RrtPathPlanner>(
     config["global_planner"]["path_planner_config_file"].as<string>(), 
     state_validity_checker_interface_);
