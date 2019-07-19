@@ -1,4 +1,5 @@
 state_validity_checker:
+  type: "uav_and_wp_manipulator"
   uav_wp_manipulator:
     robot_model_name: "wp_manipulator"
     joint_group_name: "wp_manipulator_arm"

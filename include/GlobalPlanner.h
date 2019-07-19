@@ -88,6 +88,8 @@ class GlobalPlanner
     shared_ptr<StateValidityCheckerInterface> state_validity_checker_interface_;
     shared_ptr<PathPlanningInterface> path_planner_interface_;
 
+    string state_validity_checker_type_;
+
     // Local copy of path
     Eigen::MatrixXd path_;
     int num_trajectory_restarts_, num_path_and_trajectory_restarts_;
