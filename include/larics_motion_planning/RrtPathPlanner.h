@@ -3,9 +3,9 @@
 #ifndef RRT_PATH_PLANNER
 #define RRT_PATH_PLANNER
 
-#include "MotionPlanningDatatypes.h"
-#include "PathPlanningInterface.h"
-#include "StateValidityCheckerInterface.h"
+#include <larics_motion_planning/MotionPlanningDatatypes.h>
+#include <larics_motion_planning/PathPlanningInterface.h>
+#include <larics_motion_planning/StateValidityCheckerInterface.h>
 
 #include <iostream>
 #include <string>

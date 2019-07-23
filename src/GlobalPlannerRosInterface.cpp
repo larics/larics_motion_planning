@@ -1,4 +1,4 @@
-#include <GlobalPlannerRosInterface.h>
+#include <larics_motion_planning/GlobalPlannerRosInterface.h>
 
 GlobalPlannerRosInterface::GlobalPlannerRosInterface()
 {

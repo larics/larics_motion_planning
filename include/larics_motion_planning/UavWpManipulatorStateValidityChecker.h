@@ -6,8 +6,8 @@
 #define UAV_WP_MANIPULATOR_STATE_VALIDITY_CHECKER
 
 // #include "MotionPlanningDatatypes.h"
-#include <StateValidityCheckerInterface.h>
-#include <MapInterface.h>
+#include <larics_motion_planning/StateValidityCheckerInterface.h>
+#include <larics_motion_planning/MapInterface.h>
 
 // Include for direct and inverse kinematics.
 #include <aerial_manipulators_control/ManipulatorControl.h>

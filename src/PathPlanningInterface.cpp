@@ -1,4 +1,4 @@
-#include "PathPlanningInterface.h"
+#include <larics_motion_planning/PathPlanningInterface.h>
 
 PathPlanningInterface::PathPlanningInterface()
 {

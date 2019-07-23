@@ -4,7 +4,7 @@
 #ifndef PATH_PLANNING_INTERFACE_H
 #define PATH_PLANNING_INTERFACE_H
 
-#include "MotionPlanningDatatypes.h"
+#include <larics_motion_planning/MotionPlanningDatatypes.h>
 #include <iostream>
 
 using namespace std;

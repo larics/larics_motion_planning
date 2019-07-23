@@ -4,7 +4,7 @@
 #ifndef MAP_INTERFACE_H
 #define MAP_INTERFACE_H
 
-#include "MotionPlanningDatatypes.h"
+#include <larics_motion_planning/MotionPlanningDatatypes.h>
 #include <iostream>
 
 using namespace std;

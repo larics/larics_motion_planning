@@ -1,4 +1,4 @@
-#include "StateValidityCheckerInterface.h"
+#include <larics_motion_planning/StateValidityCheckerInterface.h>
 
 StateValidityCheckerInterface::StateValidityCheckerInterface()
 {

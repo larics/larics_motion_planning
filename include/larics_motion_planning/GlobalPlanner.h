@@ -4,16 +4,16 @@
 #ifndef GLOBAL_PLANNER_H
 #define GLOBAL_PLANNER_H
 
-#include <MotionPlanningDatatypes.h>
-#include <MapInterface.h>
-#include <OctomapMap.h>
-#include <PathPlanningInterface.h>
-#include <RrtPathPlanner.h>
-#include <TrajectoryInterface.h>
-#include <ToppraTrajectory.h>
-#include <StateValidityCheckerInterface.h>
-#include <PointStateValidityChecker.h>
-#include <UavWpManipulatorStateValidityChecker.h>
+#include <larics_motion_planning/MotionPlanningDatatypes.h>
+#include <larics_motion_planning/MapInterface.h>
+#include <larics_motion_planning/OctomapMap.h>
+#include <larics_motion_planning/PathPlanningInterface.h>
+#include <larics_motion_planning/RrtPathPlanner.h>
+#include <larics_motion_planning/TrajectoryInterface.h>
+#include <larics_motion_planning/ToppraTrajectory.h>
+#include <larics_motion_planning/StateValidityCheckerInterface.h>
+#include <larics_motion_planning/PointStateValidityChecker.h>
+#include <larics_motion_planning/UavWpManipulatorStateValidityChecker.h>
 
 #include <eigen3/Eigen/Eigen>
 

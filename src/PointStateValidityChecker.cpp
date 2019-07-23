@@ -1,4 +1,4 @@
-#include <PointStateValidityChecker.h>
+#include <larics_motion_planning/PointStateValidityChecker.h>
 
 PointStateValidityChecker::PointStateValidityChecker(
   shared_ptr<MapInterface> map)
