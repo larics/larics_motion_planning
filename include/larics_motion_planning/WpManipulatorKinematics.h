@@ -33,6 +33,7 @@ class WpManipulatorKinematics : public KinematicsInterface
     bool configureFromFile(string config_filename);
 
     /// \brief Function that gets all joint positions in manipulator base frame.
+    ///   In other words, direct kinematics to each joint and end-effector.
     /// \param q Manipulator state vector.
     /// \return List of transformations to all joints.
     std::vector<Eigen::Affine3d> getJointPositions(Eigen::VectorXd q);

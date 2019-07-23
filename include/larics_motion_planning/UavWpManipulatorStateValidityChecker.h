@@ -8,9 +8,7 @@
 // #include "MotionPlanningDatatypes.h"
 #include <larics_motion_planning/StateValidityCheckerInterface.h>
 #include <larics_motion_planning/MapInterface.h>
-
-// Include for direct and inverse kinematics.
-#include <aerial_manipulators_control/ManipulatorControl.h>
+#include <larics_motion_planning/KinematicsInterface.h>
 
 #include <iostream>
 #include <string>
@@ -18,6 +16,8 @@
 #include <Eigen/Eigen>
 #include <Eigen/Geometry>
 #include <Eigen/Core>
+
+#include "yaml-cpp/yaml.h"
 
 using namespace std;
 
@@ -33,7 +33,7 @@ class UavWpManipulatorStateValidityChecker : public StateValidityCheckerInterfac
     /// \param map Map interface that is used for checking validity of the
     ///   system
     UavWpManipulatorStateValidityChecker(string config_filename, 
-      shared_ptr<MapInterface> map);
+      shared_ptr<MapInterface> map, shared_ptr<KinematicsInterface> kinematics);
 
     /// \brief Configures state validity checker from yaml file
     /// \param config_filename Path to configuration filename.
@@ -60,7 +60,7 @@ class UavWpManipulatorStateValidityChecker : public StateValidityCheckerInterfac
 
   private:
     shared_ptr<MapInterface> map_;
-    ManipulatorControl manipulator_;
+    shared_ptr<KinematicsInterface> kinematics_;
     Eigen::MatrixXd link_dimensions_;
     std::vector<string> link_directions_;
     Eigen::Vector3d uav_dimensions_;

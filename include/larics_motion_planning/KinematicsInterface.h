@@ -17,6 +17,7 @@ class KinematicsInterface
   public:
     KinematicsInterface();
     virtual bool configureFromFile(string config_filename) = 0;
+    virtual std::vector<Eigen::Affine3d> getJointPositions(Eigen::VectorXd q) = 0;
 };
 
 #endif // KINEMATICS_INTERFACE_H

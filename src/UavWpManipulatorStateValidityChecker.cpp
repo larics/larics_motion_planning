@@ -1,9 +1,11 @@
 #include <larics_motion_planning/UavWpManipulatorStateValidityChecker.h>
 
 UavWpManipulatorStateValidityChecker::UavWpManipulatorStateValidityChecker(
-  string config_filename, shared_ptr<MapInterface> map)
+  string config_filename, shared_ptr<MapInterface> map, 
+  shared_ptr<KinematicsInterface> kinematics)
 {
   map_ = map;
+  kinematics_ = kinematics;
 
   configureFromFile(config_filename);
 
@@ -18,16 +20,6 @@ bool UavWpManipulatorStateValidityChecker::configureFromFile(
 
   // Open yaml file with configuration
   YAML::Node config = YAML::LoadFile(config_filename);
-
-  // Load manipulator configuration
-  string robot_model_name, joint_group_name, dh_parameters_file;
-  robot_model_name = config["state_validity_checker"]["uav_wp_manipulator"]["robot_model_name"].as<string>();
-  joint_group_name = config["state_validity_checker"]["uav_wp_manipulator"]["joint_group_name"].as<string>();
-  dh_parameters_file = config["state_validity_checker"]["uav_wp_manipulator"]["dh_parameters_file"].as<string>();
-  // Configure manipulator
-  manipulator_.setManipulatorName(robot_model_name, joint_group_name);
-  manipulator_.LoadParameters(dh_parameters_file);
-  manipulator_.init();
 
   // Load link dimensions and directions
   std::vector< std::vector<double> > link_dimensions_vector;
@@ -103,7 +95,7 @@ void UavWpManipulatorStateValidityChecker::testDirectKinematics()
   Eigen::VectorXd q(5);
   q << 0.7, 0.7, 0.2, 0.5, -0.7;
   std::vector<Eigen::Affine3d> link_positions;
-  link_positions = manipulator_.getLinkPositions(q);
+  link_positions = kinematics_->getJointPositions(q);
   //cout << "link " << link_positions.size() << endl;
   // Link names are: world, base, link1, link2, link3, link4, link5, 
   //  end_effector_base
@@ -206,7 +198,7 @@ Eigen::MatrixXd UavWpManipulatorStateValidityChecker::generateValidityPoints(
   for (int i=0; i<q.size(); i++) q(i) = state(i+6);
 
   std::vector<Eigen::Affine3d> link_positions;
-  link_positions = manipulator_.getLinkPositions(q);
+  link_positions = kinematics_->getJointPositions(q);
 
   // Get sampled points to be checked in octomap
   points_ = Eigen::MatrixXd(0,3);
