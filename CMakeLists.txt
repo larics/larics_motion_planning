@@ -66,11 +66,17 @@ set(MAP_SOURCES src/MapInterface.cpp src/OctomapMap.cpp)
 add_library(map ${MAP_SOURCES})
 target_link_libraries(map ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES})
 
+set(KINEMATICS_SOURCES src/KinematicsInterface.cpp 
+  src/WpManipulatorKinematics.cpp)
+add_library(kinematics ${KINEMATICS_SOURCES})
+target_link_libraries(kinematics ${catkin_LIBRARIES})
+
 set(STATE_VALIDITY_CHECKING_SOURCES src/StateValidityCheckerInterface.cpp 
   src/PointStateValidityChecker.cpp
   src/UavWpManipulatorStateValidityChecker.cpp)
 add_library(state_validity_checking ${STATE_VALIDITY_CHECKING_SOURCES})
-target_link_libraries(state_validity_checking map ${catkin_LIBRARIES})
+target_link_libraries(state_validity_checking map kinematics 
+  ${catkin_LIBRARIES})
 
 set(PATH_PLANNING_SOURCES src/PathPlanningInterface.cpp 
   src/RrtPathPlanner.cpp)
@@ -86,11 +92,11 @@ set(GLOBAL_PLANNER_SOURCES src/GlobalPlanner.cpp
   src/GlobalPlannerRosInterface.cpp)
 add_library(global_planner ${GLOBAL_PLANNER_SOURCES})
 target_link_libraries(global_planner trajectory map path_planning 
-  ${catkin_LIBRARIES} ${Eigen_LIBRARIES})
+  kinematics ${catkin_LIBRARIES} ${Eigen_LIBRARIES})
 
 add_library(larics_motion_planning ${TRAJECTORY_SOURCES} ${MAP_SOURCES}
   ${PATH_PLANNING_SOURCES} ${VISUALIZATION_SOURCES} ${GLOBAL_PLANNER_SOURCES})
-target_link_libraries(larics_motion_planning trajectory map path_planning 
+target_link_libraries(larics_motion_planning trajectory map kinematics path_planning 
   visualization global_planner ${catkin_LIBRARIES} ${Eigen_LIBRARIES} yaml-cpp)
 
 add_executable(testing_node src/test.cpp)

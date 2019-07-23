@@ -3,6 +3,7 @@ global_planner:
   trajectory_config_file: "/home/antun/catkin_ws/src/larics_motion_planning/config/one_file_config_example.yaml"
   path_planner_config_file: "/home/antun/catkin_ws/src/larics_motion_planning/config/one_file_config_example.yaml"
   state_validity_checker_config_file: "/home/antun/catkin_ws/src/larics_motion_planning/config/state_validity_checker_config_example.yaml"
+  kinematics_config_file: "/home/antun/catkin_ws/src/larics_motion_planning/config/wp_manipulator_kinematics.yaml"
 
   trajectory:
     restarts: 5

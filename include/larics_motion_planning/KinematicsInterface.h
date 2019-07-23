@@ -1,0 +1,22 @@
+/// \file KinematicsInterface.h
+/// \brief Contains the abstract class interface for robot kinematics
+
+#ifndef KINEMATICS_INTERFACE_H
+#define KINEMATICS_INTERFACE_H
+
+#include <larics_motion_planning/MotionPlanningDatatypes.h>
+
+#include <Eigen/Eigen>
+#include <string>
+
+using namespace std;
+
+/// This is an interface class for trajectories of all types.
+class KinematicsInterface
+{
+  public:
+    KinematicsInterface();
+    virtual bool configureFromFile(string config_filename) = 0;
+};
+
+#endif // KINEMATICS_INTERFACE_H
