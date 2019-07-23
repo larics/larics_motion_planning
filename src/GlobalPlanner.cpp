@@ -1,4 +1,4 @@
-#include <GlobalPlanner.h>
+#include <larics_motion_planning/GlobalPlanner.h>
 
 GlobalPlanner::GlobalPlanner(string config_filename)
 {
@@ -15,11 +15,13 @@ bool GlobalPlanner::configureFromFile(string config_filename)
   // Open yaml file with configuration
   YAML::Node config = YAML::LoadFile(config_filename);
 
-  // Set up map, trajectory and path planner.
+  // Set up map interface
   map_interface_ = make_shared<OctomapMap>(
     config["global_planner"]["map_config_file"].as<string>());
+  // Set up trajectory planning interface
   trajectory_interface_ = make_shared<ToppraTrajectory>(
     config["global_planner"]["trajectory_config_file"].as<string>());
+  // Set up state validity interface
   YAML::Node state_config = YAML::LoadFile(config["global_planner"]["state_validity_checker_config_file"].as<string>());
   state_validity_checker_type_ = state_config["state_validity_checker"]["type"].as<string>();
   if (state_validity_checker_type_ == "point"){
@@ -38,6 +40,7 @@ bool GlobalPlanner::configureFromFile(string config_filename)
     cout << "  This type is not supported!" << endl;
     exit(0);
   }
+  // Set up path planning interface
   path_planner_interface_ = make_shared<RrtPathPlanner>(
     config["global_planner"]["path_planner_config_file"].as<string>(), 
     state_validity_checker_interface_);

@@ -6,8 +6,8 @@
 #define POINT_STATE_VALIDITY_CHECKER_H
 
 // #include "MotionPlanningDatatypes.h"
-#include <StateValidityCheckerInterface.h>
-#include <MapInterface.h>
+#include <larics_motion_planning/StateValidityCheckerInterface.h>
+#include <larics_motion_planning/MapInterface.h>
 
 #include <iostream>
 #include <string>

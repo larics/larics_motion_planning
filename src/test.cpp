@@ -1,10 +1,10 @@
-#include <TrajectoryInterface.h>
-#include <ToppraTrajectory.h>
-#include <MapInterface.h>
-#include <OctomapMap.h>
-#include <RrtPathPlanner.h>
-#include <Visualization.h>
-#include <GlobalPlanner.h>
+#include <larics_motion_planning/TrajectoryInterface.h>
+#include <larics_motion_planning/ToppraTrajectory.h>
+#include <larics_motion_planning/MapInterface.h>
+#include <larics_motion_planning/OctomapMap.h>
+#include <larics_motion_planning/RrtPathPlanner.h>
+#include <larics_motion_planning/Visualization.h>
+#include <larics_motion_planning/GlobalPlanner.h>
 using namespace std;
 
 /*void octomapCallback(const octomap_msgs::Octomap::ConstPtr& msg)

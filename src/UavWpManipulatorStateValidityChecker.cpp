@@ -1,4 +1,4 @@
-#include <UavWpManipulatorStateValidityChecker.h>
+#include <larics_motion_planning/UavWpManipulatorStateValidityChecker.h>
 
 UavWpManipulatorStateValidityChecker::UavWpManipulatorStateValidityChecker(
   string config_filename, shared_ptr<MapInterface> map)

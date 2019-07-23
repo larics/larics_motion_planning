@@ -1,4 +1,4 @@
-#include "ToppraTrajectory.h"
+#include <larics_motion_planning/ToppraTrajectory.h>
 
 ToppraTrajectory::ToppraTrajectory(string config_filename)
 {

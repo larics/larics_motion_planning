@@ -4,8 +4,8 @@
 #ifndef OCTOMAP_MAP_H
 #define OCTOMAP_MAP_H
 
-#include "MotionPlanningDatatypes.h"
-#include "MapInterface.h"
+#include <larics_motion_planning/MotionPlanningDatatypes.h>
+#include <larics_motion_planning/MapInterface.h>
 
 #include <iostream>
 #include <memory>

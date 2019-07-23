@@ -3,8 +3,8 @@
 #ifndef TOPPRA_TRAJECTORY_H
 #define TOPPRA_TRAJECTORY_H
 
-#include "MotionPlanningDatatypes.h"
-#include "TrajectoryInterface.h"
+#include <larics_motion_planning/MotionPlanningDatatypes.h>
+#include <larics_motion_planning/TrajectoryInterface.h>
 #include <iostream>
 #include <string>
 #include <eigen3/Eigen/Eigen>

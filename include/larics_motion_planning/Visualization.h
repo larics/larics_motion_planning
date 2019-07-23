@@ -4,7 +4,7 @@
 #ifndef VISUALIZATION_H
 #define VISUALIZATION_H
 
-#include "MotionPlanningDatatypes.h"
+#include <larics_motion_planning/MotionPlanningDatatypes.h>
 #include <iostream>
 
 #include <ros/ros.h>

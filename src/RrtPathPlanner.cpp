@@ -1,4 +1,4 @@
-#include <RrtPathPlanner.h>
+#include <larics_motion_planning/RrtPathPlanner.h>
 #include <ctime>
 
 void printRrtStarConfig(RrtStarConfig config)

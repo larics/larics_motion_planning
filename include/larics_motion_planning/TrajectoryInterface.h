@@ -4,7 +4,7 @@
 #ifndef TRAJECTORY_INTERFACE_H
 #define TRAJECTORY_INTERFACE_H
 
-#include "MotionPlanningDatatypes.h"
+#include <larics_motion_planning/MotionPlanningDatatypes.h>
 #include <iostream>
 
 using namespace std;

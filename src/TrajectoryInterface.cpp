@@ -1,4 +1,4 @@
-#include "TrajectoryInterface.h"
+#include <larics_motion_planning/TrajectoryInterface.h>
 
 TrajectoryInterface::TrajectoryInterface()
 {

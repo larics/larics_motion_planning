@@ -1,4 +1,4 @@
-#include <Visualization.h>
+#include <larics_motion_planning/Visualization.h>
 
 Visualization::Visualization()
 {

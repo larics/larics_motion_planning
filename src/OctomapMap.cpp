@@ -1,6 +1,6 @@
 /// \file OctomapMap.cpp
 
-#include "OctomapMap.h"
+#include <larics_motion_planning/OctomapMap.h>
 
 OctomapMap::OctomapMap(double resolution) :
 map_(make_unique<octomap::OcTree>(resolution))

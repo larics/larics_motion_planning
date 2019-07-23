@@ -1,4 +1,4 @@
-#include <GlobalPlannerRosInterface.h>
+#include <larics_motion_planning/GlobalPlannerRosInterface.h>
 #include <ros/ros.h>
 #include <trajectory_msgs/JointTrajectory.h>
 #include <trajectory_msgs/JointTrajectoryPoint.h>
