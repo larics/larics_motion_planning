@@ -36,7 +36,7 @@ bool GlobalPlanner::configureFromFile(string config_filename)
     // Set up validity checker for uav and wp manipulator
     state_validity_checker_interface_ = make_shared<UavWpManipulatorStateValidityChecker>(
       config["global_planner"]["state_validity_checker_config_file"].as<string>(), 
-      map_interface_);
+      map_interface_, kinematics_interface_);
     cout << "State validity checker type is: uav_and_wp_manipulator" << endl;
   }
   else{

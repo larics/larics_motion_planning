@@ -57,9 +57,9 @@ path_planner:
     is_used: true
     value: true
   solve_time:
-    is_incremental: false
-    time: 300.0
-    increment: 0.1
+    is_incremental: true
+    time: 1.0
+    increment: 0.25
   path_simplifier:
     reduce_vertices:
       is_used: true
