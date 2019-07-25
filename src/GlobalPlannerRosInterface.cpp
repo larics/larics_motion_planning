@@ -68,6 +68,77 @@ bool GlobalPlannerRosInterface::emptyCallback(std_srvs::Empty::Request &req,
     visualization_.publishStatePoints();
     usleep(10000);
   }
+  usleep(1000000);
+  // Compensation part
+  // First get fixed transform between uav and manipulator
+  Eigen::Affine3d t_b_l0;
+  t_b_l0 = Eigen::Affine3d::Identity();
+  Eigen::Matrix3d rot_uav_manipulator;
+  rot_uav_manipulator = Eigen::AngleAxisd(3.14159265359, Eigen::Vector3d::UnitZ())
+    * Eigen::AngleAxisd(0,  Eigen::Vector3d::UnitY())
+    * Eigen::AngleAxisd(1.57079632679, Eigen::Vector3d::UnitX());
+  t_b_l0.translate(Eigen::Vector3d(0, 0, 0.075));
+  t_b_l0.rotate(rot_uav_manipulator);
+
+  shared_ptr<KinematicsInterface> kinematics = global_planner_->getKinematicsInterface();
+  // Go through all trajectory points.
+  for (int i=0; i<trajectory.position.rows(); i++){
+    // Get transform of uav in world frame
+    Eigen::Affine3d t_w_b = Eigen::Affine3d::Identity();
+    t_w_b.translate(Eigen::Vector3d(trajectory.position(i, 0), 
+      trajectory.position(i, 1), trajectory.position(i, 2)));
+    Eigen::Matrix3d r_w_b;
+    // At this point roll and pitch are 0 since we don't plan for them
+    r_w_b = Eigen::AngleAxisd(trajectory.position(5), Eigen::Vector3d::UnitZ())
+      * Eigen::AngleAxisd(trajectory.position(4)*0.0,  Eigen::Vector3d::UnitY())
+      * Eigen::AngleAxisd(trajectory.position(3)*0.0,  Eigen::Vector3d::UnitX());
+    t_w_b.rotate(r_w_b);
+
+    // Transform from l0 to end effector.
+    // TODO: Provjeriti ovaj dio ako ne radi.
+    Eigen::Affine3d t_l0_ee = kinematics->getEndEffectorTransform(
+      (trajectory.position.block(i, 6, 1, 5)).transpose());
+    // Calculate end effector pose in global coordinate system.
+    Eigen::Affine3d t_w_ee = t_w_b*t_b_l0*t_l0_ee;
+
+    // Now we have pose of the end effector that we desire, and it was planned
+    // without any knowledge of roll and pitch. The idea is to include roll and
+    // pitch now.
+    t_w_b = Eigen::Affine3d::Identity();
+    t_w_b.translate(Eigen::Vector3d(trajectory.position(i, 0), 
+      trajectory.position(i, 1), trajectory.position(i, 2)));
+    // At this point roll and pitch are 0 since we don't plan for them
+    double roll = -trajectory.acceleration(i, 1)/9.81;
+    double pitch = trajectory.acceleration(i, 0)/9.81;
+    r_w_b = Eigen::AngleAxisd(trajectory.position(5), Eigen::Vector3d::UnitZ())
+      * Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY())
+      * Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX());
+    t_w_b.rotate(r_w_b);
+
+    // With new transform we can calculate true end effector position in
+    // manipulator base frame. Inverse kinematics works in l0(base manipulator
+    // frame).
+    t_l0_ee = t_b_l0.inverse()*t_w_b.inverse()*t_w_ee;
+
+    // Inverzna za svaku točku. Dodati funkciju inverzne da prima Affine3d
+    // i da vraća VectorXd.
+    bool found_ik;
+    Eigen::VectorXd ik_solution;
+    ik_solution = kinematics->calculateInverseKinematics(t_l0_ee, found_ik);
+    if (found_ik == false) cout << i << endl;
+    else{
+      trajectory.position.block(i, 6, 1, 5) = ik_solution.transpose();
+    }
+  }
+  for (int i=0; i<trajectory.position.rows(); i++){
+    trajectory.position(i, 3) = -trajectory.acceleration(i, 1)/9.81;
+    trajectory.position(i, 4) = trajectory.acceleration(i, 0)/9.81;
+    visualization_.setStatePoints(
+      global_planner_->getRobotStatePoints((trajectory.position.row(i)).transpose()));
+    visualization_.publishStatePoints();
+    usleep(10000);
+  }
+
   return true;
 }
 
