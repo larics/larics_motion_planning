@@ -38,6 +38,19 @@ class WpManipulatorKinematics : public KinematicsInterface
     /// \return List of transformations to all joints.
     std::vector<Eigen::Affine3d> getJointPositions(Eigen::VectorXd q);
 
+    /// \brief Direct kinematics to end effector.
+    /// \param q Manipulator joint state vector.
+    /// \return Transform of the end effector in manipulator base frame.
+    Eigen::Affine3d getEndEffectorTransform(Eigen::VectorXd q);
+
+    /// \brief Inverse kinematics from end effector pose.
+    /// \param transform Eigen::Affine3d transform of the manipulator
+    ///   end-effector
+    /// \param found_ik Flag determining if inverse solution was found.
+    /// return Joint states for provided transform.
+    Eigen::VectorXd calculateInverseKinematics(
+      Eigen::Affine3d transform, bool &found_ik);
+
   private:
     ManipulatorControl manipulator_;
 };
