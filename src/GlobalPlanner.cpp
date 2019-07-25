@@ -147,6 +147,7 @@ bool GlobalPlanner::planPathAndTrajectory(Eigen::MatrixXd waypoints)
         trajectory.position(j, 3) = -trajectory.acceleration(j, 1)/9.81;
         trajectory.position(j, 4) = trajectory.acceleration(j, 0)/9.81;
       }
+      // TODO: Collision check the trajectory.
       //success &= this->collisionCheck(trajectory.position);
       if (success == false) cout << "Trajectory collision check failed!" << endl;
     }
@@ -173,6 +174,11 @@ Trajectory GlobalPlanner::getTrajectory()
 Eigen::MatrixXd GlobalPlanner::getRobotStatePoints(Eigen::VectorXd state)
 {
   return state_validity_checker_interface_->generateValidityPoints(state);
+}
+
+shared_ptr<KinematicsInterface> GlobalPlanner::getKinematicsInterface()
+{
+  return kinematics_interface_;
 }
 
 bool GlobalPlanner::planPathThroughTwoWaypoints(Eigen::MatrixXd waypoints)
