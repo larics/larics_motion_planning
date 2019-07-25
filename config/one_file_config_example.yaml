@@ -72,6 +72,6 @@ path_planner:
       max_steps: 5
 
 toppra_trajectory:
-  velocities: [0.5, 0.5, 0.5, 100, 100, 0.3, 1.0, 1.0, 1.0, 1.0, 1.0]
-  accelerations: [0.4, 0.4, 0.4, 100, 100, 0.3, 1.2, 1.2, 1.2, 1.2, 1.2]
+  velocities: [2.0, 2.0, 0.5, 100, 100, 0.3, 1.0, 1.0, 1.0, 1.0, 1.0]
+  accelerations: [1.4, 1.4, 0.4, 100, 100, 0.3, 1.2, 1.2, 1.2, 1.2, 1.2]
   sampling_frequency: 100.0
