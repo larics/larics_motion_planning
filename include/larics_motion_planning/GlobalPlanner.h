@@ -84,6 +84,10 @@ class GlobalPlanner
     /// \return State Points
     Eigen::MatrixXd getRobotStatePoints(Eigen::VectorXd state);
 
+    /// \brief Returns kinematics interface used in planner.
+    /// \return Shared pointer to kinematics interface.
+    shared_ptr<KinematicsInterface> getKinematicsInterface();
+
   private:
     shared_ptr<MapInterface> map_interface_;
     shared_ptr<TrajectoryInterface> trajectory_interface_;
