@@ -17,7 +17,11 @@ class KinematicsInterface
   public:
     KinematicsInterface();
     virtual bool configureFromFile(string config_filename) = 0;
-    virtual std::vector<Eigen::Affine3d> getJointPositions(Eigen::VectorXd q) = 0;
+    virtual std::vector<Eigen::Affine3d> getJointPositions(
+      Eigen::VectorXd q) = 0;
+    virtual Eigen::Affine3d getEndEffectorTransform(Eigen::VectorXd q) = 0;
+    virtual Eigen::VectorXd calculateInverseKinematics(
+      Eigen::Affine3d transform, bool &found_ik) = 0;
 };
 
 #endif // KINEMATICS_INTERFACE_H

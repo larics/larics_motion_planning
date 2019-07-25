@@ -28,3 +28,15 @@ std::vector<Eigen::Affine3d> WpManipulatorKinematics::getJointPositions(
 {
   return manipulator_.getLinkPositions(q); 
 }
+
+Eigen::Affine3d WpManipulatorKinematics::getEndEffectorTransform(
+  Eigen::VectorXd q)
+{
+  return manipulator_.getEndEffectorTransform(q);
+}
+
+Eigen::VectorXd WpManipulatorKinematics::calculateInverseKinematics(
+  Eigen::Affine3d transform, bool &found_ik)
+{
+  return manipulator_.calculateJointSetpoints(transform, found_ik);
+}
