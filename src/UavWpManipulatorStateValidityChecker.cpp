@@ -7,7 +7,9 @@ UavWpManipulatorStateValidityChecker::UavWpManipulatorStateValidityChecker(
   map_ = map;
   kinematics_ = kinematics;
 
-  configureFromFile(config_filename);
+  string username = "/home/";
+  username = username + getenv("USERNAME") + "/";
+  configureFromFile(username + config_filename);
 
   //testDirectKinematics();
 }

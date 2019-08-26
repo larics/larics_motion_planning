@@ -2,10 +2,9 @@
 
 GlobalPlanner::GlobalPlanner(string config_filename)
 {
-  cout << "Initializing global planner from file: " << endl;
-  cout << "  " << config_filename << endl;
-
-  configureFromFile(config_filename);
+  string username = "/home/";
+  username = username + getenv("USERNAME") + "/";
+  configureFromFile(username + config_filename);
 }
 
 bool GlobalPlanner::configureFromFile(string config_filename)

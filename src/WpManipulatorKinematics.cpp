@@ -2,7 +2,9 @@
 
 WpManipulatorKinematics::WpManipulatorKinematics(string config_filename)
 {
-  configureFromFile(config_filename);
+  string username = "/home/";
+  username = username + getenv("USERNAME") + "/";
+  configureFromFile(username + config_filename);
 }
 
 bool WpManipulatorKinematics::configureFromFile(string config_filename)

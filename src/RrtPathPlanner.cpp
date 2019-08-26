@@ -45,7 +45,9 @@ RrtPathPlanner::RrtPathPlanner(string config_filename,
   shared_ptr<StateValidityCheckerInterface> validity_checker)
 {
   state_validity_checker_ = validity_checker;
-  configureFromFile(config_filename);
+  string username = "/home/";
+  username = username + getenv("USERNAME") + "/";
+  configureFromFile(username + config_filename);
   path_length_ = 0.0;
 }
 

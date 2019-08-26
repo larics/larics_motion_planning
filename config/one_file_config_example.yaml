@@ -1,9 +1,9 @@
 global_planner:
-  map_config_file: "/home/antun/catkin_ws/src/larics_motion_planning/config/one_file_config_example.yaml"
-  trajectory_config_file: "/home/antun/catkin_ws/src/larics_motion_planning/config/one_file_config_example.yaml"
-  path_planner_config_file: "/home/antun/catkin_ws/src/larics_motion_planning/config/one_file_config_example.yaml"
-  state_validity_checker_config_file: "/home/antun/catkin_ws/src/larics_motion_planning/config/state_validity_checker_config_example.yaml"
-  kinematics_config_file: "/home/antun/catkin_ws/src/larics_motion_planning/config/wp_manipulator_kinematics.yaml"
+  map_config_file: "catkin_ws/src/larics_motion_planning/config/one_file_config_example.yaml"
+  trajectory_config_file: "catkin_ws/src/larics_motion_planning/config/one_file_config_example.yaml"
+  path_planner_config_file: "catkin_ws/src/larics_motion_planning/config/one_file_config_example.yaml"
+  state_validity_checker_config_file: "catkin_ws/src/larics_motion_planning/config/state_validity_checker_config_example.yaml"
+  kinematics_config_file: "catkin_ws/src/larics_motion_planning/config/wp_manipulator_kinematics.yaml"
 
   trajectory:
     restarts: 5
@@ -17,7 +17,7 @@ global_planner:
     collision_check: true
 
 octomap:
-  path_to_file: "/home/antun/catkin_ws/src/larics_gazebo_worlds/models/greenhouse/greenhouse4096.binvox.bt"
+  path_to_file: "catkin_ws/src/larics_gazebo_worlds/models/greenhouse/greenhouse4096.binvox.bt"
   search_depth: 16
 
 path_planner:
