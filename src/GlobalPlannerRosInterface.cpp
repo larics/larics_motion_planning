@@ -20,6 +20,9 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
       "multi_dof_trajectory", 1);
   // Path publisher
   cartesian_path_pub_ = nh_.advertise<nav_msgs::Path>("cartesian_path", 1);
+  // Joint trajectory publisher
+  joint_trajectory_pub_ = nh_.advertise<trajectory_msgs::JointTrajectory>(
+    "joint_trajectory", 1);
 
   // TODO: Delete this service. Just testing service for now.
   empty_service_server_ = nh_.advertiseService("empty_service_test",
@@ -68,6 +71,10 @@ bool GlobalPlannerRosInterface::emptyCallback(std_srvs::Empty::Request &req,
     visualization_.publishStatePoints();
     usleep(10000);
   }
+  string tempstr;
+  cout << "Press enter to publish non compensated trajectory" << endl;
+  getline(cin, tempstr);
+  joint_trajectory_pub_.publish(trajectoryToJointTrajectory(trajectory));
   usleep(1000000);
   // Compensation part
   // First get fixed transform between uav and manipulator
@@ -110,7 +117,10 @@ bool GlobalPlannerRosInterface::emptyCallback(std_srvs::Empty::Request &req,
     // At this point roll and pitch are 0 since we don't plan for them
     double roll = -trajectory.acceleration(i, 1)/9.81;
     double pitch = trajectory.acceleration(i, 0)/9.81;
-    r_w_b = Eigen::AngleAxisd(trajectory.position(5), Eigen::Vector3d::UnitZ())
+    double dy = t_w_ee.translation().y() - t_w_b.translation().y();
+    double dx = t_w_ee.translation().x() - t_w_b.translation().x();
+    double yaw = atan2(dy, dx);
+    r_w_b = Eigen::AngleAxisd(trajectory.position(5) /*yaw*/, Eigen::Vector3d::UnitZ())
       * Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY())
       * Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX());
     t_w_b.rotate(r_w_b);
@@ -125,7 +135,7 @@ bool GlobalPlannerRosInterface::emptyCallback(std_srvs::Empty::Request &req,
     bool found_ik;
     Eigen::VectorXd ik_solution;
     ik_solution = kinematics->calculateInverseKinematics(t_l0_ee, found_ik);
-    if (found_ik == false) cout << i << endl;
+    if (found_ik == false) cout << i << " " << yaw << endl;
     else{
       trajectory.position.block(i, 6, 1, 5) = ik_solution.transpose();
     }
@@ -136,8 +146,11 @@ bool GlobalPlannerRosInterface::emptyCallback(std_srvs::Empty::Request &req,
     visualization_.setStatePoints(
       global_planner_->getRobotStatePoints((trajectory.position.row(i)).transpose()));
     visualization_.publishStatePoints();
-    usleep(10000);
+    usleep(100000);
   }
+  cout << "Press enter to publish compensated trajectory" << endl;
+  getline(cin, tempstr);
+  joint_trajectory_pub_.publish(trajectoryToJointTrajectory(trajectory));
 
   return true;
 }
