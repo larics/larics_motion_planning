@@ -1,3 +1,3 @@
 octomap:
-  path_to_file: "/home/antun/catkin_ws/src/larics_gazebo_worlds/models/floor_plan_simple/model.binvox.bt"
+  path_to_file: "catkin_ws/src/larics_gazebo_worlds/models/floor_plan_simple/model.binvox.bt"
   search_depth: 14

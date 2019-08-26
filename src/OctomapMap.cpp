@@ -13,7 +13,9 @@ map_(make_unique<octomap::OcTree>(resolution))
 OctomapMap::OctomapMap(string octomap_config_file)
 {
   // Configures the map from yaml file.
-  configureFromFile(octomap_config_file);
+  string username = "/home/";
+  username = username + getenv("USERNAME") + "/";
+  configureFromFile(username + octomap_config_file);
 }
 
 OctomapMap::~OctomapMap()
@@ -51,7 +53,9 @@ bool OctomapMap::configureFromFile(string config_filename)
   YAML::Node config = YAML::LoadFile(config_filename);
 
   // Load map from path provided in file.
-  map_ = make_unique<octomap::OcTree>(
+  string username = "/home/";
+  username = username + getenv("USERNAME") + "/";
+  map_ = make_unique<octomap::OcTree>(username + 
     config["octomap"]["path_to_file"].as<string>());
   // Set search depth from file.
   search_depth_ = config["octomap"]["search_depth"].as<int>();
