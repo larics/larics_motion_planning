@@ -93,8 +93,9 @@ int main(int argc, char **argv)
   }
   //cout << viz.getPath() << endl;
   //cout << path_planner.getPath() << endl;*/
-
-  GlobalPlanner gp("/home/antun/catkin_ws/src/larics_motion_planning/config/global_planner_config_example.yaml");
+  string username = "/home/";
+  username = username + getenv("USERNAME") + "/";
+  GlobalPlanner gp(username + "catkin_ws/src/larics_motion_planning/config/global_planner_config_example.yaml");
   Eigen::MatrixXd waypoints(5,3);
   waypoints << 1.57, -8.74, 1.0, 
                8.86, -2.23, 1.0,

@@ -2,15 +2,15 @@
 
 ToppraTrajectory::ToppraTrajectory(string config_filename)
 {
-  cout << "Initializing TOPP-RA trajectory from file:" << endl;
-  cout << "  " << config_filename << endl;
+  string username = "/home/";
+  username = username + getenv("USERNAME") + "/";
 
   // Set up node handle and create service
   nh_ = ros::NodeHandle();
   generate_trajectory_client_ = nh_.serviceClient<topp_ros::GenerateTrajectory>(
     "generate_toppra_trajectory");
 
-  configureFromFile(config_filename);
+  configureFromFile(username + config_filename);
 }
 
 ToppraTrajectory::ToppraTrajectory(Eigen::MatrixXd config_matrix, double sampling_frequency) :
@@ -33,6 +33,8 @@ ToppraTrajectory::~ToppraTrajectory()
 
 bool ToppraTrajectory::configureFromFile(string config_filename)
 {
+  cout << "Initializing TOPP-RA trajectory from file:" << endl;
+  cout << "  " << config_filename << endl;
   // Open yaml file with configuration
   YAML::Node config = YAML::LoadFile(config_filename);
   std::vector<double> velocities, accelerations;
