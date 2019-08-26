@@ -64,7 +64,8 @@ class GlobalPlannerRosInterface
     ros::NodeHandle nh_;
 
     // Publishers
-    ros::Publisher multi_dof_trajectory_pub_, cartesian_path_pub_;
+    ros::Publisher multi_dof_trajectory_pub_, cartesian_path_pub_, 
+      joint_trajectory_pub_;
 
     // Empty service
     ros::ServiceServer empty_service_server_;
