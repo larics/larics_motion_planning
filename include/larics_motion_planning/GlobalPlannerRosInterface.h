@@ -69,6 +69,7 @@ class GlobalPlannerRosInterface
 
     // Empty service
     ros::ServiceServer empty_service_server_;
+    ros::ServiceClient execute_trajectory_client_;
     bool emptyCallback(std_srvs::Empty::Request &req, 
       std_srvs::Empty::Response &res);
 
@@ -102,6 +103,8 @@ class GlobalPlannerRosInterface
       Eigen::MatrixXd path);
     trajectory_msgs::JointTrajectory trajectoryToJointTrajectory(
       Trajectory eigen_trajectory);  
+    Trajectory jointTrajectoryToTrajectory(trajectory_msgs::JointTrajectory 
+      joint_trajectory);
 };
 
 #endif // GLOBAL_PLANNER_ROS_INTERFACE_H

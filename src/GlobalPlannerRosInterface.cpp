@@ -27,6 +27,9 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
   // TODO: Delete this service. Just testing service for now.
   empty_service_server_ = nh_.advertiseService("empty_service_test",
     &GlobalPlannerRosInterface::emptyCallback, this);
+  execute_trajectory_client_ = 
+    nh_.serviceClient<larics_motion_planning::MultiDofTrajectory>(
+    "execute_trajectory");
   // Service for planning the cartesian trajectory.
   cartesian_trajectory_server_ = nh_.advertiseService("cartesian_trajectory",
     &GlobalPlannerRosInterface::cartesianTrajectoryCallback, this);
@@ -72,10 +75,20 @@ bool GlobalPlannerRosInterface::emptyCallback(std_srvs::Empty::Request &req,
     usleep(10000);
   }
   string tempstr;
-  cout << "Press enter to publish non compensated trajectory" << endl;
-  getline(cin, tempstr);
-  joint_trajectory_pub_.publish(trajectoryToJointTrajectory(trajectory));
+  cout << "Press enter to publish non compensated trajectory with acceleration roll pitch estimation." << endl;
+  //getline(cin, tempstr);
+  //joint_trajectory_pub_.publish(trajectoryToJointTrajectory(trajectory));
   usleep(1000000);
+
+  // Send this trajectory to Gazebo simulation and collect information about
+  // roll and pitch
+  larics_motion_planning::MultiDofTrajectory service;
+  service.request.waypoints = trajectoryToJointTrajectory(trajectory);
+  bool success;
+  success = execute_trajectory_client_.call(service);
+  cout << "Service call was: " << success << endl;
+  trajectory = jointTrajectoryToTrajectory(service.response.trajectory);
+
   // Compensation part
   // First get fixed transform between uav and manipulator
   Eigen::Affine3d t_b_l0;
@@ -115,12 +128,15 @@ bool GlobalPlannerRosInterface::emptyCallback(std_srvs::Empty::Request &req,
     t_w_b.translate(Eigen::Vector3d(trajectory.position(i, 0), 
       trajectory.position(i, 1), trajectory.position(i, 2)));
     // At this point roll and pitch are 0 since we don't plan for them
-    double roll = -trajectory.acceleration(i, 1)/9.81;
-    double pitch = trajectory.acceleration(i, 0)/9.81;
+    //double roll = -trajectory.acceleration(i, 1)/9.81;
+    //double pitch = trajectory.acceleration(i, 0)/9.81;
+    double roll = trajectory.position(i, 3);
+    double pitch = trajectory.position(i, 4);
+    cout << pitch << " " << trajectory.acceleration(i, 0)/9.81 << endl;
     double dy = t_w_ee.translation().y() - t_w_b.translation().y();
     double dx = t_w_ee.translation().x() - t_w_b.translation().x();
     double yaw = atan2(dy, dx);
-    r_w_b = Eigen::AngleAxisd(trajectory.position(5) /*yaw*/, Eigen::Vector3d::UnitZ())
+    r_w_b = Eigen::AngleAxisd(trajectory.position(i, 5) /*yaw*/, Eigen::Vector3d::UnitZ())
       * Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY())
       * Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX());
     t_w_b.rotate(r_w_b);
@@ -141,12 +157,12 @@ bool GlobalPlannerRosInterface::emptyCallback(std_srvs::Empty::Request &req,
     }
   }
   for (int i=0; i<trajectory.position.rows(); i++){
-    trajectory.position(i, 3) = -trajectory.acceleration(i, 1)/9.81;
-    trajectory.position(i, 4) = trajectory.acceleration(i, 0)/9.81;
+    //trajectory.position(i, 3) = -trajectory.acceleration(i, 1)/9.81;
+    //trajectory.position(i, 4) = trajectory.acceleration(i, 0)/9.81;
     visualization_.setStatePoints(
       global_planner_->getRobotStatePoints((trajectory.position.row(i)).transpose()));
     visualization_.publishStatePoints();
-    usleep(100000);
+    usleep(10000);
   }
   cout << "Press enter to publish compensated trajectory" << endl;
   getline(cin, tempstr);
@@ -423,4 +439,29 @@ trajectory_msgs::JointTrajectory GlobalPlannerRosInterface::trajectoryToJointTra
   }
 
   return joint_trajectory;
+}
+
+Trajectory GlobalPlannerRosInterface::jointTrajectoryToTrajectory(
+  trajectory_msgs::JointTrajectory joint_trajectory)
+{
+  Trajectory eigen_trajectory;
+  eigen_trajectory.position.resize(joint_trajectory.points.size(), 
+    joint_trajectory.points[0].positions.size());
+  eigen_trajectory.velocity.resize(joint_trajectory.points.size(), 
+    joint_trajectory.points[0].positions.size());
+  eigen_trajectory.acceleration.resize(joint_trajectory.points.size(), 
+    joint_trajectory.points[0].positions.size());
+  eigen_trajectory.time.resize(joint_trajectory.points.size());
+
+  // Go through the whole path and set it to
+  for (int i=0; i<joint_trajectory.points.size(); i++){
+    for (int j=0; j<joint_trajectory.points[0].positions.size(); j++){
+      eigen_trajectory.position(i,j) = joint_trajectory.points[i].positions[j];
+      eigen_trajectory.velocity(i,j) = joint_trajectory.points[i].velocities[j];
+      eigen_trajectory.acceleration(i,j) = joint_trajectory.points[i].accelerations[j];
+    }
+    eigen_trajectory.time(i) = joint_trajectory.points[i].time_from_start.toSec();
+  }
+
+  return eigen_trajectory;
 }
