@@ -21,7 +21,9 @@ bool GlobalPlanner::configureFromFile(string config_filename)
   trajectory_interface_ = make_shared<ToppraTrajectory>(
     config["global_planner"]["trajectory_config_file"].as<string>());
   // Set up state validity interface
-  YAML::Node state_config = YAML::LoadFile(config["global_planner"]["state_validity_checker_config_file"].as<string>());
+  string username = "/home/";
+  username = username + getenv("USERNAME") + "/";
+  YAML::Node state_config = YAML::LoadFile(username + config["global_planner"]["state_validity_checker_config_file"].as<string>());
   state_validity_checker_type_ = state_config["state_validity_checker"]["type"].as<string>();
   if (state_validity_checker_type_ == "point"){
     state_validity_checker_interface_ = make_shared<PointStateValidityChecker>(

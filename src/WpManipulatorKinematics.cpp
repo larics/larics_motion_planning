@@ -18,7 +18,9 @@ bool WpManipulatorKinematics::configureFromFile(string config_filename)
   string robot_model_name, joint_group_name, dh_parameters_file;
   robot_model_name = config["wp_manipulator_kinematics"]["robot_model_name"].as<string>();
   joint_group_name = config["wp_manipulator_kinematics"]["joint_group_name"].as<string>();
-  dh_parameters_file = config["wp_manipulator_kinematics"]["dh_parameters_file"].as<string>();
+  string username = "/home/";
+  username = username + getenv("USERNAME") + "/";
+  dh_parameters_file = username + config["wp_manipulator_kinematics"]["dh_parameters_file"].as<string>();
   // Configure manipulator
   manipulator_.setManipulatorName(robot_model_name, joint_group_name);
   manipulator_.LoadParameters(dh_parameters_file);
