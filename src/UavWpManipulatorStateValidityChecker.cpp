@@ -68,6 +68,13 @@ bool UavWpManipulatorStateValidityChecker::configureFromFile(
     * Eigen::AngleAxisd(temp_transf[3], Eigen::Vector3d::UnitX());
   t_uav_manipulator_.translate(Eigen::Vector3d(temp_transf[0], temp_transf[1], temp_transf[2]));
   t_uav_manipulator_.rotate(rot_uav_manipulator);
+
+  // Get tool data
+  use_tool_ = config["state_validity_checker"]["uav_wp_manipulator"]["tool"]["use_tool"].as<bool>();
+  std::vector<double> tool_dimensions;
+  tool_dimensions = config["state_validity_checker"]["uav_wp_manipulator"]["tool"]["dimensions"].as< std::vector<double> >();
+  for (int i=0; i<3; i++) tool_dimensions_(i) = tool_dimensions[i];
+  tool_direction_ = config["state_validity_checker"]["uav_wp_manipulator"]["tool"]["direction"].as<string>();
 }
 
 void UavWpManipulatorStateValidityChecker::testDirectKinematics()
@@ -220,6 +227,26 @@ Eigen::MatrixXd UavWpManipulatorStateValidityChecker::generateValidityPoints(
       points_.row(j+points_size) = ((t_world_link*current_point).translation()).transpose();
     }
   }
+
+  // Sample tool points if requested. Tool is going to be an extension of last
+  // link
+  if (use_tool_ == true){
+    Eigen::Affine3d t_world_link = t_world_manipulator*link_positions[4+2];
+    Eigen::MatrixXd points_link = generatePrism(tool_dimensions_(0), 
+      tool_dimensions_(1), tool_dimensions_(2), 
+      manipulator_sampling_resolution_, tool_direction_);
+    //points_ = Eigen::MatrixXd(points_link.rows(), points_link.cols());
+    double points_size = points_.rows();
+    points_.conservativeResize(points_.rows() + points_link.rows(), 3);
+    for (int j=0; j<points_link.rows(); j++){
+      Eigen::Affine3d current_point(Eigen::Affine3d::Identity());
+      //cout << (points_link.row(i)).transpose() << endl;
+      //exit(0);
+      current_point.translate(Eigen::Vector3d((points_link.row(j)).transpose()));
+      points_.row(j+points_size) = ((t_world_link*current_point).translation()).transpose();
+    }
+  }
+
   Eigen::Affine3d t_world_link = t_world_uav;
   Eigen::MatrixXd points_link = generatePrism(uav_dimensions_(0), 
     uav_dimensions_(1), uav_dimensions_(2), uav_sampling_resolution_, "n");
