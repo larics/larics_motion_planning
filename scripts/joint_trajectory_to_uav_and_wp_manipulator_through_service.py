@@ -109,7 +109,7 @@ class JointTrajectoryToUavAndWpManipulatorReference:
             point.positions = tuple(lst)
             response.trajectory.points.append(point)
 
-            if abs(self.roll) < 0.001 and abs(self.pitch) < 0.001 and (time.time()-tstart) > 0.1:
+            if abs(self.roll) < 0.001 and abs(self.pitch) < 0.001 and (time.time()-tstart) > 2.1:
                 break
 
             rate.sleep()
