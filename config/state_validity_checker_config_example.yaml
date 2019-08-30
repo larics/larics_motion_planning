@@ -15,3 +15,8 @@ state_validity_checker:
     checker_resolution:
       manipulator: 0.01
       uav: 0.03
+
+    tool:
+      use_tool: true
+      dimensions: [0.3453, 0.01, 0.01]
+      direction: "x"

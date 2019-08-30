@@ -68,6 +68,10 @@ class UavWpManipulatorStateValidityChecker : public StateValidityCheckerInterfac
 
     Eigen::Affine3d t_uav_manipulator_;
 
+    bool use_tool_;
+    Eigen::Vector3d tool_dimensions_;
+    string tool_direction_;
+
     Eigen::MatrixXd generatePrism(double x, double y, double z, 
       double resolution, string direction);
 };
