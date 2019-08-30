@@ -109,9 +109,9 @@ bool GlobalPlannerRosInterface::emptyCallback(std_srvs::Empty::Request &req,
       trajectory.position(i, 1), trajectory.position(i, 2)));
     Eigen::Matrix3d r_w_b;
     // At this point roll and pitch are 0 since we don't plan for them
-    r_w_b = Eigen::AngleAxisd(trajectory.position(5), Eigen::Vector3d::UnitZ())
-      * Eigen::AngleAxisd(trajectory.position(4)*0.0,  Eigen::Vector3d::UnitY())
-      * Eigen::AngleAxisd(trajectory.position(3)*0.0,  Eigen::Vector3d::UnitX());
+    r_w_b = Eigen::AngleAxisd(trajectory.position(i, 5), Eigen::Vector3d::UnitZ())
+      * Eigen::AngleAxisd(trajectory.position(i, 4)*0.0,  Eigen::Vector3d::UnitY())
+      * Eigen::AngleAxisd(trajectory.position(i, 3)*0.0,  Eigen::Vector3d::UnitX());
     t_w_b.rotate(r_w_b);
 
     // Transform from l0 to end effector.
@@ -132,7 +132,6 @@ bool GlobalPlannerRosInterface::emptyCallback(std_srvs::Empty::Request &req,
     //double pitch = trajectory.acceleration(i, 0)/9.81;
     double roll = trajectory.position(i, 3);
     double pitch = trajectory.position(i, 4);
-    cout << pitch << " " << trajectory.acceleration(i, 0)/9.81 << endl;
     double dy = t_w_ee.translation().y() - t_w_b.translation().y();
     double dx = t_w_ee.translation().x() - t_w_b.translation().x();
     double yaw = atan2(dy, dx);
