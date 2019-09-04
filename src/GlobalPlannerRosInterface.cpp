@@ -29,7 +29,7 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
     &GlobalPlannerRosInterface::emptyCallback, this);
   execute_trajectory_client_ = 
     nh_.serviceClient<larics_motion_planning::MultiDofTrajectory>(
-    "execute_trajectory");
+    "/simulate_arducopter");
   // Service for planning the cartesian trajectory.
   cartesian_trajectory_server_ = nh_.advertiseService("cartesian_trajectory",
     &GlobalPlannerRosInterface::cartesianTrajectoryCallback, this);
@@ -87,7 +87,19 @@ bool GlobalPlannerRosInterface::emptyCallback(std_srvs::Empty::Request &req,
   bool success;
   success = execute_trajectory_client_.call(service);
   cout << "Service call was: " << success << endl;
-  trajectory = jointTrajectoryToTrajectory(service.response.trajectory);
+  //cout << service.response.pitch << endl;
+  //exit(0);
+  trajectory_msgs::JointTrajectory rp_trajectory = service.request.waypoints;
+  for (int i=0; i<service.response.pitch.size(); i++){
+    if (i >= service.request.waypoints.points.size()){
+      rp_trajectory.points.push_back(service.request.waypoints.points[
+        service.request.waypoints.points.size()-1]);
+    }
+    rp_trajectory.points[i].positions[3] = service.response.roll[i];
+    rp_trajectory.points[i].positions[4] = service.response.pitch[i];
+    //cout << service.response.pitch[i] << endl;
+  }
+  trajectory = jointTrajectoryToTrajectory(rp_trajectory);
 
   // Compensation part
   // First get fixed transform between uav and manipulator

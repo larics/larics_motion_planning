@@ -7,3 +7,5 @@ bool                              plan_trajectory
 trajectory_msgs/JointTrajectory   trajectory
 trajectory_msgs/JointTrajectory   path
 float64                           path_length
+float64[]                         roll
+float64[]                         pitch
