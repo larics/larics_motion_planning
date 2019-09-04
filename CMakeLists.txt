@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
     cmake_modules
     eigen_conversions
     message_generation
+    ompl
     aerial_manipulators_control
 )
 
