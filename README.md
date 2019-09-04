@@ -13,6 +13,10 @@ rosrun octomap_server octomap_server_node greenhouse4096.binvox.bt _frame_id:="w
 roslaunch wp_manipulator planning_context.launch
 
 rosrun aerial_manipulators_control wp_manipulator_control __ns:=uav
+
+rosrun joy joy_node _autorepeat_rate:=30 __ns:=uav
+
+rosrun mmuav_joy uav_manipulator_joy_command_node.py __ns:=uav
 ```
 
 ./binvox -e -bb -20.0 -35.0 0.0 20 4.0 2.0 ../models/greenhouse/greenhouse.stl
@@ -114,3 +118,26 @@ plan_trajectory: true"
 Stanja za pipe insertion
 Ispred cijevi: [-3.4, 0, 1.98, 0, 0, 0, 0.787, 0.787, 0.787, -1.57, 0.787]
 Skroz u cijevi: [-3.0, 0, 1.98, 0, 0, 0, 0.787, 0.787, 0.787, -1.57, 0.787]
+
+Za roll pitch kompenzaciju
+rosservice call /simulate_arducopter "waypoints:
+  header:
+    seq: 0
+    stamp: {secs: 0, nsecs: 0}
+    frame_id: ''
+  joint_names: ['']
+  points:
+  - positions: [2.0, 0.0, 1.98, 0.0, 0.0, 3.14, 0.787, 0.787, 0.787, -1.57, 0.787]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [1.6, 0.0, 1.98, 0.0, 0.0, 3.14, 0.787, 0.787, 0.787, -1.57, 0.787]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+publish_path: false
+publish_trajectory: false
+plan_path: false
+plan_trajectory: true" 
