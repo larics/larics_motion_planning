@@ -1,4 +1,5 @@
-wp_manipulator_kinematics:
-  robot_model_name: "wp_manipulator"
-  joint_group_name: "wp_manipulator_arm"
-  dh_parameters_file: "catkin_ws/src/aerial_manipulators/aerial_manipulators_control/config/wp_manipulator_dh_parameters.yaml"
+kinematics:
+  wp_manipulator_kinematics:
+    robot_model_name: "wp_manipulator"
+    joint_group_name: "wp_manipulator_arm"
+    dh_parameters_file: "catkin_ws/src/aerial_manipulators/aerial_manipulators_control/config/wp_manipulator_dh_parameters.yaml"
