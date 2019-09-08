@@ -1,9 +1,9 @@
 global_planner:
-  map_config_file: "catkin_ws/src/larics_motion_planning/config/one_file_config_example.yaml"
-  trajectory_config_file: "catkin_ws/src/larics_motion_planning/config/one_file_config_example.yaml"
-  path_planner_config_file: "catkin_ws/src/larics_motion_planning/config/one_file_config_example.yaml"
-  state_validity_checker_config_file: "catkin_ws/src/larics_motion_planning/config/one_file_config_example.yaml"
-  kinematics_config_file: "catkin_ws/src/larics_motion_planning/config/one_file_config_example.yaml"
+  map_config_file: "catkin_ws/src/larics_motion_planning/config/uav_and_wp_manipulator_config.yaml"
+  trajectory_config_file: "catkin_ws/src/larics_motion_planning/config/uav_and_wp_manipulator_config.yaml"
+  path_planner_config_file: "catkin_ws/src/larics_motion_planning/config/uav_and_wp_manipulator_config.yaml"
+  state_validity_checker_config_file: "catkin_ws/src/larics_motion_planning/config/uav_and_wp_manipulator_config.yaml"
+  kinematics_config_file: "catkin_ws/src/larics_motion_planning/config/uav_and_wp_manipulator_config.yaml"
 
   trajectory:
     restarts: 5
