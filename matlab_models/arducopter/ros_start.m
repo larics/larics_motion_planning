@@ -1,3 +1,8 @@
+%% To make custom messages
+% roboticAddons -> this starts gui in which you can install tool for genmsg
+% rosgenmsg('/home/antun/catkin_ws/src')
+
+%% 
 x_ref.time = [0:0.01:10]';
 x_ref.signals.values = linspace(0, 1, 201)';
 x_ref.signals.values = [x_ref.signals.values; linspace(1, 1, 800)'];
@@ -15,8 +20,8 @@ yaw_ref = x_ref;
 yaw_ref.signals.values = yaw_ref.signals.values*0;
 
 %%
-rosinit('http://localhost:11311', ...
-           'NodeHost', 'localhost');
+rosinit('http://antun-ethernet:11311', ...
+           'NodeHost', 'antun-ethernet');
 %%
 simulate_roll_pitch_service = rossvcserver('/simulate_arducopter', ...
     'larics_motion_planning/MultiDofTrajectory', @simulateRollPitchCallback);

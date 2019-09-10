@@ -97,6 +97,6 @@ resp.Pitch = sim_out.pitch.signals.values(1:endpoint,1);
 % end
 
 disp('New trajectory length:')
-length(resp.Trajectory.Points)
+length(resp.Pitch)
 
 end
