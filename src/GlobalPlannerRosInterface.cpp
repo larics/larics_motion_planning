@@ -7,7 +7,7 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
   ros::NodeHandle nh_private = ros::NodeHandle("~");
 
   nh_private.param("global_planner_config_file", global_planner_config_file, 
-    string("catkin_ws/src/larics_motion_planning/config/one_file_config_example.yaml"));
+    string("catkin_ws/src/larics_motion_planning/config/uav_and_wp_manipulator_3R_config.yaml"));
   nh_private.param("rate", rate_, int(10));
 
   // Global planner config
@@ -67,8 +67,8 @@ bool GlobalPlannerRosInterface::emptyCallback(std_srvs::Empty::Request &req,
   cout << "Cols: " << trajectory.position.cols() << " Rows: " << trajectory.position.rows() << endl;
 
   for (int i=0; i<trajectory.position.rows(); i++){
-    trajectory.position(i, 3) = -trajectory.acceleration(i, 1)/9.81;
-    trajectory.position(i, 4) = trajectory.acceleration(i, 0)/9.81;
+    trajectory.position(i, 3) = -0*trajectory.acceleration(i, 1)/9.81;
+    trajectory.position(i, 4) = 0*trajectory.acceleration(i, 0)/9.81;
     visualization_.setStatePoints(
       global_planner_->getRobotStatePoints((trajectory.position.row(i)).transpose()));
     visualization_.publishStatePoints();
@@ -99,19 +99,21 @@ bool GlobalPlannerRosInterface::emptyCallback(std_srvs::Empty::Request &req,
     rp_trajectory.points[i].positions[4] = service.response.pitch[i];
     //cout << service.response.pitch[i] << endl;
   }
-  trajectory = jointTrajectoryToTrajectory(rp_trajectory);
-
+  //trajectory = jointTrajectoryToTrajectory(rp_trajectory);
+  trajectory = jointTrajectoryToTrajectory(service.response.trajectory);
   // Compensation part
   // First get fixed transform between uav and manipulator
   Eigen::Affine3d t_b_l0;
   t_b_l0 = Eigen::Affine3d::Identity();
   Eigen::Matrix3d rot_uav_manipulator;
-  rot_uav_manipulator = Eigen::AngleAxisd(3.14159265359, Eigen::Vector3d::UnitZ())
+  /*rot_uav_manipulator = Eigen::AngleAxisd(3.14159265359, Eigen::Vector3d::UnitZ())
     * Eigen::AngleAxisd(0,  Eigen::Vector3d::UnitY())
-    * Eigen::AngleAxisd(1.57079632679, Eigen::Vector3d::UnitX());
-  t_b_l0.translate(Eigen::Vector3d(0, 0, 0.075));
+    * Eigen::AngleAxisd(1.57079632679, Eigen::Vector3d::UnitX());*/
+  rot_uav_manipulator = Eigen::AngleAxisd(-1.57079632679, Eigen::Vector3d::UnitZ())
+    * Eigen::AngleAxisd(1.57079632679,  Eigen::Vector3d::UnitY())
+    * Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX());
+  t_b_l0.translate(Eigen::Vector3d(0, 0, 0.125));
   t_b_l0.rotate(rot_uav_manipulator);
-
   shared_ptr<KinematicsInterface> kinematics = global_planner_->getKinematicsInterface();
   // Go through all trajectory points.
   for (int i=0; i<trajectory.position.rows(); i++){
@@ -129,10 +131,9 @@ bool GlobalPlannerRosInterface::emptyCallback(std_srvs::Empty::Request &req,
     // Transform from l0 to end effector.
     // TODO: Provjeriti ovaj dio ako ne radi.
     Eigen::Affine3d t_l0_ee = kinematics->getEndEffectorTransform(
-      (trajectory.position.block(i, 6, 1, 5)).transpose());
+      (trajectory.position.block(i, 6, 1, 3)).transpose());
     // Calculate end effector pose in global coordinate system.
     Eigen::Affine3d t_w_ee = t_w_b*t_b_l0*t_l0_ee;
-
     // Now we have pose of the end effector that we desire, and it was planned
     // without any knowledge of roll and pitch. The idea is to include roll and
     // pitch now.
@@ -164,14 +165,18 @@ bool GlobalPlannerRosInterface::emptyCallback(std_srvs::Empty::Request &req,
     ik_solution = kinematics->calculateInverseKinematics(t_l0_ee, found_ik);
     if (found_ik == false) cout << i << " " << yaw << endl;
     else{
-      trajectory.position.block(i, 6, 1, 5) = ik_solution.transpose();
+      trajectory.position.block(i, 6, 1, 3) = ik_solution.transpose();
     }
   }
+  cout << "Proso petlju" << endl;
   for (int i=0; i<trajectory.position.rows(); i++){
     //trajectory.position(i, 3) = -trajectory.acceleration(i, 1)/9.81;
     //trajectory.position(i, 4) = trajectory.acceleration(i, 0)/9.81;
+    //cout << "171" << endl;
+    //cout << (trajectory.position.row(i)).transpose() << endl;
     visualization_.setStatePoints(
       global_planner_->getRobotStatePoints((trajectory.position.row(i)).transpose()));
+    //cout << "175" << endl;
     visualization_.publishStatePoints();
     usleep(10000);
   }
