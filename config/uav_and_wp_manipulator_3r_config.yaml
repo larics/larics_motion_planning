@@ -1,0 +1,112 @@
+global_planner:
+  map_config_file: "catkin_ws/src/larics_motion_planning/config/uav_and_wp_manipulator_3r_config.yaml"
+  trajectory_config_file: "catkin_ws/src/larics_motion_planning/config/uav_and_wp_manipulator_3r_config.yaml"
+  path_planner_config_file: "catkin_ws/src/larics_motion_planning/config/uav_and_wp_manipulator_3r_config.yaml"
+  state_validity_checker_config_file: "catkin_ws/src/larics_motion_planning/config/uav_and_wp_manipulator_3r_config.yaml"
+  kinematics_config_file: "catkin_ws/src/larics_motion_planning/config/uav_and_wp_manipulator_3r_config.yaml"
+
+  trajectory:
+    restarts: 5
+
+  path_and_trajectory:
+    restarts: 5
+
+  path:
+    restarts: 5
+    collision_check_restarts: 5
+    collision_check: true
+
+octomap:
+  path_to_file: "catkin_ws/src/larics_gazebo_worlds/models/greenhouse/greenhouse4096.binvox.bt"
+  search_depth: 16
+
+path_planner:
+  spaces:
+    number: 2
+    # UAV has 6 dof: x, y, z, roll, pitch, yaw. We don't use roll and pitch in
+    # planning, however we use them in visualization and later in compensation
+    # so we need all 6DOF.
+    # Manipulator has 3DOF in this case
+    dimensions: [6, 3]
+    weights: [1.0, 1.0]
+    bounds: [[[0, 10.0], [-20.0, 0.0], [0.2, 1.0], [0.0, 0.0], [0.0, 0.0], [-3.15, 3.15]], [[-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57]]]
+    #bounds: [[[0, 10.0], [-20.0, 0.0], [0.95, 1.05]], [[-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57]]]
+  #bounds: [[0, 10.0], [-20.0, 0.0], [0.95, 1.05]]
+  bounds: [[-10.0, 10.0], [-20.0, 20.0], [0.95, 3.0]]
+  longest_valid_segment:
+    is_used: true
+    is_metric: true
+    value: 0.01
+  goal_bias:
+    is_used: true
+    value: 0.05
+  range:
+    is_used: true
+    value: 0.5
+  rewire_factor:
+    is_used: false
+    value: 1.1
+  delay_cc:
+    is_used: true
+    value: true
+  tree_pruning: 
+    is_used: true
+    value: false
+  prune_threshold:
+    is_used: true
+    value: 0.1
+  pruned_measure:
+    is_used: true
+    value: false
+  k_nearest:
+    is_used: true
+    value: true
+  solve_time:
+    is_incremental: true
+    time: 1.0
+    increment: 0.25
+  path_simplifier:
+    reduce_vertices:
+      is_used: true
+      max_steps: 0.25
+      max_empty_steps: 0
+      range_ratio: 0.33
+      use_as_fraction: true
+    smooth_b_spline:
+      is_used: true
+      max_steps: 5
+
+toppra_trajectory:
+  velocities: [0.8, 0.8, 0.5, 100, 100, 0.3, 1.0, 1.0, 1.0] #4.8
+  accelerations: [0.8, 0.8, 0.4, 100, 100, 0.3, 1.2, 1.2, 1.2] #10
+  sampling_frequency: 100.0
+
+state_validity_checker:
+  type: "uav_and_wp_manipulator"
+  uav_wp_manipulator:
+    manipulator_link_dimensions: [[0.0285, 0.1365, 0.0340], [0.072489, 0.0285, 0.0340], [0.035, 0.0285, 0.0340]]
+    manipulator_link_directions: ["y", "x", "x"]
+
+    uav_dimensions: [0.4, 0.4, 0.17]
+
+    # Transform where pitch is compensated with first dynamixel, manipulator in upright position
+    #uav_manipulator_transform: [0, 0, 0.125, 1.57079632679, 0, 3.14159265359]
+    # Yaw is compensated with first joint, 2nd and 3rd joints are compensating pitch
+    #uav_manipulator_transform: [0, 0, 0.125, 0, 0, -1.57079632679]
+    # Pitch is compensated with first joint, manipulator is on it's side
+    uav_manipulator_transform: [0, 0, 0.125, 0, 1.57079632679, -1.57079632679]
+
+    checker_resolution:
+      manipulator: 0.01
+      uav: 0.03
+
+    tool:
+      use_tool: true
+      dimensions: [0.3453, 0.01, 0.01]
+      direction: "x"
+
+kinematics:
+  wp_manipulator_kinematics:
+    robot_model_name: "wp_manipulator_3r"
+    joint_group_name: "wp_manipulator_3r_arm"
+    dh_parameters_file: "catkin_ws/src/aerial_manipulators/aerial_manipulators_control/config/wp_manipulator_3r_dh_parameters.yaml"
