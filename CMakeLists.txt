@@ -95,10 +95,17 @@ add_library(global_planner ${GLOBAL_PLANNER_SOURCES})
 target_link_libraries(global_planner trajectory map path_planning 
   kinematics ${catkin_LIBRARIES} ${Eigen_LIBRARIES})
 
+set(LOCAL_PLANNER_SOURCES src/LocalPlanner.cpp)
+add_library(local_planner ${LOCAL_PLANNER_SOURCES})
+target_link_libraries(local_planner trajectory map path_planning 
+  kinematics ${catkin_LIBRARIES} ${Eigen_LIBRARIES})
+
 add_library(larics_motion_planning ${TRAJECTORY_SOURCES} ${MAP_SOURCES}
-  ${PATH_PLANNING_SOURCES} ${VISUALIZATION_SOURCES} ${GLOBAL_PLANNER_SOURCES})
+  ${PATH_PLANNING_SOURCES} ${VISUALIZATION_SOURCES} ${GLOBAL_PLANNER_SOURCES}
+  ${LOCAL_PLANNER_SOURCES})
 target_link_libraries(larics_motion_planning trajectory map kinematics path_planning 
-  visualization global_planner ${catkin_LIBRARIES} ${Eigen_LIBRARIES} yaml-cpp)
+  visualization global_planner local_planner ${catkin_LIBRARIES} ${Eigen_LIBRARIES} 
+  yaml-cpp)
 
 add_executable(testing_node src/test.cpp)
 target_link_libraries(testing_node larics_motion_planning)
