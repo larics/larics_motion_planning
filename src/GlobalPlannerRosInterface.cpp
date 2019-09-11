@@ -7,7 +7,7 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
   ros::NodeHandle nh_private = ros::NodeHandle("~");
 
   nh_private.param("global_planner_config_file", global_planner_config_file, 
-    string("catkin_ws/src/larics_motion_planning/config/uav_and_wp_manipulator_3R_config.yaml"));
+    string("catkin_ws/src/larics_motion_planning/config/uav_and_wp_manipulator_3r_config.yaml"));
   nh_private.param("rate", rate_, int(10));
 
   // Global planner config
