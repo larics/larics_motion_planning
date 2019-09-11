@@ -28,6 +28,10 @@ class JointTrajectoryToUavAndWpManipulatorReference:
         self.manipulator_joint3_pub = rospy.Publisher(
             '/euroc3/wp_manipulator_3r/joint3', Float32, queue_size=1)
 
+        # Alternatively, publish directly as joint trajectory
+        self.manipulator_trajectory_pub = rospy.Publisher(
+            '/manipulator/joint_trajectory', JointTrajectory, queue_size=1)
+
         rospy.Subscriber('/uav/joint_trajectory', JointTrajectory, 
             self.jointTrajectoryCallback, queue_size=1)
 
@@ -78,6 +82,24 @@ class JointTrajectoryToUavAndWpManipulatorReference:
         temp_trajectory = MultiDOFJointTrajectory()
         temp_trajectory.points.append(self.uav_current_trajectory_point)
         self.uav_trajectory_point_pub.publish(temp_trajectory)
+
+        # Manipulator joint trajectory message
+        q1 = self.current_trajectory_point.positions[4+2]
+        q2 = self.current_trajectory_point.positions[5+2]
+        q3 = self.current_trajectory_point.positions[6+2]
+        joint_trajectory = JointTrajectory()
+        joint_trajectory_point = JointTrajectoryPoint()
+        joint_trajectory_point.positions = [q1, q2, -q3]
+        joint_trajectory_point.velocities = [0, 0, 0]
+        joint_trajectory_point.accelerations = [0, 0, 0]
+        joint_trajectory_point.effort = [0, 0, 0]
+        joint_trajectory_point.time_from_start = rospy.Duration(0.001)
+
+        joint_trajectory.points.append(joint_trajectory_point)
+        joint_trajectory.header.frame_id = "world"
+        joint_trajectory.header.stamp = rospy.Time.now()
+        self.manipulator_trajectory_pub.publish(joint_trajectory)
+
 
 def jointTrajectoryPointToMultiDofJointTrajectoryPoint(joint):
     multi = MultiDOFJointTrajectoryPoint()
