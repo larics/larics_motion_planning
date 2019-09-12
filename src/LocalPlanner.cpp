@@ -6,7 +6,18 @@ LocalPlanner::LocalPlanner(string config_filename)
   username = username + getenv("USERNAME") + "/";
   configureFromFile(username + config_filename);
 
+  // Publishers
+  multi_dof_trajectory_pub_ = nh_.advertise<trajectory_msgs::MultiDOFJointTrajectory>(
+    "/euroc3/command/trajectory", 1);
+  manipulator_joint_trajectory_pub_ = nh_.advertise<trajectory_msgs::JointTrajectory>(
+    "/euroc3/wp_manipulator/joint_trajectory", 1);
+  multi_dof_trajectory_point_pub_ = nh_.advertise<trajectory_msgs::MultiDOFJointTrajectoryPoint>(
+    "/uav/multi_dof_joint_trajectory_point", 1);
+
+
+  // Subscribers
   nh_.subscribe("joint_trajectory", 1, &LocalPlanner::jointTrajectoryCallback, this);
+  nh_.subscribe("/euroc3/msf_core/odometry", 1, &LocalPlanner::odometryCallback, this);
 }
 
 bool LocalPlanner::configureFromFile(string config_filename)
@@ -125,5 +136,59 @@ void LocalPlanner::jointTrajectoryCallback(
       current_point.positions[7] = ik_solution.transpose()[1];
       current_point.positions[8] = ik_solution.transpose()[2];
     }
+
+    // Publish data to uav and manipulator
+    trajectory_msgs::MultiDOFJointTrajectoryPoint multi_dof_point;
+    geometry_msgs::Transform temp_transform;
+    temp_transform.translation.x = msg.points[i].positions[0];
+    temp_transform.translation.y = msg.points[i].positions[1];
+    temp_transform.translation.z = msg.points[i].positions[2];
+    temp_transform.rotation.x = 0;
+    temp_transform.rotation.y = 0;
+    temp_transform.rotation.z = sin(msg.points[i].positions[5]/2.0);
+    temp_transform.rotation.w = cos(msg.points[i].positions[5]/2.0);
+    // Velocities
+    geometry_msgs::Twist temp_velocity;
+    temp_velocity.linear.x = msg.points[i].velocities[0];
+    temp_velocity.linear.y = msg.points[i].velocities[1];
+    temp_velocity.linear.z = msg.points[i].velocities[2];
+    // Accelerations
+    geometry_msgs::Twist temp_acceleration;
+    temp_acceleration.linear.x = msg.points[i].accelerations[0];
+    temp_acceleration.linear.y = msg.points[i].accelerations[1];
+    temp_acceleration.linear.z = msg.points[i].accelerations[2];
+    // Push to point and trajectory
+    multi_dof_point.transforms.push_back(temp_transform);
+    multi_dof_point.velocities.push_back(temp_velocity);
+    multi_dof_point.accelerations.push_back(temp_acceleration);
+    // Trajectory
+    trajectory_msgs::MultiDOFJointTrajectory multi_dof_trajectory;
+    multi_dof_trajectory.points.push_back(multi_dof_point);
+
+    // Manipulator as well
+    trajectory_msgs::JointTrajectory manipulator_trajectory;
+    trajectory_msgs::JointTrajectoryPoint manipulator_point;
+    manipulator_point.positions.push_back(msg.points[i].positions[6]);
+    manipulator_point.positions.push_back(msg.points[i].positions[7]);
+    manipulator_point.positions.push_back(msg.points[i].positions[8]);
+    for (int j=0; j<3; j++){
+      manipulator_point.velocities.push_back(0);
+      manipulator_point.accelerations.push_back(0);
+      manipulator_point.effort.push_back(0);
+    }
+    manipulator_point.time_from_start = ros::Duration(0.001);
+    // Fill the manipulator trajectory with current point
+    manipulator_trajectory.points.push_back(manipulator_point);
+    manipulator_trajectory.header.frame_id = "world";
+    manipulator_trajectory.joint_names.push_back("joint1");
+    manipulator_trajectory.joint_names.push_back("joint2");
+    manipulator_trajectory.joint_names.push_back("joint3");
+    manipulator_trajectory.header.stamp = ros::Time::now();
+    // TODO: publish both messages
   }
+}
+
+void LocalPlanner::odometryCallback(const nav_msgs::Odometry &msg)
+{
+  uav_current_pose_ = msg.pose.pose;
 }
