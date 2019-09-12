@@ -6,6 +6,15 @@
 #ifndef LOCAL_PLANNER_H
 #define LOCAL_PLANNER_H
 
+// TODO: remove ros from local planner? Consider this, use it now though.
+#include <ros/ros.h>
+
+#include <trajectory_msgs/MultiDOFJointTrajectory.h>
+#include <trajectory_msgs/MultiDOFJointTrajectoryPoint.h>
+#include <trajectory_msgs/JointTrajectory.h>
+#include <trajectory_msgs/JointTrajectoryPoint.h>
+
+
 #include <larics_motion_planning/MotionPlanningDatatypes.h>
 #include <larics_motion_planning/MapInterface.h>
 #include <larics_motion_planning/OctomapMap.h>
@@ -38,6 +47,21 @@ class LocalPlanner
     /// \param config_filename Path to configuration file.
     /// \return True if configuration was successful, false otherwise.
     bool configureFromFile(string config_filename);
+
+    void run();
+
+  private:
+    shared_ptr<MapInterface> map_interface_;
+    shared_ptr<StateValidityCheckerInterface> state_validity_checker_interface_;
+    shared_ptr<PathPlanningInterface> path_planner_interface_;
+    shared_ptr<KinematicsInterface> kinematics_interface_;
+
+    string state_validity_checker_type_;
+
+    // Node handle
+    ros::NodeHandle nh_;
+    void jointTrajectoryCallback(const trajectory_msgs::JointTrajectory &msg);
+
 };
 
 
