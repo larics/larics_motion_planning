@@ -13,6 +13,7 @@
 #include <trajectory_msgs/MultiDOFJointTrajectoryPoint.h>
 #include <trajectory_msgs/JointTrajectory.h>
 #include <trajectory_msgs/JointTrajectoryPoint.h>
+#include <geometry_msgs/Pose.h>
 
 
 #include <larics_motion_planning/MotionPlanningDatatypes.h>
@@ -61,6 +62,8 @@ class LocalPlanner
     // Node handle
     ros::NodeHandle nh_;
     void jointTrajectoryCallback(const trajectory_msgs::JointTrajectory &msg);
+
+    geometry_msgs::Pose uav_current_pose_;
 
 };
 
