@@ -14,6 +14,9 @@
 #include <trajectory_msgs/JointTrajectory.h>
 #include <trajectory_msgs/JointTrajectoryPoint.h>
 #include <geometry_msgs/Pose.h>
+#include <geometry_msgs/Transform.h>
+#include <geometry_msgs/Twist.h>
+#include <nav_msgs/Odometry.h>
 
 
 #include <larics_motion_planning/MotionPlanningDatatypes.h>
@@ -30,6 +33,7 @@
 #include <larics_motion_planning/UavWpManipulatorStateValidityChecker.h>
 
 #include <eigen3/Eigen/Eigen>
+#include <cmath>
 
 #include "yaml-cpp/yaml.h"
 
@@ -61,7 +65,10 @@ class LocalPlanner
 
     // Node handle
     ros::NodeHandle nh_;
+    ros::Publisher multi_dof_trajectory_pub_, manipulator_joint_trajectory_pub_, 
+      multi_dof_trajectory_point_pub_;
     void jointTrajectoryCallback(const trajectory_msgs::JointTrajectory &msg);
+    void odometryCallback(const nav_msgs::Odometry &msg);
 
     geometry_msgs::Pose uav_current_pose_;
 
