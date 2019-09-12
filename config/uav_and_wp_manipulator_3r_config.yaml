@@ -110,3 +110,11 @@ kinematics:
     robot_model_name: "wp_manipulator_3r"
     joint_group_name: "wp_manipulator_3r_arm"
     dh_parameters_file: "catkin_ws/src/aerial_manipulators/aerial_manipulators_control/config/wp_manipulator_3r_dh_parameters.yaml"
+
+
+local_planner:
+  map_config_file: "catkin_ws/src/larics_motion_planning/config/uav_and_wp_manipulator_3r_config.yaml"
+  #trajectory_config_file: "catkin_ws/src/larics_motion_planning/config/uav_and_wp_manipulator_3r_config.yaml"
+  #path_planner_config_file: "catkin_ws/src/larics_motion_planning/config/uav_and_wp_manipulator_3r_config.yaml"
+  state_validity_checker_config_file: "catkin_ws/src/larics_motion_planning/config/uav_and_wp_manipulator_3r_config.yaml"
+  kinematics_config_file: "catkin_ws/src/larics_motion_planning/config/uav_and_wp_manipulator_3r_config.yaml"
