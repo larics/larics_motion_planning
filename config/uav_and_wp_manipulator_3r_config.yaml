@@ -94,7 +94,7 @@ state_validity_checker:
     # Yaw is compensated with first joint, 2nd and 3rd joints are compensating pitch
     #uav_manipulator_transform: [0, 0, 0.125, 0, 0, -1.57079632679]
     # Pitch is compensated with first joint, manipulator is on it's side
-    uav_manipulator_transform: [0, 0, 0.125, 0, 1.57079632679, -1.57079632679]
+    uav_manipulator_transform: [0.02, 0, 0.15, 0, 1.57079632679, -1.57079632679]
 
     checker_resolution:
       manipulator: 0.01
