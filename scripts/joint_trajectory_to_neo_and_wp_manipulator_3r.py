@@ -30,7 +30,7 @@ class JointTrajectoryToUavAndWpManipulatorReference:
 
         # Alternatively, publish directly as joint trajectory
         self.manipulator_trajectory_pub = rospy.Publisher(
-            '/manipulator/joint_trajectory', JointTrajectory, queue_size=1)
+            '/euroc3/wp_manipulator_3r/joint_trajectory', JointTrajectory, queue_size=1)
 
         rospy.Subscriber('/uav/joint_trajectory', JointTrajectory, 
             self.jointTrajectoryCallback, queue_size=1)
@@ -97,6 +97,9 @@ class JointTrajectoryToUavAndWpManipulatorReference:
 
         joint_trajectory.points.append(joint_trajectory_point)
         joint_trajectory.header.frame_id = "world"
+        joint_trajectory.joint_names.append("joint1")
+        joint_trajectory.joint_names.append("joint2")
+        joint_trajectory.joint_names.append("joint3")
         joint_trajectory.header.stamp = rospy.Time.now()
         self.manipulator_trajectory_pub.publish(joint_trajectory)
 
