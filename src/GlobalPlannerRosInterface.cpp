@@ -75,7 +75,7 @@ bool GlobalPlannerRosInterface::emptyCallback(std_srvs::Empty::Request &req,
     usleep(10000);
   }
   string tempstr;
-  cout << "Press enter to publish non compensated trajectory with acceleration roll pitch estimation." << endl;
+  cout << "Animated uncompensated trajectory with roll and pitch estimated from compensation." << endl;
   //getline(cin, tempstr);
   //joint_trajectory_pub_.publish(trajectoryToJointTrajectory(trajectory));
   usleep(1000000);
@@ -168,7 +168,7 @@ bool GlobalPlannerRosInterface::emptyCallback(std_srvs::Empty::Request &req,
       trajectory.position.block(i, 6, 1, 3) = ik_solution.transpose();
     }
   }
-  cout << "Proso petlju" << endl;
+  //cout << "Proso petlju" << endl;
   for (int i=0; i<trajectory.position.rows(); i++){
     //trajectory.position(i, 3) = -trajectory.acceleration(i, 1)/9.81;
     //trajectory.position(i, 4) = trajectory.acceleration(i, 0)/9.81;

@@ -230,7 +230,7 @@ Eigen::MatrixXd UavWpManipulatorStateValidityChecker::generateValidityPoints(
 
   // Sample tool points if requested. Tool is going to be an extension of last
   // link
-  cout << "Doing Tool" << endl;
+  //cout << "Doing Tool" << endl;
   if (use_tool_ == true){
     Eigen::Affine3d t_world_link = t_world_manipulator*link_positions[q.size()+1];
     Eigen::MatrixXd points_link = generatePrism(tool_dimensions_(0), 
@@ -247,7 +247,7 @@ Eigen::MatrixXd UavWpManipulatorStateValidityChecker::generateValidityPoints(
       points_.row(j+points_size) = ((t_world_link*current_point).translation()).transpose();
     }
   }
-  cout << "Tool done" << endl;
+  //cout << "Tool done" << endl;
 
   Eigen::Affine3d t_world_link = t_world_uav;
   Eigen::MatrixXd points_link = generatePrism(uav_dimensions_(0), 
@@ -255,7 +255,7 @@ Eigen::MatrixXd UavWpManipulatorStateValidityChecker::generateValidityPoints(
   //points_ = Eigen::MatrixXd(points_link.rows(), points_link.cols());
   double points_size = points_.rows();
   points_.conservativeResize(points_.rows() + points_link.rows(), 3);
-  cout << "Adding UAV" << endl;
+  //cout << "Adding UAV" << endl;
   for (int j=0; j<points_link.rows(); j++){
     Eigen::Affine3d current_point(Eigen::Affine3d::Identity());
     //cout << (points_link.row(i)).transpose() << endl;
@@ -263,8 +263,8 @@ Eigen::MatrixXd UavWpManipulatorStateValidityChecker::generateValidityPoints(
     current_point.translate(Eigen::Vector3d((points_link.row(j)).transpose()));
     points_.row(j+points_size) = ((t_world_link*current_point).translation()).transpose();
   }
-  cout << "UAV done" << endl;
-  cout << points_.rows() << " " << points_.cols() << endl;
+  //cout << "UAV done" << endl;
+  //cout << points_.rows() << " " << points_.cols() << endl;
 
   return points_;
 }
