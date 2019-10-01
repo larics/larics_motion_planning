@@ -276,7 +276,10 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
     planner->as<og::RRTstar>()->setRange(planner_configuration_.range_value);
   }
   // Rewiring scale factor, not sure what it is but default was 1.1
-  //planner->as<og::RRTstar>()->setRewireFactor(1.1);
+  if (planner_configuration_.rewire_factor_is_used){
+    planner->as<og::RRTstar>()->setRewireFactor(
+      planner_configuration_.rewire_factor_value);
+  }
   // Delays collision checking procedures. If set to false this checks
   // collisions between neighbor nodes and tries to find the nearest. If set
   // to true it stops when it has found the first collision free neighbor which
