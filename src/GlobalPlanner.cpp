@@ -4,7 +4,9 @@ GlobalPlanner::GlobalPlanner(string config_filename)
 {
   string username = "/home/";
   username = username + getenv("USERNAME") + "/";
-  configureFromFile(username + config_filename);
+  size_t found = config_filename.find(username);
+  if (found != string::npos) configureFromFile(config_filename);
+  else configureFromFile(username + config_filename);
 }
 
 bool GlobalPlanner::configureFromFile(string config_filename)
