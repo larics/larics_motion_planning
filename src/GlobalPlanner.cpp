@@ -32,11 +32,12 @@ bool GlobalPlanner::configureFromFile(string config_filename)
       map_interface_);
     cout << "State validity checker type is: point" << endl;
   }
-  else if (state_validity_checker_type_ == "ball"){
+  else if (state_validity_checker_type_ == "ball" || 
+    state_validity_checker_type_ == "sphere"){
     state_validity_checker_interface_ = make_shared<BallStateValidityChecker>(
       config["global_planner"]["state_validity_checker_config_file"].as<string>(),
-      map_interface_);
-    cout << "State validity checker type is: ball" << endl;
+      map_interface_, state_validity_checker_type_);
+    cout << "State validity checker type is: " << state_validity_checker_type_ << endl;
   }
   else if (state_validity_checker_type_ == "uav_and_wp_manipulator"){
     // First set up kinematics for wp manipulator.

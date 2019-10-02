@@ -27,7 +27,7 @@ class BallStateValidityChecker : public StateValidityCheckerInterface
     /// \param config_filename Configuration filename for validity checker.
     /// \param map Map interface that is used for checking validity of a point.
     BallStateValidityChecker(string config_filename, 
-      shared_ptr<MapInterface> map);
+      shared_ptr<MapInterface> map, string type);
 
     /// \brief Validity of a robot state.
     /// \param state Vector of robot state.
@@ -49,9 +49,15 @@ class BallStateValidityChecker : public StateValidityCheckerInterface
     /// \return Matrix of points for the ball.
     Eigen::MatrixXd generateBall();
 
+    /// \brief Generates sphere of points.
+    /// \return Matrix of points for the sphere.
+    Eigen::MatrixXd generateSphere();
+
   private:
     shared_ptr<MapInterface> map_;
-    double radius_, resolution_;
+    string checker_type_;
+    double ball_radius_, ball_resolution_;
+    double sphere_radius_, sphere_resolution_;
 };
 
 #endif // BALL_STATE_VALIDITY_CHECKER_H
