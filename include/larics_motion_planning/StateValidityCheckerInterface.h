@@ -19,6 +19,7 @@ class StateValidityCheckerInterface
     virtual bool isStateValid(Eigen::VectorXd state) = 0;
     Eigen::MatrixXd getStatePoints() {return points_;}
     virtual Eigen::MatrixXd generateValidityPoints(Eigen::VectorXd state) {return points_;}
+    virtual bool configureFromFile(string config_filename) {return true;}
 
   protected:
     Eigen::MatrixXd points_;

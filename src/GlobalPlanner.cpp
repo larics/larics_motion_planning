@@ -32,6 +32,12 @@ bool GlobalPlanner::configureFromFile(string config_filename)
       map_interface_);
     cout << "State validity checker type is: point" << endl;
   }
+  else if (state_validity_checker_type_ == "ball"){
+    state_validity_checker_interface_ = make_shared<BallStateValidityChecker>(
+      config["global_planner"]["state_validity_checker_config_file"].as<string>(),
+      map_interface_);
+    cout << "State validity checker type is: ball" << endl;
+  }
   else if (state_validity_checker_type_ == "uav_and_wp_manipulator"){
     // First set up kinematics for wp manipulator.
     kinematics_interface_ = make_shared<WpManipulatorKinematics>(
@@ -51,7 +57,6 @@ bool GlobalPlanner::configureFromFile(string config_filename)
   path_planner_interface_ = make_shared<RrtPathPlanner>(
     config["global_planner"]["path_planner_config_file"].as<string>(), 
     state_validity_checker_interface_);
-
   num_trajectory_restarts_ = 
     config["global_planner"]["trajectory"]["restarts"].as<int>();
   num_path_and_trajectory_restarts_ = 

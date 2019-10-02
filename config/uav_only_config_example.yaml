@@ -144,4 +144,8 @@ toppra_trajectory:
 
 state_validity_checker:
   # State validity checker only checks one point.
-  type: "point"
+  type: "ball"
+
+  ball:
+    radius: 0.2
+    resolution: 0.1

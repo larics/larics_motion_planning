@@ -15,6 +15,7 @@
 #include <larics_motion_planning/ToppraTrajectory.h>
 #include <larics_motion_planning/StateValidityCheckerInterface.h>
 #include <larics_motion_planning/PointStateValidityChecker.h>
+#include <larics_motion_planning/BallStateValidityChecker.h>
 #include <larics_motion_planning/UavWpManipulatorStateValidityChecker.h>
 
 #include <eigen3/Eigen/Eigen>
