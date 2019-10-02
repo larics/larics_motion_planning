@@ -12,3 +12,9 @@ bool PointStateValidityChecker::isStateValid(Eigen::VectorXd state)
   points_ = state.transpose();
   return map_->isStateValid(state);
 }
+
+Eigen::MatrixXd PointStateValidityChecker::generateValidityPoints(Eigen::VectorXd state)
+{
+  points_ = state.transpose();
+  return points_;
+}

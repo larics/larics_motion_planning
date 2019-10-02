@@ -30,6 +30,11 @@ class PointStateValidityChecker : public StateValidityCheckerInterface
     ///   otherwise.
     bool isStateValid(Eigen::VectorXd state);
 
+    /// \brief Generates a single point to be checked.
+    /// \param state Robot state, only first three DOF are taken into account.
+    /// \return Matrix of points for collision checking.
+    Eigen::MatrixXd generateValidityPoints(Eigen::VectorXd state);
+
   private:
     shared_ptr<MapInterface> map_;
 };
