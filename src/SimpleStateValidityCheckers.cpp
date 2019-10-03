@@ -64,7 +64,7 @@ Eigen::MatrixXd SimpleStateValidityCheckers::generateValidityPoints(
 Eigen::MatrixXd SimpleStateValidityCheckers::generateBall()
 {
   //cout << points << endl;
-
+  /*
   int points_size = 0;
   for (double radius = ball_resolution_; radius <= (ball_radius_+ball_resolution_/2.0); 
     radius+=ball_resolution_){
@@ -101,6 +101,18 @@ Eigen::MatrixXd SimpleStateValidityCheckers::generateBall()
         points_size++;
       }
     }
+  }*/
+  Eigen::MatrixXd points(0,3);
+  for (double radius = 0.0; radius < (
+    ball_radius_ + ball_resolution_/2.0); radius+=ball_resolution_){
+    sphere_radius_ = radius;
+    sphere_resolution_ = ball_resolution_;
+    Eigen::MatrixXd current_sphere_points = generateSphere();
+
+    int rows = points.rows();
+    points.conservativeResize(points.rows()+current_sphere_points.rows(), 3);
+    points.block(rows, 0, current_sphere_points.rows(), 
+      current_sphere_points.cols()) << current_sphere_points;
   }
   
   //cout << points_size << endl;
