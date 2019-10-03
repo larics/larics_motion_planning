@@ -67,7 +67,16 @@ bool SimpleStateValidityCheckers::configureFromFile(string config_filename)
 
 bool SimpleStateValidityCheckers::isStateValid(Eigen::VectorXd state)
 {
-  return true;
+  // Get points to be checked.
+  Eigen::MatrixXd state_points = generateValidityPoints(state);
+
+  // Check for validity
+  bool valid_flag = true;
+  for (int i=0; i<state_points.rows() && valid_flag==true; i++){
+    valid_flag &= map_->isStateValid((state_points.row(i)).transpose());
+  }
+
+  return valid_flag;
 }
 
 Eigen::MatrixXd SimpleStateValidityCheckers::generateValidityPoints(
