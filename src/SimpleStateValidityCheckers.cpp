@@ -12,8 +12,11 @@ SimpleStateValidityCheckers::SimpleStateValidityCheckers(
   
   if (checker_type_.compare("ball") == 0) points_ = generateBall();
   else if (checker_type_.compare("sphere") == 0) points_ = generateSphere();
-  //cout << points_.rows() << " " << points_.cols() << endl;
-  //cout << points_ << endl;
+  else if (checker_type_.compare("point") == 0) points_ = generatePoint();
+  else{
+    cout << "The " << type << " state validity checker does not exist" << endl;
+    exit(0);
+  }
 }
 
 bool SimpleStateValidityCheckers::configureFromFile(string config_filename)
@@ -142,5 +145,11 @@ Eigen::MatrixXd SimpleStateValidityCheckers::generateSphere()
   //cout << points_size << endl;
   //cout << points.rows() << " " << points.cols() << endl;
 
+  return points;
+}
+
+Eigen::MatrixXd SimpleStateValidityCheckers::generatePoint()
+{
+  Eigen::MatrixXd points = Eigen::MatrixXd::Zero(1,3);
   return points;
 }

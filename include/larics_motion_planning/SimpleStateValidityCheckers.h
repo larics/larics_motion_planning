@@ -1,6 +1,6 @@
 /// \file SimpleStateValidityCheckers.h
-/// \brief This calss considers the robot to be a ball and checks if that
-///   is in obstacle or not.
+/// \brief This class contains several simple geometric shapes as state 
+///   validity checkers. It features point, sphere and ball states.
 
 #ifndef SIMPLE_STATE_VALIDITY_CHECKERS_H
 #define SIMPLE_STATE_VALIDITY_CHECKERS_H
@@ -40,7 +40,8 @@ class SimpleStateValidityCheckers : public StateValidityCheckerInterface
     /// \return False if configuration is unsuccessful, true otherwise.
     bool configureFromFile(string config_filename);
 
-    /// \brief Generates a ball of points
+    /// \brief Since points are generated in constructor, this translates 
+    ///   them to robot current position.
     /// \param state Robot state, only first three DOF are taken into account.
     /// \return Matrix of points for collision checking.
     Eigen::MatrixXd generateValidityPoints(Eigen::VectorXd state);
@@ -52,6 +53,10 @@ class SimpleStateValidityCheckers : public StateValidityCheckerInterface
     /// \brief Generates sphere of points.
     /// \return Matrix of points for the sphere.
     Eigen::MatrixXd generateSphere();
+
+    /// \brief Generates a single point.
+    /// \return Matrix that contains only that point.
+    Eigen::MatrixXd generatePoint();
 
   private:
     shared_ptr<MapInterface> map_;

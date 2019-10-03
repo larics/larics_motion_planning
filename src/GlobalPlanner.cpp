@@ -27,13 +27,14 @@ bool GlobalPlanner::configureFromFile(string config_filename)
   username = username + getenv("USERNAME") + "/";
   YAML::Node state_config = YAML::LoadFile(username + config["global_planner"]["state_validity_checker_config_file"].as<string>());
   state_validity_checker_type_ = state_config["state_validity_checker"]["type"].as<string>();
-  if (state_validity_checker_type_ == "point"){
-    state_validity_checker_interface_ = make_shared<PointStateValidityChecker>(
-      map_interface_);
-    cout << "State validity checker type is: point" << endl;
-  }
-  else if (state_validity_checker_type_ == "ball" || 
-    state_validity_checker_type_ == "sphere"){
+  //if (state_validity_checker_type_ == "point"){
+  //  state_validity_checker_interface_ = make_shared<PointStateValidityChecker>(
+  //    map_interface_);
+  //  cout << "State validity checker type is: point" << endl;
+  //}
+  if (state_validity_checker_type_ == "ball" || 
+    state_validity_checker_type_ == "sphere" ||
+    state_validity_checker_type_ == "point"){
     state_validity_checker_interface_ = make_shared<SimpleStateValidityCheckers>(
       config["global_planner"]["state_validity_checker_config_file"].as<string>(),
       map_interface_, state_validity_checker_type_);
