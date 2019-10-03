@@ -2,6 +2,10 @@
 
 Visualization::Visualization()
 {
+  ros::NodeHandle nh_private = ros::NodeHandle("~");
+  nh_private.param("state_scale", state_scale_, double(0.1));
+  nh_private.param("waypoints_scale", waypoints_scale_, double(0.2));
+
   path_publisher_ = nh_.advertise<nav_msgs::Path>("visualization/path", 1);
   trajectory_publisher_ = nh_.advertise<nav_msgs::Path>(
     "visualization/trajectory", 1);
@@ -82,9 +86,9 @@ void Visualization::setStatePoints(Eigen::MatrixXd points)
   state_points_.header.frame_id = "world";
   state_points_.ns = "state_points";
   state_points_.id = 0;
-  state_points_.scale.x = 0.01;
-  state_points_.scale.y = 0.01;
-  state_points_.scale.z = 0.01;
+  state_points_.scale.x = state_scale_;
+  state_points_.scale.y = state_scale_;
+  state_points_.scale.z = state_scale_;
   state_points_.lifetime = ros::Duration(0);
 }
 
@@ -161,9 +165,9 @@ visualization_msgs::Marker Visualization::navMsgsPathToVisualizationMsgsMarker(
   marker.id = 0;
   marker.type = visualization_msgs::Marker::SPHERE_LIST;
   marker.action = visualization_msgs::Marker::ADD;
-  marker.scale.x = 0.2;
-  marker.scale.y = 0.2;
-  marker.scale.z = 0.2;
+  marker.scale.x = waypoints_scale_;
+  marker.scale.y = waypoints_scale_;
+  marker.scale.z = waypoints_scale_;
   marker.lifetime = ros::Duration(0);
 
   geometry_msgs::Point current_point;

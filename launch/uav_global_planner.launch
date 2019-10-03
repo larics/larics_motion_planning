@@ -6,6 +6,9 @@
     <node name="global_planner" pkg="larics_motion_planning" type="global_planner_node" output="screen">
       <param name="rate" value="$(arg rate)" />
       <param name="global_planner_config_file" value="$(find larics_motion_planning)/config/uav_only_config_example.yaml" />
+
+      <param name="state_scale" value="0.05" />
+      <param name="waypoints_scale" value="0.5" />
     </node>
   </group>
 </launch>

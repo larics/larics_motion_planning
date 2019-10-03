@@ -101,6 +101,7 @@ class Visualization
     ros::Publisher path_publisher_, trajectory_publisher_, waypoints_publisher_, 
       state_points_publisher_;
 
+    double state_scale_, waypoints_scale_;
 
     nav_msgs::Path eigenMatrixXdToNavMsgsPath(Eigen::MatrixXd eigen_path, 
       bool projection=false);
