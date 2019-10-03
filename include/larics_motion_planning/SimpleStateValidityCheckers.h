@@ -58,11 +58,16 @@ class SimpleStateValidityCheckers : public StateValidityCheckerInterface
     /// \return Matrix that contains only that point.
     Eigen::MatrixXd generatePoint();
 
+    /// \brief Generates a circle.
+    /// \return Matrix that contains circle of points.
+    Eigen::MatrixXd generateCircle();
+
   private:
     shared_ptr<MapInterface> map_;
     string checker_type_;
     double ball_radius_, ball_resolution_;
     double sphere_radius_, sphere_resolution_;
+    double circle_radius_, circle_resolution_;
 };
 
 #endif // SIMPLE_STATE_VALIDITY_CHECKERS_H

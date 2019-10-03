@@ -13,6 +13,7 @@ SimpleStateValidityCheckers::SimpleStateValidityCheckers(
   if (checker_type_.compare("ball") == 0) points_ = generateBall();
   else if (checker_type_.compare("sphere") == 0) points_ = generateSphere();
   else if (checker_type_.compare("point") == 0) points_ = generatePoint();
+  else if (checker_type_.compare("circle") == 0) points_ = generateCircle();
   else{
     cout << "The " << type << " state validity checker does not exist" << endl;
     exit(0);
@@ -34,6 +35,10 @@ bool SimpleStateValidityCheckers::configureFromFile(string config_filename)
   else if (checker_type_.compare("sphere") == 0){
     sphere_radius_ = config["state_validity_checker"]["sphere"]["radius"].as<double>();
     sphere_resolution_ = config["state_validity_checker"]["sphere"]["resolution"].as<double>();
+  }
+  else if (checker_type_.compare("circle") == 0){
+    circle_radius_ = config["state_validity_checker"]["circle"]["radius"].as<double>();
+    circle_resolution_ = config["state_validity_checker"]["circle"]["resolution"].as<double>();
   }
   else{
     cout << "There is no such checker type. Your type is: " << checker_type_ << endl;
@@ -198,5 +203,28 @@ Eigen::MatrixXd SimpleStateValidityCheckers::generateSphere()
 Eigen::MatrixXd SimpleStateValidityCheckers::generatePoint()
 {
   Eigen::MatrixXd points = Eigen::MatrixXd::Zero(1,3);
+  return points;
+}
+
+Eigen::MatrixXd SimpleStateValidityCheckers::generateCircle()
+{
+
+  Eigen::MatrixXd points(1,3);
+  points(0,0) = 0.0; points(0,1) = 0.0; points(0,2) = 0.0;
+  for (double r=0.0; r<(circle_radius_+circle_resolution_/2.0); 
+    r+=circle_resolution_){
+    double n = ceil(2.0*r*M_PI/circle_resolution_);
+
+    int row = points.rows();
+    points.conservativeResize(points.rows()+int(n), 3);
+    for (int i=0; i<int(n); i++){
+      double phi = double(i)*2.0*M_PI/n;
+      points(i+row, 0) = r*cos(phi); 
+      points(i+row, 1) = r*sin(phi);
+      points(i+row, 2) = 0.0;
+    }
+  }
+
+
   return points;
 }
