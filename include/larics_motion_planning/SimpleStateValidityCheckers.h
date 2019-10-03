@@ -66,6 +66,11 @@ class SimpleStateValidityCheckers : public StateValidityCheckerInterface
     /// \return Matrix that contains cylinder of points.
     Eigen::MatrixXd generateCylinder();
 
+    /// \brief Generates a rectangle.
+    /// \return Matrix that contains rectangle of points.
+    Eigen::MatrixXd generateRectangle(double z=0.0);
+
+
   private:
     shared_ptr<MapInterface> map_;
     string checker_type_;
@@ -73,6 +78,7 @@ class SimpleStateValidityCheckers : public StateValidityCheckerInterface
     double sphere_radius_, sphere_resolution_;
     double circle_radius_, circle_resolution_;
     double cylinder_radius_, cylinder_resolution_, cylinder_height_;
+    double rectangle_x_, rectangle_y_, rectangle_resolution_;
 };
 
 #endif // SIMPLE_STATE_VALIDITY_CHECKERS_H

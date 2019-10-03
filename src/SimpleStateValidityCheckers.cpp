@@ -15,6 +15,7 @@ SimpleStateValidityCheckers::SimpleStateValidityCheckers(
   else if (checker_type_.compare("point") == 0) points_ = generatePoint();
   else if (checker_type_.compare("circle") == 0) points_ = generateCircle();
   else if (checker_type_.compare("cylinder") == 0) points_ = generateCylinder();
+  else if (checker_type_.compare("rectangle") == 0) points_ = generateRectangle();
   else{
     cout << "The " << type << " state validity checker does not exist" << endl;
     exit(0);
@@ -45,6 +46,11 @@ bool SimpleStateValidityCheckers::configureFromFile(string config_filename)
     cylinder_radius_ = config["state_validity_checker"]["cylinder"]["radius"].as<double>();
     cylinder_resolution_ = config["state_validity_checker"]["cylinder"]["resolution"].as<double>();
     cylinder_height_ = config["state_validity_checker"]["cylinder"]["height"].as<double>();
+  }
+  else if (checker_type_.compare("rectangle") == 0){
+    rectangle_x_ = config["state_validity_checker"]["rectangle"]["x_dimension"].as<double>();
+    rectangle_y_ = config["state_validity_checker"]["rectangle"]["y_dimension"].as<double>();
+    rectangle_resolution_ = config["state_validity_checker"]["rectangle"]["resolution"].as<double>();
   }
   else{
     cout << "There is no such checker type. Your type is: " << checker_type_ << endl;
@@ -247,6 +253,33 @@ Eigen::MatrixXd SimpleStateValidityCheckers::generateCylinder()
     int rows = points.rows();
     points.conservativeResize(points.rows()+circle.rows(), 3);
     points.block(rows, 0, circle.rows(), circle.cols()) << circle;
+  }
+
+  return points;
+}
+
+Eigen::MatrixXd SimpleStateValidityCheckers::generateRectangle(double z)
+{
+  int points_size = 0;
+  for (double x=0.0; x<(rectangle_x_+rectangle_resolution_/2.0);
+    x+=rectangle_resolution_){
+    for (double y=0.0; y<(rectangle_y_+rectangle_resolution_/2.0);
+    y+=rectangle_resolution_){
+      points_size++;
+    }
+  }
+
+  Eigen::MatrixXd points(points_size,3);
+  points_size = 0;
+  for (double x=0.0; x<(rectangle_x_+rectangle_resolution_/2.0);
+    x+=rectangle_resolution_){
+    for (double y=0.0; y<(rectangle_y_+rectangle_resolution_/2.0);
+    y+=rectangle_resolution_){
+      points(points_size, 0) = x-rectangle_x_/2.0;
+      points(points_size, 1) = y-rectangle_y_/2.0;
+      points(points_size, 2) = z;
+      points_size++;
+    }
   }
 
   return points;
