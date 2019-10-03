@@ -34,7 +34,7 @@ bool GlobalPlanner::configureFromFile(string config_filename)
   }
   else if (state_validity_checker_type_ == "ball" || 
     state_validity_checker_type_ == "sphere"){
-    state_validity_checker_interface_ = make_shared<BallStateValidityChecker>(
+    state_validity_checker_interface_ = make_shared<SimpleStateValidityCheckers>(
       config["global_planner"]["state_validity_checker_config_file"].as<string>(),
       map_interface_, state_validity_checker_type_);
     cout << "State validity checker type is: " << state_validity_checker_type_ << endl;

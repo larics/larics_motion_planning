@@ -1,9 +1,9 @@
-/// \file BallStateValidityChecker.h
+/// \file SimpleStateValidityCheckers.h
 /// \brief This calss considers the robot to be a ball and checks if that
 ///   is in obstacle or not.
 
-#ifndef BALL_STATE_VALIDITY_CHECKER_H
-#define BALL_STATE_VALIDITY_CHECKER_H
+#ifndef SIMPLE_STATE_VALIDITY_CHECKERS_H
+#define SIMPLE_STATE_VALIDITY_CHECKERS_H
 
 // #include "MotionPlanningDatatypes.h"
 #include <larics_motion_planning/StateValidityCheckerInterface.h>
@@ -20,13 +20,13 @@
 using namespace std;
 
 /// This class check if a single point is in obstacle or not.
-class BallStateValidityChecker : public StateValidityCheckerInterface
+class SimpleStateValidityCheckers : public StateValidityCheckerInterface
 {
   public:
     /// \brief Constructor.
     /// \param config_filename Configuration filename for validity checker.
     /// \param map Map interface that is used for checking validity of a point.
-    BallStateValidityChecker(string config_filename, 
+    SimpleStateValidityCheckers(string config_filename, 
       shared_ptr<MapInterface> map, string type);
 
     /// \brief Validity of a robot state.
@@ -60,4 +60,4 @@ class BallStateValidityChecker : public StateValidityCheckerInterface
     double sphere_radius_, sphere_resolution_;
 };
 
-#endif // BALL_STATE_VALIDITY_CHECKER_H
+#endif // SIMPLE_STATE_VALIDITY_CHECKERS_H

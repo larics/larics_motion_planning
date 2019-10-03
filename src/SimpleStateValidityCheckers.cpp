@@ -1,6 +1,6 @@
-#include <larics_motion_planning/BallStateValidityChecker.h>
+#include <larics_motion_planning/SimpleStateValidityCheckers.h>
 
-BallStateValidityChecker::BallStateValidityChecker(
+SimpleStateValidityCheckers::SimpleStateValidityCheckers(
   string config_filename, shared_ptr<MapInterface> map, string type)
 {
   map_ = map;
@@ -16,7 +16,7 @@ BallStateValidityChecker::BallStateValidityChecker(
   //cout << points_ << endl;
 }
 
-bool BallStateValidityChecker::configureFromFile(string config_filename)
+bool SimpleStateValidityCheckers::configureFromFile(string config_filename)
 {
   cout << "Configuring state validity checker from file: " << endl;
   cout << "  " << config_filename << endl;
@@ -38,12 +38,12 @@ bool BallStateValidityChecker::configureFromFile(string config_filename)
   return true;
 }
 
-bool BallStateValidityChecker::isStateValid(Eigen::VectorXd state)
+bool SimpleStateValidityCheckers::isStateValid(Eigen::VectorXd state)
 {
   return true;
 }
 
-Eigen::MatrixXd BallStateValidityChecker::generateValidityPoints(
+Eigen::MatrixXd SimpleStateValidityCheckers::generateValidityPoints(
   Eigen::VectorXd state)
 {
   Eigen::Vector3d position = Eigen::Vector3d::Zero();
@@ -58,7 +58,7 @@ Eigen::MatrixXd BallStateValidityChecker::generateValidityPoints(
   return state_points;
 }
 
-Eigen::MatrixXd BallStateValidityChecker::generateBall()
+Eigen::MatrixXd SimpleStateValidityCheckers::generateBall()
 {
   //cout << points << endl;
 
@@ -106,7 +106,7 @@ Eigen::MatrixXd BallStateValidityChecker::generateBall()
   return points;
 }
 
-Eigen::MatrixXd BallStateValidityChecker::generateSphere()
+Eigen::MatrixXd SimpleStateValidityCheckers::generateSphere()
 {
   //cout << points << endl;
 
