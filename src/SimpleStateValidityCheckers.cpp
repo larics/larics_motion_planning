@@ -112,7 +112,7 @@ Eigen::MatrixXd SimpleStateValidityCheckers::generateBall()
 Eigen::MatrixXd SimpleStateValidityCheckers::generateSphere()
 {
   //cout << points << endl;
-
+  /*
   int points_size = 0;
   double sphere_area = 4.0*M_PI*sphere_radius_*sphere_radius_;
   double a = sqrt(sphere_area);
@@ -143,7 +143,42 @@ Eigen::MatrixXd SimpleStateValidityCheckers::generateSphere()
   }
   
   //cout << points_size << endl;
-  //cout << points.rows() << " " << points.cols() << endl;
+  //cout << points.rows() << " " << points.cols() << endl;*/
+
+  int points_size = 0;
+  double n = ceil(2.0*sphere_radius_*M_PI/(sphere_resolution_));
+  double delta_phi = 2.0*M_PI/n;
+
+  for (double phi = -M_PI/2.0; phi < (M_PI/2.0+delta_phi/2.0); phi+=delta_phi){
+    double r = sphere_radius_*cos(phi);
+    double z = sphere_radius_*(1.0-sin(phi));
+    double nc = ceil(2.0*r*M_PI/sphere_resolution_);
+    double delta_theta = 2.0*M_PI/nc;
+
+    for (double theta = 0.0; theta < (2.0*M_PI-delta_theta/2.0); theta+=delta_theta){
+      points_size++;
+    }
+  }
+
+  Eigen::MatrixXd points(points_size+1,3);
+  points_size = 0;
+
+  for (double phi = -M_PI/2.0; phi < (M_PI/2.0+delta_phi/2.0); phi+=delta_phi){
+    double r = sphere_radius_*cos(phi);
+    double z = sphere_radius_*(1.0-sin(phi));
+    double nc = ceil(2.0*r*M_PI/sphere_resolution_);
+    double delta_theta = 2.0*M_PI/nc;
+
+    for (double theta = 0.0; theta < (2.0*M_PI-delta_theta/2.0); theta+=delta_theta){
+      points(points_size, 0) = r*cos(theta);
+      points(points_size, 1) = r*sin(theta);
+      points(points_size, 2) = z-sphere_radius_;
+      points_size++;
+    }
+  }
+  points(points_size, 0) = 0;
+  points(points_size, 1) = 0;
+  points(points_size, 2) = -sphere_radius_;
 
   return points;
 }
