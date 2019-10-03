@@ -16,6 +16,7 @@ SimpleStateValidityCheckers::SimpleStateValidityCheckers(
   else if (checker_type_.compare("circle") == 0) points_ = generateCircle();
   else if (checker_type_.compare("cylinder") == 0) points_ = generateCylinder();
   else if (checker_type_.compare("rectangle") == 0) points_ = generateRectangle();
+  else if (checker_type_.compare("prism") == 0) points_ = generatePrism();
   else{
     cout << "The " << type << " state validity checker does not exist" << endl;
     exit(0);
@@ -51,6 +52,12 @@ bool SimpleStateValidityCheckers::configureFromFile(string config_filename)
     rectangle_x_ = config["state_validity_checker"]["rectangle"]["x_dimension"].as<double>();
     rectangle_y_ = config["state_validity_checker"]["rectangle"]["y_dimension"].as<double>();
     rectangle_resolution_ = config["state_validity_checker"]["rectangle"]["resolution"].as<double>();
+  }
+  else if (checker_type_.compare("prism") == 0){
+    prism_x_ = config["state_validity_checker"]["prism"]["x_dimension"].as<double>();
+    prism_y_ = config["state_validity_checker"]["prism"]["y_dimension"].as<double>();
+    prism_z_ = config["state_validity_checker"]["prism"]["z_dimension"].as<double>();
+    prism_resolution_ = config["state_validity_checker"]["prism"]["resolution"].as<double>();
   }
   else{
     cout << "There is no such checker type. Your type is: " << checker_type_ << endl;
@@ -280,6 +287,26 @@ Eigen::MatrixXd SimpleStateValidityCheckers::generateRectangle(double z)
       points(points_size, 2) = z;
       points_size++;
     }
+  }
+
+  return points;
+}
+
+Eigen::MatrixXd SimpleStateValidityCheckers::generatePrism()
+{
+
+  Eigen::MatrixXd points(0,3);
+
+  rectangle_x_ = prism_x_;
+  rectangle_y_ = prism_y_;
+  rectangle_resolution_ = prism_resolution_;
+  for (double z=0.0; z<(prism_z_+prism_resolution_/2.0); 
+    z+=prism_resolution_){
+    Eigen::MatrixXd rectangle = generateRectangle(z-prism_z_/2.0);
+
+    int rows = points.rows();
+    points.conservativeResize(points.rows()+rectangle.rows(), 3);
+    points.block(rows, 0, rectangle.rows(), rectangle.cols()) << rectangle;
   }
 
   return points;

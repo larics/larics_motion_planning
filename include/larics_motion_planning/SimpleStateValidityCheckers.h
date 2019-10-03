@@ -70,6 +70,10 @@ class SimpleStateValidityCheckers : public StateValidityCheckerInterface
     /// \return Matrix that contains rectangle of points.
     Eigen::MatrixXd generateRectangle(double z=0.0);
 
+    /// \brief Generates a prism.
+    /// \return Matrix that contains prism of points.
+    Eigen::MatrixXd generatePrism();
+
 
   private:
     shared_ptr<MapInterface> map_;
@@ -79,6 +83,7 @@ class SimpleStateValidityCheckers : public StateValidityCheckerInterface
     double circle_radius_, circle_resolution_;
     double cylinder_radius_, cylinder_resolution_, cylinder_height_;
     double rectangle_x_, rectangle_y_, rectangle_resolution_;
+    double prism_x_, prism_y_, prism_z_, prism_resolution_;
 };
 
 #endif // SIMPLE_STATE_VALIDITY_CHECKERS_H
