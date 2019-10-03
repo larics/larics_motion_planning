@@ -14,6 +14,7 @@ SimpleStateValidityCheckers::SimpleStateValidityCheckers(
   else if (checker_type_.compare("sphere") == 0) points_ = generateSphere();
   else if (checker_type_.compare("point") == 0) points_ = generatePoint();
   else if (checker_type_.compare("circle") == 0) points_ = generateCircle();
+  else if (checker_type_.compare("cylinder") == 0) points_ = generateCylinder();
   else{
     cout << "The " << type << " state validity checker does not exist" << endl;
     exit(0);
@@ -39,6 +40,11 @@ bool SimpleStateValidityCheckers::configureFromFile(string config_filename)
   else if (checker_type_.compare("circle") == 0){
     circle_radius_ = config["state_validity_checker"]["circle"]["radius"].as<double>();
     circle_resolution_ = config["state_validity_checker"]["circle"]["resolution"].as<double>();
+  }
+  else if (checker_type_.compare("cylinder") == 0){
+    cylinder_radius_ = config["state_validity_checker"]["cylinder"]["radius"].as<double>();
+    cylinder_resolution_ = config["state_validity_checker"]["cylinder"]["resolution"].as<double>();
+    cylinder_height_ = config["state_validity_checker"]["cylinder"]["height"].as<double>();
   }
   else{
     cout << "There is no such checker type. Your type is: " << checker_type_ << endl;
@@ -206,11 +212,10 @@ Eigen::MatrixXd SimpleStateValidityCheckers::generatePoint()
   return points;
 }
 
-Eigen::MatrixXd SimpleStateValidityCheckers::generateCircle()
+Eigen::MatrixXd SimpleStateValidityCheckers::generateCircle(double z)
 {
-
   Eigen::MatrixXd points(1,3);
-  points(0,0) = 0.0; points(0,1) = 0.0; points(0,2) = 0.0;
+  points(0,0) = 0.0; points(0,1) = 0.0; points(0,2) = z;
   for (double r=0.0; r<(circle_radius_+circle_resolution_/2.0); 
     r+=circle_resolution_){
     double n = ceil(2.0*r*M_PI/circle_resolution_);
@@ -221,10 +226,28 @@ Eigen::MatrixXd SimpleStateValidityCheckers::generateCircle()
       double phi = double(i)*2.0*M_PI/n;
       points(i+row, 0) = r*cos(phi); 
       points(i+row, 1) = r*sin(phi);
-      points(i+row, 2) = 0.0;
+      points(i+row, 2) = z;
     }
   }
 
+  return points;
+}
+
+Eigen::MatrixXd SimpleStateValidityCheckers::generateCylinder()
+{
+
+  Eigen::MatrixXd points(0,3);
+
+  for (double z=0.0; z<(cylinder_height_+cylinder_resolution_/2.0); 
+    z+=cylinder_resolution_){
+    circle_radius_ = cylinder_radius_;
+    circle_resolution_ = cylinder_resolution_;
+    Eigen::MatrixXd circle = generateCircle(z-cylinder_height_/2.0);
+
+    int rows = points.rows();
+    points.conservativeResize(points.rows()+circle.rows(), 3);
+    points.block(rows, 0, circle.rows(), circle.cols()) << circle;
+  }
 
   return points;
 }

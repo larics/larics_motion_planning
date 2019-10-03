@@ -60,7 +60,11 @@ class SimpleStateValidityCheckers : public StateValidityCheckerInterface
 
     /// \brief Generates a circle.
     /// \return Matrix that contains circle of points.
-    Eigen::MatrixXd generateCircle();
+    Eigen::MatrixXd generateCircle(double z=0.0);
+
+    /// \brief Generates a cylinder.
+    /// \return Matrix that contains cylinder of points.
+    Eigen::MatrixXd generateCylinder();
 
   private:
     shared_ptr<MapInterface> map_;
@@ -68,6 +72,7 @@ class SimpleStateValidityCheckers : public StateValidityCheckerInterface
     double ball_radius_, ball_resolution_;
     double sphere_radius_, sphere_resolution_;
     double circle_radius_, circle_resolution_;
+    double cylinder_radius_, cylinder_resolution_, cylinder_height_;
 };
 
 #endif // SIMPLE_STATE_VALIDITY_CHECKERS_H
