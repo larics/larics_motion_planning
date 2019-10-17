@@ -353,3 +353,28 @@ publish_path: false
 publish_trajectory: true
 plan_path: false
 plan_trajectory: true" 
+
+
+0.8, 0.8, 0.5, 100, 100, 0.3, 1.0, 1.0
+
+rosservice call /uav/multi_dof_trajectory "waypoints:
+  header:
+    seq: 0
+    stamp: {secs: 0, nsecs: 0}
+    frame_id: ''
+  joint_names: ['']
+  points:
+  - positions: [0.0, 1.5, 1.6, 0, 0, 0, 0, 0]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [7.0, 1.5, 1.6, 0, 0, 0, 7.0, 0]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+publish_path: false
+publish_trajectory: true
+plan_path: false
+plan_trajectory: true"

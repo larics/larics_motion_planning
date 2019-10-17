@@ -287,12 +287,12 @@ bool GlobalPlannerRosInterface::multiDofTrajectoryCallback(
   }
 
   // If path or trajectory are to be published, then publish them.
-  /*if (req.publish_trajectory){
-    multi_dof_trajectory_pub_.publish(res.trajectory);
+  if (req.publish_trajectory){
+    joint_trajectory_pub_.publish(res.trajectory);
   }
   if (req.publish_path){
     cartesian_path_pub_.publish(res.path);
-  }*/
+  }
   return success;
 }
 
