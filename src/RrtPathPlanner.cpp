@@ -73,6 +73,8 @@ bool RrtPathPlanner::configureFromFile(string config_filename)
     planner_configuration_.spaces_dimensions.end(), 0);
   planner_configuration_.spaces_weights = 
     config["path_planner"]["spaces"]["weights"].as< std::vector<double> >();
+  planner_configuration_.spaces_types = 
+    config["path_planner"]["spaces"]["types"].as< std::vector<string> >();
   planner_configuration_.spaces_bounds = 
     config["path_planner"]["spaces"]["bounds"].as< std::vector< std::vector< std::vector<double> > > >();
 
@@ -201,10 +203,14 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   //ob::StateSpacePtr state_space(std::make_shared<ob::SE3StateSpace>());
   auto state_space(ob::StateSpacePtr(
       make_shared<ob::CompoundStateSpace>()));
+  //cout << typeid(state_space).name() << endl;
   for (int i=0; i<planner_configuration_.number_of_spaces; i++){
-    auto current_space(ob::StateSpacePtr(
-      make_shared<ob::RealVectorStateSpace>(
-      planner_configuration_.spaces_dimensions[i])));
+    //ob::StateSpacePtr current_space(ob::StateSpacePtr(
+    //  make_shared<ob::RealVectorStateSpace>(
+    //  planner_configuration_.spaces_dimensions[i])));
+    auto current_space = generateSpace(planner_configuration_.spaces_types[i], 
+      planner_configuration_.spaces_dimensions[i], planner_configuration_.spaces_bounds[i]);
+    //cout << typeid(current_space).name() << endl;
 
     // Set bounds for spatial axes. Our path planner will not go outside these.
     // TODO Check if there can be arbitrary number of bounds and how can they be
@@ -469,4 +475,17 @@ bool RrtPathPlanner::isStateValid(const ob::State *state)
   //cout << state << endl;
   //exit(0);
   return state_validity_checker_->isStateValid(state_vector);
+}
+
+ob::StateSpacePtr RrtPathPlanner::generateSpace(string type, int dimension, 
+  std::vector< std::vector <double> > space_bounds)
+{
+  ob::StateSpacePtr space;
+  if (type.compare("RealVector") == 0){
+    //ob::StateSpacePtr space(ob::StateSpacePtr(
+    //  make_shared<ob::RealVectorStateSpace>(dimension)));
+    space = ob::StateSpacePtr(make_shared<ob::RealVectorStateSpace>(dimension));
+  }
+
+  return space;
 }

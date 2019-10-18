@@ -36,6 +36,7 @@ typedef struct{
   std::vector<int> spaces_dimensions;
   int total_dof_number;
   std::vector<double> spaces_weights;
+  std::vector<string> spaces_types;
   std::vector< std::vector< std::vector<double> > > spaces_bounds;
 
   //std::vector< std::vector<double> > bounds;
@@ -132,6 +133,10 @@ class RrtPathPlanner : public PathPlanningInterface
     RrtStarConfig planner_configuration_;
     bool isStateValid(const ob::State *state);
     inline void convertOmplPathToEigenMatrix(og::PathGeometric path);
+
+    ob::StateSpacePtr generateSpace(string type, int dimension, 
+      std::vector< std::vector <double> > space_bounds);
+
 };
 
 #endif // RRT_PATH_PLANNER
