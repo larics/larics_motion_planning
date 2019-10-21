@@ -18,6 +18,7 @@
 using namespace std;
 
 #include <ompl/base/spaces/SE3StateSpace.h>
+#include <ompl/base/spaces/SO2StateSpace.h>
 #include <ompl/base/spaces/RealVectorBounds.h>
 #include <ompl/base/State.h>
 #include <ompl/base/ScopedState.h>
@@ -136,7 +137,6 @@ class RrtPathPlanner : public PathPlanningInterface
 
     ob::StateSpacePtr generateSpace(string type, int dimension, 
       std::vector< std::vector <double> > space_bounds);
-
 };
 
 #endif // RRT_PATH_PLANNER

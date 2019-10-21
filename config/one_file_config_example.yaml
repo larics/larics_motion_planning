@@ -22,14 +22,12 @@ octomap:
 
 path_planner:
   spaces:
-    number: 2
-    dimensions: [6, 5]
-    weights: [1.0, 1.0]
-    types: ["RealVector", "RealVector"]
-    bounds: [[[0, 10.0], [-20.0, 0.0], [0.2, 1.0], [0.0, 0.0], [0.0, 0.0], [-3.15, 3.15]], [[-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57]]]
+    number: 3
+    dimensions: [6, 5, 1]
+    weights: [1.0, 1.0, 1.0]
+    types: ["RealVector", "RealVector", "SO2"]
+    bounds: [[[0, 10.0], [-20.0, 0.0], [0.2, 1.0], [0.0, 0.0], [0.0, 0.0], [-3.15, 3.15]], [[-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57]], [[0, 0]]]
     #bounds: [[[0, 10.0], [-20.0, 0.0], [0.95, 1.05]], [[-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57]]]
-  #bounds: [[0, 10.0], [-20.0, 0.0], [0.95, 1.05]]
-  bounds: [[-10.0, 10.0], [-20.0, 20.0], [0.95, 3.0]]
   longest_valid_segment:
     is_used: true
     is_metric: true
@@ -74,12 +72,12 @@ path_planner:
       max_steps: 5
 
 toppra_trajectory:
-  velocities: [2.0, 2.0, 0.5, 100, 100, 0.3, 1.0, 1.0, 1.0, 1.0, 1.0]
-  accelerations: [1.4, 1.4, 0.4, 100, 100, 0.3, 1.2, 1.2, 1.2, 1.2, 1.2]
+  velocities: [2.0, 2.0, 0.5, 100, 100, 0.3, 1.0, 1.0, 1.0, 1.0, 1.0, 0.3]
+  accelerations: [1.4, 1.4, 0.4, 100, 100, 0.3, 1.2, 1.2, 1.2, 1.2, 1.2, 0.3]
   sampling_frequency: 100.0
 
 state_validity_checker:
-  type: "uav_and_wp_manipulator"
+  type: "point"
   uav_wp_manipulator:
     manipulator_link_dimensions: [[0.0340, 0.1225, 0.0285], [0.1365, 0.0340, 0.0285], [0.0755, 0.0285, 0.0340], [0.0725, 0.0285, 0.0340], [0.0453, 0.0285, 0.0340]]
     manipulator_link_directions: ["y", "x", "x", "x", "x"]

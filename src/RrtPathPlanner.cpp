@@ -201,7 +201,7 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   //        Both are okay, with latter we will have to use as<ob::Se3StateSpace>
   //        to specify the space in which we are planning.
   //ob::StateSpacePtr state_space(std::make_shared<ob::SE3StateSpace>());
-  auto state_space(ob::StateSpacePtr(
+  ob::StateSpacePtr state_space(ob::StateSpacePtr(
       make_shared<ob::CompoundStateSpace>()));
   //cout << typeid(state_space).name() << endl;
   for (int i=0; i<planner_configuration_.number_of_spaces; i++){
@@ -221,13 +221,13 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
       bounds.setLow(j, planner_configuration_.bounds[j][0]);
       bounds.setHigh(j, planner_configuration_.bounds[j][1]);
     }*/
-    ob::RealVectorBounds bounds(planner_configuration_.spaces_bounds[i].size());
-    for (int j=0; j<planner_configuration_.spaces_bounds[i].size(); j++){
-      bounds.setLow(j, planner_configuration_.spaces_bounds[i][j][0]);
-      bounds.setHigh(j, planner_configuration_.spaces_bounds[i][j][1]);
-    }
+    //ob::RealVectorBounds bounds(planner_configuration_.spaces_bounds[i].size());
+    //for (int j=0; j<planner_configuration_.spaces_bounds[i].size(); j++){
+    //  bounds.setLow(j, planner_configuration_.spaces_bounds[i][j][0]);
+    //  bounds.setHigh(j, planner_configuration_.spaces_bounds[i][j][1]);
+    //}
     // Set bounds
-    current_space->as<ob::RealVectorStateSpace>()->setBounds(bounds);
+    //current_space->as<ob::RealVectorStateSpace>()->setBounds(bounds);
     state_space->as<ob::CompoundStateSpace>()->addSubspace(
       current_space, planner_configuration_.spaces_weights[i]);
     //state_space->setSubspaceWeight(i, 1.0);
@@ -354,6 +354,7 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   ob::ScopedState<ob::CompoundStateSpace> goal(state_space);
   //goal[0] = positions(1,0); goal[1] = positions(1,1); goal[2] = positions(1,2);
   for (int i=0; i<positions.cols(); i++){
+    cout << i << endl;
     start[i] = positions(0, i);
     goal[i] = positions(1, i);
   }
@@ -485,6 +486,19 @@ ob::StateSpacePtr RrtPathPlanner::generateSpace(string type, int dimension,
     //ob::StateSpacePtr space(ob::StateSpacePtr(
     //  make_shared<ob::RealVectorStateSpace>(dimension)));
     space = ob::StateSpacePtr(make_shared<ob::RealVectorStateSpace>(dimension));
+
+    ob::RealVectorBounds bounds(dimension);
+    for (int i=0; i<dimension; i++){
+      bounds.setLow(i, space_bounds[i][0]);
+      bounds.setHigh(i, space_bounds[i][1]);
+      //cout << i << ": " << space_bounds[i][0] << " " << space_bounds[i][1] << endl;
+    }
+
+    space->as<ob::RealVectorStateSpace>()->setBounds(bounds);
+  }
+
+  else if (type.compare("SO2") == 0){
+    space = ob::StateSpacePtr(make_shared<ob::SO2StateSpace>());
   }
 
   return space;
