@@ -454,6 +454,13 @@ trajectory_msgs::JointTrajectory GlobalPlannerRosInterface::trajectoryToJointTra
     joint_trajectory.points.push_back(current_point);
   }
 
+  joint_trajectory.header.stamp = ros::Time::now();
+  for (int j=0; j<n_dofs; j++){
+    stringstream ss;
+    ss << j;
+    joint_trajectory.joint_names.push_back("joint"+ss.str());
+  }
+
   return joint_trajectory;
 }
 

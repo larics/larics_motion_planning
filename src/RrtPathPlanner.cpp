@@ -354,7 +354,6 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   ob::ScopedState<ob::CompoundStateSpace> goal(state_space);
   //goal[0] = positions(1,0); goal[1] = positions(1,1); goal[2] = positions(1,2);
   for (int i=0; i<positions.cols(); i++){
-    cout << i << endl;
     start[i] = positions(0, i);
     goal[i] = positions(1, i);
   }
