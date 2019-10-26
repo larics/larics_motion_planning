@@ -432,6 +432,8 @@ inline void RrtPathPlanner::convertOmplPathToEigenMatrix(og::PathGeometric path)
     ob::ScopedState<ob::CompoundStateSpace> temp(si);
     temp = point;
     for (int j=0; j<planner_configuration_.total_dof_number; j++) path_(i,j) = temp[j];
+
+    //cout << temp[11] << " " << path.getState(i)->as<ob::CompoundState>()->as<ob::SO2StateSpace::StateType>(2)->value/*temp->as<ob::CompoundState>()->as<ob::SO2StateSpace>()->value*/ << endl;
     //cout << point->as<ob::RealVectorStateSpace::StateType>()->values[0] << endl;
     //auto point1 = point->as<ob::CompoundState>();
     //auto point2 = point1[0];

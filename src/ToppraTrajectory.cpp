@@ -58,6 +58,9 @@ bool ToppraTrajectory::configureFromFile(string config_filename)
       dynamic_constraints_(1,i) = accelerations[i];
     }
 
+    // Angle flags
+    is_angular_ = config["toppra_trajectory"]["is_angular"].as<std::vector<int> >();
+
     // Set up sampling frequency
     sampling_frequency_ = config["toppra_trajectory"]["sampling_frequency"].as<double>();
   }
@@ -72,6 +75,15 @@ bool ToppraTrajectory::generateTrajectory(Eigen::MatrixXd positions)
 {
   if (positions.cols() != n_dofs_) return false;
   if (positions.rows() < 2) return false;
+
+  for (int i=0; i<n_dofs_; i++){
+    if (is_angular_[i] == 1){
+      for (int j=1; j<positions.rows(); j++){
+        if ((positions(j-1,i) - positions(j,i)) > M_PI)  positions(j,i) += 2.0*M_PI;
+        else if ((positions(j-1,i) - positions(j,i)) < -M_PI)  positions(j,i) -= 2.0*M_PI;
+      }
+    }
+  }
 
   // Setup local variables
   int n_waypoints = positions.rows();
@@ -104,6 +116,16 @@ bool ToppraTrajectory::generateTrajectory(Eigen::MatrixXd positions)
   if (service_success){
     // Convert the trajectory to eigen matrix.
     sampleTrajectory(srv.response.trajectory);
+
+    for (int i=0; i<n_dofs_; i++){
+      if (is_angular_[i] == 1){
+        for (int j=1; j<sampled_trajectory_.position.rows(); j++){
+          sampled_trajectory_.position(j,i) = atan2(
+            sin(sampled_trajectory_.position(j,i)), 
+            cos(sampled_trajectory_.position(j,i)));
+        }
+      }
+    }
   }
   else return false;
 

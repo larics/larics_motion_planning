@@ -7,6 +7,7 @@
 #include <larics_motion_planning/TrajectoryInterface.h>
 #include <iostream>
 #include <string>
+#include <cmath>
 #include <eigen3/Eigen/Eigen>
 
 #include <ros/ros.h>
@@ -68,6 +69,7 @@ class ToppraTrajectory : public TrajectoryInterface
     ros::ServiceClient generate_trajectory_client_;
     Trajectory sampled_trajectory_;
     Eigen::MatrixXd dynamic_constraints_;
+    std::vector<int> is_angular_;
     int n_dofs_;
     double sampling_frequency_;
 
