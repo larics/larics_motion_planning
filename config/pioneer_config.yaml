@@ -71,4 +71,5 @@ path_planner:
 toppra_trajectory:
   velocities: [0.5, 0.5, 0.5]
   accelerations: [0.4, 0.4, 0.4]
+  is_angular: [0, 0, 0]
   sampling_frequency: 100.0
