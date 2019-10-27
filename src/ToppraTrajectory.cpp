@@ -76,14 +76,32 @@ bool ToppraTrajectory::generateTrajectory(Eigen::MatrixXd positions)
   if (positions.cols() != n_dofs_) return false;
   if (positions.rows() < 2) return false;
 
+  // TODO: account for multiple turns. This will solve the problem if vehicle
+  // turns only once but if it turns for multiple circles it will only add 2PI.
+  // Check how many times is the difference greater than PI and add angle 
+  // accordingly(don't know how much at this point).
   for (int i=0; i<n_dofs_; i++){
     if (is_angular_[i] == 1){
       for (int j=1; j<positions.rows(); j++){
+        /*cout << "bf: " << positions(j-1,i) << " " << positions(j,i) << " " << positions(j-1,i) - positions(j,i) << endl;
         if ((positions(j-1,i) - positions(j,i)) > M_PI)  positions(j,i) += 2.0*M_PI;
         else if ((positions(j-1,i) - positions(j,i)) < -M_PI)  positions(j,i) -= 2.0*M_PI;
+        cout << "af: " << positions(j-1,i) << " " << positions(j,i) << " " << positions(j-1,i) - positions(j,i) << endl;
+        */
+        double delta = positions(j-1,i) - positions(j,i);
+        //cout << "bf: " << positions(j-1,i) << " " << positions(j,i) << " " << " " << delta << " " << ceil(fabs(delta)/(2.0*M_PI)) << endl;
+        if (delta > M_PI)  positions(j,i) += ceil(floor(fabs(delta)/M_PI)/(2.0))*2.0*M_PI;
+        else if (delta < -M_PI)  positions(j,i) -= ceil(floor(fabs(delta)/M_PI)/(2.0))*2.0*M_PI;
+        //cout << "af: " << positions(j-1,i) << " " << positions(j,i) << " " << " " << delta << " " << ceil(fabs(delta)/(2.0*M_PI)) << endl;
       }
     }
   }
+
+/*  double delta = positions(j-1,i) - positions(j,i);
+    cout << positions(j-1,i) << " " << positions(j,i) << " " << " " << delta << " " << ceil(fabs(delta)/(2.0*M_PI)) << endl;
+    if (delta > M_PI)  positions(j,i) += ceil(fabs(delta)/(2.0*M_PI))*2.0*M_PI;
+    else if (delta < -M_PI)  positions(j,i) -= ceil(fabs(delta)/(2.0*M_PI))*2.0*M_PI;
+  */
 
   // Setup local variables
   int n_waypoints = positions.rows();
