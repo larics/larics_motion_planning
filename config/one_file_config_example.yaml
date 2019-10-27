@@ -22,11 +22,11 @@ octomap:
 
 path_planner:
   spaces:
-    number: 3
-    dimensions: [6, 5, 1]
-    weights: [1.0, 1.0, 1.0]
-    types: ["RealVector", "RealVector", "SO2"]
-    bounds: [[[0, 10.0], [-20.0, 0.0], [0.2, 1.0], [0.0, 0.0], [0.0, 0.0], [-3.15, 3.15]], [[-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57]], [[0, 0]]]
+    number: 4
+    dimensions: [6, 5, 1, 3]
+    weights: [1.0, 1.0, 0.5, 1.0]
+    types: ["RealVector", "RealVector", "SO2", "SO3"]
+    bounds: [[[0, 10.0], [-20.0, 0.0], [0.2, 1.0], [0.0, 0.0], [0.0, 0.0], [-3.15, 3.15]], [[-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57]], [[-3.1415, 3.1415]], [[-3.1415, 3.1415]]]
     #bounds: [[[0, 10.0], [-20.0, 0.0], [0.95, 1.05]], [[-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57]]]
   longest_valid_segment:
     is_used: true
@@ -57,24 +57,24 @@ path_planner:
     is_used: true
     value: true
   solve_time:
-    is_incremental: true
-    time: 1.0
+    is_incremental: false
+    time: 5.0
     increment: 0.25
   path_simplifier:
     reduce_vertices:
-      is_used: true
+      is_used: false
       max_steps: 0.25
       max_empty_steps: 0
       range_ratio: 0.33
       use_as_fraction: true
     smooth_b_spline:
-      is_used: true
+      is_used: false
       max_steps: 5
 
 toppra_trajectory:
-  velocities: [2.0, 2.0, 0.5, 100, 100, 0.3, 1.0, 1.0, 1.0, 1.0, 1.0, 0.3]
-  accelerations: [1.4, 1.4, 0.4, 100, 100, 0.3, 1.2, 1.2, 1.2, 1.2, 1.2, 0.3]
-  is_angular: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+  velocities: [2.0, 2.0, 0.5, 100, 100, 0.3, 1.0, 1.0, 1.0, 1.0, 1.0, 0.3, 1.0, 1.0, 1.0]
+  accelerations: [1.4, 1.4, 0.4, 100, 100, 0.3, 1.2, 1.2, 1.2, 1.2, 1.2, 0.3, 1.2, 1.2, 1.2]
+  is_angular: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1]
   sampling_frequency: 100.0
 
 state_validity_checker:

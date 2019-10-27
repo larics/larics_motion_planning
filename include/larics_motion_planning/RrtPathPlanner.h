@@ -19,6 +19,7 @@ using namespace std;
 
 #include <ompl/base/spaces/SE3StateSpace.h>
 #include <ompl/base/spaces/SO2StateSpace.h>
+#include <ompl/base/spaces/SO3StateSpace.h>
 #include <ompl/base/spaces/RealVectorBounds.h>
 #include <ompl/base/State.h>
 #include <ompl/base/ScopedState.h>
@@ -36,6 +37,8 @@ typedef struct{
   int number_of_spaces;
   std::vector<int> spaces_dimensions;
   int total_dof_number;
+  int n_euler;
+  int n_quaternion;
   std::vector<double> spaces_weights;
   std::vector<string> spaces_types;
   std::vector< std::vector< std::vector<double> > > spaces_bounds;

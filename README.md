@@ -31,18 +31,18 @@ rosservice call /uav/multi_dof_trajectory "waypoints:
     frame_id: ''
   joint_names: ['']
   points:
-  - positions: [6.12, -8.27, 1.0, 0.0, 0.0, 1.57, 0.787, 0.787, 0.787, -1.57, 0.787]
+  - positions: [6.12, -8.27, 1.0, 0.0, 0.0, 1.57, 0.787, 0.787, 0.787, -1.57, 0.787, -3.0, 0.2, 0.6, 2.3]
     velocities: [0]
     accelerations: [0]
     effort: [0]
     time_from_start: {secs: 0, nsecs: 0}
-  - positions: [4.61, -4.30, 1.0, 0.0, 0.0, 1.57, 0.787, 0.787, 0.787, -1.57, 0.787]
+  - positions: [4.61, -4.30, 1.0, 0.0, 0.0, 1.57, 0.787, 0.787, 0.787, -1.57, 0.787, 3.0, 0.5, 0.1, 3.0]
     velocities: [0]
     accelerations: [0]
     effort: [0]
     time_from_start: {secs: 0, nsecs: 0}
 publish_path: false
-publish_trajectory: false
+publish_trajectory: true
 plan_path: true
 plan_trajectory: true" 
 

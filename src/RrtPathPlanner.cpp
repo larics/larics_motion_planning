@@ -78,9 +78,24 @@ bool RrtPathPlanner::configureFromFile(string config_filename)
   planner_configuration_.spaces_bounds =
     config["path_planner"]["spaces"]["bounds"].as< std::vector< std::vector< std::vector<double> > > >();
 
-  // Load bounds
-  //planner_configuration_.bounds =
-  //  config["path_planner"]["bounds"].as<std::vector< std::vector<double> > >();
+  planner_configuration_.n_euler = 0;
+  planner_configuration_.n_quaternion = 0;
+  // Go through all spaces
+  for (int i=0; i<planner_configuration_.number_of_spaces; i++){
+    if (planner_configuration_.spaces_types[i].compare("RealVector")==0){
+      planner_configuration_.n_euler += planner_configuration_.spaces_dimensions[i];
+      planner_configuration_.n_quaternion += planner_configuration_.spaces_dimensions[i];
+    }
+    else if (planner_configuration_.spaces_types[i].compare("SO2")==0){
+      planner_configuration_.n_euler += 1;
+      planner_configuration_.n_quaternion += 1;
+    }
+    else if (planner_configuration_.spaces_types[i].compare("SO3")==0){
+      planner_configuration_.n_euler += 3; // euler angles
+      planner_configuration_.n_quaternion += 4; // quaternion representation
+    }
+  }
+
   // Longest valid segment
   planner_configuration_.longest_valid_segment_is_used =
     config["path_planner"]["longest_valid_segment"]["is_used"].as<bool>();
@@ -353,9 +368,47 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   //start[0] = positions(0,0); start[1] = positions(0,1); start[2] = positions(0,2);
   ob::ScopedState<ob::CompoundStateSpace> goal(state_space);
   //goal[0] = positions(1,0); goal[1] = positions(1,1); goal[2] = positions(1,2);
-  for (int i=0; i<positions.cols(); i++){
-    start[i] = positions(0, i);
-    goal[i] = positions(1, i);
+  //for (int i=0; i<positions.cols(); i++){
+  //  start[i] = positions(0, i);
+  //  goal[i] = positions(1, i);
+  //}
+  int nq = 0;
+  int ne = 0;
+  // First go through all spaces.
+  // TODO: TREBAJU DVA BROJACA. JEDAN ZA RPY STATE A DRUGI ZA QUATERNION STATE
+  for (int k=0; k<planner_configuration_.spaces_dimensions.size(); k++){
+    if (planner_configuration_.spaces_types[k].compare("RealVector")==0 || 
+      planner_configuration_.spaces_types[k].compare("SO2")==0){
+
+      for (int l=0; l<planner_configuration_.spaces_dimensions[k]; l++){
+        start[nq] = positions(0, ne);
+        goal[nq] = positions(1, ne);
+        ne++;
+        nq++;
+      }
+    }
+    else if (planner_configuration_.spaces_types[k].compare("SO3")==0){
+      // Manage start
+      double roll=positions(0, ne), pitch=positions(0, ne+1), yaw=positions(0, ne+2);
+      double qw = cos(roll/2.0)*cos(pitch/2.0)*cos(yaw/2.0) + sin(roll/2.0)*sin(pitch/2.0)*sin(yaw/2.0);
+      double qx = sin(roll/2.0)*cos(pitch/2.0)*cos(yaw/2.0) - cos(roll/2.0)*sin(pitch/2.0)*sin(yaw/2.0);
+      double qy = cos(roll/2.0)*sin(pitch/2.0)*cos(yaw/2.0) + sin(roll/2.0)*cos(pitch/2.0)*sin(yaw/2.0);
+      double qz = cos(roll/2.0)*cos(pitch/2.0)*sin(yaw/2.0) - sin(roll/2.0)*sin(pitch/2.0)*cos(yaw/2.0);
+      start[nq] = qx; start[nq+1] = qy; start[nq+2] = qz; start[nq+3] = qw;
+
+      // Manage goal
+      roll=positions(1, ne), pitch=positions(1, ne+1), yaw=positions(1, ne+2);
+      qw = cos(roll/2.0)*cos(pitch/2.0)*cos(yaw/2.0) + sin(roll/2.0)*sin(pitch/2.0)*sin(yaw/2.0);
+      qx = sin(roll/2.0)*cos(pitch/2.0)*cos(yaw/2.0) - cos(roll/2.0)*sin(pitch/2.0)*sin(yaw/2.0);
+      qy = cos(roll/2.0)*sin(pitch/2.0)*cos(yaw/2.0) + sin(roll/2.0)*cos(pitch/2.0)*sin(yaw/2.0);
+      qz = cos(roll/2.0)*cos(pitch/2.0)*sin(yaw/2.0) - sin(roll/2.0)*sin(pitch/2.0)*cos(yaw/2.0);
+      goal[nq] = qx; goal[nq+1] = qy; goal[nq+2] = qz; goal[nq+3] = qw;
+      // SO3 state is represented internaly as quaternion so it will have
+      // four data values. Our state has only (roll, pitch, yaw so we advance 
+      // by 3)
+      ne+=3;
+      nq+=4;
+    }
   }
 
   // Set up problem definition. That is basically setting start and goal states
@@ -426,13 +479,41 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
 
 inline void RrtPathPlanner::convertOmplPathToEigenMatrix(og::PathGeometric path)
 {
-  path_ = Eigen::MatrixXd(path.getStateCount(), planner_configuration_.total_dof_number);
+  path_ = Eigen::MatrixXd(path.getStateCount(), planner_configuration_.n_euler);
   for (int i=0; i<path.getStateCount(); i++){
     auto point = path.getState(i);
     ob::ScopedState<ob::CompoundStateSpace> temp(si);
     temp = point;
-    for (int j=0; j<planner_configuration_.total_dof_number; j++) path_(i,j) = temp[j];
+    //for (int j=0; j<planner_configuration_.total_dof_number; j++) path_(i,j) = temp[j];
 
+    int j = 0;
+    int nq = 0; // Index of space with quaternion
+    int ne = 0; // Index of space with euler angle
+    // First go through all spaces.
+    // TODO: TREBAJU DVA BROJACA. JEDAN ZA RPY(nase) STATE A DRUGI ZA QUATERNION(ompl) STATE
+    for (int k=0; k<planner_configuration_.spaces_dimensions.size(); k++){
+      //cout << "442" << endl;
+      if (planner_configuration_.spaces_types[k].compare("RealVector")==0 || 
+        planner_configuration_.spaces_types[k].compare("SO2")==0){
+        //cout << "445" << endl;
+        for (int l=0; l<planner_configuration_.spaces_dimensions[k]; l++){
+          path_(i,ne) = temp[nq];
+          ne++;
+          nq++;
+        }
+      }
+      else if (planner_configuration_.spaces_types[k].compare("SO3")==0){
+        double q1=temp[nq], q2=temp[nq+1], q3=temp[nq+2], q0=temp[nq+3]; 
+        path_(i,ne) = atan2(2.0*(q0*q1 + q2*q3), 1.0 - 2.0*(q1*q1 + q2*q2)); //roll
+        path_(i,ne+1) = asin(2.0*(q0*q2-q3*q1)); //pitch
+        path_(i,ne+2) = atan2(2.0*(q0*q3 + q1*q2), 1.0 - 2.0*(q2*q2+q3*q3)); //yaw
+        // SO3 state is represented internaly as quaternion so it will have
+        // four data values.
+        ne+=3;
+        nq+=4;
+      }
+    }
+    //cout << "Gotovo punjenje matrice" << endl;
     //cout << temp[11] << " " << path.getState(i)->as<ob::CompoundState>()->as<ob::SO2StateSpace::StateType>(2)->value/*temp->as<ob::CompoundState>()->as<ob::SO2StateSpace>()->value*/ << endl;
     //cout << point->as<ob::RealVectorStateSpace::StateType>()->values[0] << endl;
     //auto point1 = point->as<ob::CompoundState>();
@@ -461,7 +542,7 @@ double RrtPathPlanner::getPathLength()
 
 bool RrtPathPlanner::isStateValid(const ob::State *state)
 {
-  Eigen::VectorXd state_vector(planner_configuration_.total_dof_number);
+  Eigen::VectorXd state_vector(planner_configuration_.n_quaternion);
   //state_vector(0) = state->as<ob::SE3StateSpace::StateType>()->getX();
   //state_vector(1) = state->as<ob::SE3StateSpace::StateType>()->getY();
   //state_vector(2) = state->as<ob::SE3StateSpace::StateType>()->getZ();
@@ -472,7 +553,7 @@ bool RrtPathPlanner::isStateValid(const ob::State *state)
   //state_vector(0) = state->as<ob::RealVectorStateSpace::StateType>()->values[0];
   //state_vector(1) = state->as<ob::RealVectorStateSpace::StateType>()->values[1];
   //state_vector(2) = state->as<ob::RealVectorStateSpace::StateType>()->values[2];
-  for (int i=0; i<planner_configuration_.total_dof_number; i++) state_vector(i) = temp[i];
+  for (int i=0; i<planner_configuration_.n_quaternion; i++) state_vector(i) = temp[i];
   //cout << state_vector << endl;
   //cout << state << endl;
   //exit(0);
@@ -500,6 +581,10 @@ ob::StateSpacePtr RrtPathPlanner::generateSpace(string type, int dimension,
 
   else if (type.compare("SO2") == 0){
     space = ob::StateSpacePtr(make_shared<ob::SO2StateSpace>());
+  }
+
+  else if (type.compare("SO3") == 0){
+    space = ob::StateSpacePtr(make_shared<ob::SO3StateSpace>());
   }
 
   return space;
