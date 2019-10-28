@@ -7,9 +7,9 @@ SimpleStateValidityCheckers::SimpleStateValidityCheckers(
   checker_type_ = string(type);
 
   string username = "/home/";
-  username = username + getenv("USERNAME") + "/";
+  username = username + getenv("USER") + "/";
   configureFromFile(username + config_filename);
-  
+
   if (checker_type_.compare("ball") == 0) points_ = generateBall();
   else if (checker_type_.compare("sphere") == 0) points_ = generateSphere();
   else if (checker_type_.compare("point") == 0) points_ = generatePoint();
@@ -99,7 +99,7 @@ Eigen::MatrixXd SimpleStateValidityCheckers::generateBall()
   //cout << points << endl;
   /*
   int points_size = 0;
-  for (double radius = ball_resolution_; radius <= (ball_radius_+ball_resolution_/2.0); 
+  for (double radius = ball_resolution_; radius <= (ball_radius_+ball_resolution_/2.0);
     radius+=ball_resolution_){
     double sphere_area = 4.0*M_PI*radius*radius;
     double a = sqrt(sphere_area);
@@ -116,7 +116,7 @@ Eigen::MatrixXd SimpleStateValidityCheckers::generateBall()
   Eigen::MatrixXd points(points_size,3);
   //points.conservativeResize(points.rows()+points_size, 3);
   points_size = 0;
-  for (double radius = ball_resolution_; radius <= (ball_radius_+ball_resolution_/2.0); 
+  for (double radius = ball_resolution_; radius <= (ball_radius_+ball_resolution_/2.0);
     radius+=ball_resolution_){
     double sphere_area = 4.0*M_PI*radius*radius;
     double a = sqrt(sphere_area);
@@ -144,10 +144,10 @@ Eigen::MatrixXd SimpleStateValidityCheckers::generateBall()
 
     int rows = points.rows();
     points.conservativeResize(points.rows()+current_sphere_points.rows(), 3);
-    points.block(rows, 0, current_sphere_points.rows(), 
+    points.block(rows, 0, current_sphere_points.rows(),
       current_sphere_points.cols()) << current_sphere_points;
   }
-  
+
   //cout << points_size << endl;
   //cout << points.rows() << " " << points.cols() << endl;
 
@@ -186,7 +186,7 @@ Eigen::MatrixXd SimpleStateValidityCheckers::generateSphere()
       points_size++;
     }
   }
-  
+
   //cout << points_size << endl;
   //cout << points.rows() << " " << points.cols() << endl;*/
 
@@ -238,7 +238,7 @@ Eigen::MatrixXd SimpleStateValidityCheckers::generateCircle(double z)
 {
   Eigen::MatrixXd points(1,3);
   points(0,0) = 0.0; points(0,1) = 0.0; points(0,2) = z;
-  for (double r=0.0; r<(circle_radius_+circle_resolution_/2.0); 
+  for (double r=0.0; r<(circle_radius_+circle_resolution_/2.0);
     r+=circle_resolution_){
     double n = ceil(2.0*r*M_PI/circle_resolution_);
 
@@ -246,7 +246,7 @@ Eigen::MatrixXd SimpleStateValidityCheckers::generateCircle(double z)
     points.conservativeResize(points.rows()+int(n), 3);
     for (int i=0; i<int(n); i++){
       double phi = double(i)*2.0*M_PI/n;
-      points(i+row, 0) = r*cos(phi); 
+      points(i+row, 0) = r*cos(phi);
       points(i+row, 1) = r*sin(phi);
       points(i+row, 2) = z;
     }
@@ -260,7 +260,7 @@ Eigen::MatrixXd SimpleStateValidityCheckers::generateCylinder()
 
   Eigen::MatrixXd points(0,3);
 
-  for (double z=0.0; z<(cylinder_height_+cylinder_resolution_/2.0); 
+  for (double z=0.0; z<(cylinder_height_+cylinder_resolution_/2.0);
     z+=cylinder_resolution_){
     circle_radius_ = cylinder_radius_;
     circle_resolution_ = cylinder_resolution_;
@@ -309,7 +309,7 @@ Eigen::MatrixXd SimpleStateValidityCheckers::generatePrism()
   rectangle_x_ = prism_x_;
   rectangle_y_ = prism_y_;
   rectangle_resolution_ = prism_resolution_;
-  for (double z=0.0; z<(prism_z_+prism_resolution_/2.0); 
+  for (double z=0.0; z<(prism_z_+prism_resolution_/2.0);
     z+=prism_resolution_){
     Eigen::MatrixXd rectangle = generateRectangle(z-prism_z_/2.0);
 

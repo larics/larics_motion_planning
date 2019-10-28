@@ -3,7 +3,7 @@
 WpManipulatorKinematics::WpManipulatorKinematics(string config_filename)
 {
   string username = "/home/";
-  username = username + getenv("USERNAME") + "/";
+  username = username + getenv("USER") + "/";
   configureFromFile(username + config_filename);
 }
 
@@ -19,7 +19,7 @@ bool WpManipulatorKinematics::configureFromFile(string config_filename)
   robot_model_name = config["kinematics"]["wp_manipulator_kinematics"]["robot_model_name"].as<string>();
   joint_group_name = config["kinematics"]["wp_manipulator_kinematics"]["joint_group_name"].as<string>();
   string username = "/home/";
-  username = username + getenv("USERNAME") + "/";
+  username = username + getenv("USER") + "/";
   dh_parameters_file = username + config["kinematics"]["wp_manipulator_kinematics"]["dh_parameters_file"].as<string>();
   // Configure manipulator
   manipulator_.setManipulatorName(robot_model_name, joint_group_name);
@@ -30,7 +30,7 @@ bool WpManipulatorKinematics::configureFromFile(string config_filename)
 std::vector<Eigen::Affine3d> WpManipulatorKinematics::getJointPositions(
   Eigen::VectorXd q)
 {
-  return manipulator_.getLinkPositions(q); 
+  return manipulator_.getLinkPositions(q);
 }
 
 Eigen::Affine3d WpManipulatorKinematics::getEndEffectorTransform(

@@ -8,13 +8,13 @@ void printRrtStarConfig(RrtStarConfig config)
   // Print bounds
   cout << " Bounds |    min    |    max    |" << endl;
   /*for (int i = 0; i<config.bounds.size(); i++){
-    cout << " " <<  setfill('0') << setw(6) << i << " | " << 
+    cout << " " <<  setfill('0') << setw(6) << i << " | " <<
       boost::format("%9.2f") % config.bounds[i][0] << " | " <<
       boost::format("%9.2f") % config.bounds[i][1] << " | " << endl;
   }*/
   cout << endl;
-  
-  cout << "       Parameter      | " << "Is used |  Value" << endl; 
+
+  cout << "       Parameter      | " << "Is used |  Value" << endl;
   cout << "Longest valid segment |    " << config.longest_valid_segment_is_used << "    | " << boost::format("%7.2f") % config.longest_valid_segment_value << endl;
   cout << "       Goal bias      |    " << config.goal_bias_is_used <<             "    | " << boost::format("%7.2f") % config.goal_bias_value << endl;
   cout << "         Range        |    " << config.range_is_used <<                 "    | " << boost::format("%7.2f") % config.range_value << endl;
@@ -25,8 +25,8 @@ void printRrtStarConfig(RrtStarConfig config)
   cout << "    Pruned measure    |    " << config.pruned_measure_is_used <<        "    | B" << boost::format("%4d") % config.pruned_measure_value << endl;
   cout << "      K nearest       |    " << config.k_nearest_is_used <<             "    | B" << boost::format("%4d") % config.k_nearest_value << endl;
 
-  cout  << "Solve time: " << config.solve_time << " Is incremental: " << 
-    config.solve_time_is_incremental << " Increment: " << 
+  cout  << "Solve time: " << config.solve_time << " Is incremental: " <<
+    config.solve_time_is_incremental << " Increment: " <<
     config.solve_time_increment << endl;
 
   cout << "Path simplification: " << endl;
@@ -41,12 +41,12 @@ void printRrtStarConfig(RrtStarConfig config)
   cout << "  Max steps: " << config.smooth_bspline_max_steps << endl;
 }
 
-RrtPathPlanner::RrtPathPlanner(string config_filename, 
+RrtPathPlanner::RrtPathPlanner(string config_filename,
   shared_ptr<StateValidityCheckerInterface> validity_checker)
 {
   state_validity_checker_ = validity_checker;
   string username = "/home/";
-  username = username + getenv("USERNAME") + "/";
+  username = username + getenv("USER") + "/";
   configureFromFile(username + config_filename);
   path_length_ = 0.0;
 }
@@ -64,103 +64,103 @@ bool RrtPathPlanner::configureFromFile(string config_filename)
   YAML::Node config = YAML::LoadFile(config_filename);
 
   // Load spaces configuration
-  planner_configuration_.number_of_spaces = 
+  planner_configuration_.number_of_spaces =
     config["path_planner"]["spaces"]["number"].as<int>();
-  planner_configuration_.spaces_dimensions = 
+  planner_configuration_.spaces_dimensions =
     config["path_planner"]["spaces"]["dimensions"].as< std::vector<int> >();
   planner_configuration_.total_dof_number = accumulate(
-    planner_configuration_.spaces_dimensions.begin(), 
+    planner_configuration_.spaces_dimensions.begin(),
     planner_configuration_.spaces_dimensions.end(), 0);
-  planner_configuration_.spaces_weights = 
+  planner_configuration_.spaces_weights =
     config["path_planner"]["spaces"]["weights"].as< std::vector<double> >();
-  planner_configuration_.spaces_types = 
+  planner_configuration_.spaces_types =
     config["path_planner"]["spaces"]["types"].as< std::vector<string> >();
-  planner_configuration_.spaces_bounds = 
+  planner_configuration_.spaces_bounds =
     config["path_planner"]["spaces"]["bounds"].as< std::vector< std::vector< std::vector<double> > > >();
 
-  // Load bounds 
-  //planner_configuration_.bounds = 
+  // Load bounds
+  //planner_configuration_.bounds =
   //  config["path_planner"]["bounds"].as<std::vector< std::vector<double> > >();
   // Longest valid segment
-  planner_configuration_.longest_valid_segment_is_used = 
+  planner_configuration_.longest_valid_segment_is_used =
     config["path_planner"]["longest_valid_segment"]["is_used"].as<bool>();
-  planner_configuration_.longest_valid_segment_is_metric = 
+  planner_configuration_.longest_valid_segment_is_metric =
     config["path_planner"]["longest_valid_segment"]["is_metric"].as<bool>();
-  planner_configuration_.longest_valid_segment_value = 
+  planner_configuration_.longest_valid_segment_value =
     config["path_planner"]["longest_valid_segment"]["value"].as<double>();
 
   // Goal bias
-  planner_configuration_.goal_bias_is_used = 
+  planner_configuration_.goal_bias_is_used =
     config["path_planner"]["goal_bias"]["is_used"].as<bool>();
-  planner_configuration_.goal_bias_value = 
+  planner_configuration_.goal_bias_value =
     config["path_planner"]["goal_bias"]["value"].as<double>();
 
   // Range
-  planner_configuration_.range_is_used = 
+  planner_configuration_.range_is_used =
     config["path_planner"]["range"]["is_used"].as<bool>();
-  planner_configuration_.range_value = 
+  planner_configuration_.range_value =
     config["path_planner"]["range"]["value"].as<double>();
 
   // Rewire factor
-  planner_configuration_.rewire_factor_is_used = 
+  planner_configuration_.rewire_factor_is_used =
     config["path_planner"]["rewire_factor"]["is_used"].as<bool>();
-  planner_configuration_.rewire_factor_value = 
+  planner_configuration_.rewire_factor_value =
     config["path_planner"]["rewire_factor"]["value"].as<double>();
 
   // Delay collision check
-  planner_configuration_.delay_cc_is_used = 
+  planner_configuration_.delay_cc_is_used =
     config["path_planner"]["delay_cc"]["is_used"].as<bool>();
-  planner_configuration_.delay_cc_value = 
+  planner_configuration_.delay_cc_value =
     config["path_planner"]["delay_cc"]["value"].as<bool>();
 
   // Tree pruning
-  planner_configuration_.tree_pruning_is_used = 
+  planner_configuration_.tree_pruning_is_used =
     config["path_planner"]["tree_pruning"]["is_used"].as<bool>();
-  planner_configuration_.tree_pruning_value = 
+  planner_configuration_.tree_pruning_value =
     config["path_planner"]["tree_pruning"]["value"].as<bool>();
 
   // Prune threshold
-  planner_configuration_.prune_threshold_is_used = 
+  planner_configuration_.prune_threshold_is_used =
     config["path_planner"]["prune_threshold"]["is_used"].as<bool>();
-  planner_configuration_.prune_threshold_value = 
+  planner_configuration_.prune_threshold_value =
     config["path_planner"]["prune_threshold"]["value"].as<double>();
 
   // Pruned measure
-  planner_configuration_.pruned_measure_is_used = 
+  planner_configuration_.pruned_measure_is_used =
     config["path_planner"]["pruned_measure"]["is_used"].as<bool>();
-  planner_configuration_.pruned_measure_value = 
+  planner_configuration_.pruned_measure_value =
     config["path_planner"]["pruned_measure"]["value"].as<bool>();
 
   // k nearest
-  planner_configuration_.k_nearest_is_used = 
+  planner_configuration_.k_nearest_is_used =
     config["path_planner"]["k_nearest"]["is_used"].as<bool>();
-  planner_configuration_.k_nearest_value = 
+  planner_configuration_.k_nearest_value =
     config["path_planner"]["k_nearest"]["value"].as<bool>();
 
   // solve time
-  planner_configuration_.solve_time_is_incremental = 
+  planner_configuration_.solve_time_is_incremental =
     config["path_planner"]["solve_time"]["is_incremental"].as<bool>();
-  planner_configuration_.solve_time = 
+  planner_configuration_.solve_time =
     config["path_planner"]["solve_time"]["time"].as<double>();
-  planner_configuration_.solve_time_increment = 
+  planner_configuration_.solve_time_increment =
     config["path_planner"]["solve_time"]["increment"].as<double>();
 
   // Reduce vertices
-  planner_configuration_.reduce_vertices_is_used = 
+  planner_configuration_.reduce_vertices_is_used =
     config["path_planner"]["path_simplifier"]["reduce_vertices"]["is_used"].as<bool>();
-  planner_configuration_.reduce_vertices_max_steps = 
+  planner_configuration_.reduce_vertices_max_steps =
     config["path_planner"]["path_simplifier"]["reduce_vertices"]["max_steps"].as<double>();
-  planner_configuration_.reduce_vertices_max_empty_steps = 
+  planner_configuration_.reduce_vertices_max_empty_steps =
     config["path_planner"]["path_simplifier"]["reduce_vertices"]["max_empty_steps"].as<double>();
-  planner_configuration_.reduce_vertices_range_ratio = 
+  planner_configuration_.reduce_vertices_range_ratio =
     config["path_planner"]["path_simplifier"]["reduce_vertices"]["range_ratio"].as<double>();
-  planner_configuration_.reduce_vertices_use_as_fraction = 
+  planner_configuration_.reduce_vertices_use_as_fraction =
     config["path_planner"]["path_simplifier"]["reduce_vertices"]["use_as_fraction"].as<bool>();
 
   // Smooth b-spline
-  planner_configuration_.smooth_bspline_is_used = 
+  planner_configuration_.smooth_bspline_is_used =
     config["path_planner"]["path_simplifier"]["smooth_b_spline"]["is_used"].as<bool>();
-  planner_configuration_.smooth_bspline_max_steps = 
+  planner_configuration_.smooth_bspline_max_steps =
     config["path_planner"]["path_simplifier"]["smooth_b_spline"]["max_steps"].as<double>();
   //printRrtStarConfig(planner_configuration_);
 }
@@ -208,7 +208,7 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
     //ob::StateSpacePtr current_space(ob::StateSpacePtr(
     //  make_shared<ob::RealVectorStateSpace>(
     //  planner_configuration_.spaces_dimensions[i])));
-    auto current_space = generateSpace(planner_configuration_.spaces_types[i], 
+    auto current_space = generateSpace(planner_configuration_.spaces_types[i],
       planner_configuration_.spaces_dimensions[i], planner_configuration_.spaces_bounds[i]);
     //cout << typeid(current_space).name() << endl;
 
@@ -250,8 +250,8 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
         planner_configuration_.longest_valid_segment_value);
     }
   }
-  
-  // Create simple setup. Here ob::SpaceInformation and ob::ProblemDefinition 
+
+  // Create simple setup. Here ob::SpaceInformation and ob::ProblemDefinition
   // are both created internally. But we can override them with our code.
   //og::SimpleSetup ss(state_space);
   // Set validity checker
@@ -315,9 +315,9 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
       planner_configuration_.pruned_measure_value);
   }
   // COMMENTED PARAMETERS WE LEAVE AT DEFAULT
-  // Use direct sampling of the heuristic for the generation of random samples 
-  // (e.g., x_rand). If a direct sampling method is not defined for the 
-  // objective, rejection sampling will be used by default. 
+  // Use direct sampling of the heuristic for the generation of random samples
+  // (e.g., x_rand). If a direct sampling method is not defined for the
+  // objective, rejection sampling will be used by default.
   // Don't know what exactly that is so leaving it at default which is false.
   //planner->as<og::RRTstar>()->setInformedSampling(false);
   // Controls if heuristic above is used on samples. Default is false.
@@ -325,7 +325,7 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   // Controls if heuristic above is used on new states before connection.
   // Default is false
   //planner->as<og::RRTstar>()->setNewStateRejection(false);
-  // Controls whether pruning and new-state rejection uses an admissible 
+  // Controls whether pruning and new-state rejection uses an admissible
   // cost-to-come estimate or not. Default is true.
   //planner->as<og::RRTstar>()->setAdmissibleCostToCome(true);
   // Controls whether samples are returned in ordered by the heuristic. This is
@@ -334,7 +334,7 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   // Set batch size for ordered sampling. I guess it is not used if the above
   // parameter is false. Default is 1.
   //planner->as<og::RRTstar>()->setBatchSize(1);
-  // Focus search is accomplished by turning on InformedSampling, TreePruning 
+  // Focus search is accomplished by turning on InformedSampling, TreePruning
   // and NewStateRejection. Default is false.
   //planner->as<og::RRTstar>()->setFocusSearch(false);
   // Use a k-nearest search for rewiring instead of a r-disc search. Default is
@@ -343,12 +343,12 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
     planner->as<og::RRTstar>()->setKNearest(
       planner_configuration_.k_nearest_value);
   }
-  // Set the number of attempts to make while performing rejection or informed 
+  // Set the number of attempts to make while performing rejection or informed
   // sampling. Default is 100
   //planner->as<og::RRTstar>()->setNumSamplingAttempts(100);
 
   // Set up start and goal states.
-  // TODO check if start and goal are 
+  // TODO check if start and goal are
   ob::ScopedState<ob::CompoundStateSpace> start(state_space);
   //start[0] = positions(0,0); start[1] = positions(0,1); start[2] = positions(0,2);
   ob::ScopedState<ob::CompoundStateSpace> goal(state_space);
@@ -391,21 +391,21 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   ob::PathPtr path = pdef->getSolutionPath();
   og::PathGeometric path_geom(dynamic_cast<const og::PathGeometric&>(
     *pdef->getSolutionPath()));
-  
+
   // Try to simplify path
   og::PathSimplifier path_simplifier(si);
   if (planner_configuration_.reduce_vertices_is_used){
     //cout << "Path geometric length: " << path_geom.getStateCount() << endl;
     if (planner_configuration_.reduce_vertices_use_as_fraction){
-      path_simplifier.reduceVertices(path_geom, 
-        path_geom.getStateCount()*planner_configuration_.reduce_vertices_max_steps, 
-        path_geom.getStateCount()*planner_configuration_.reduce_vertices_max_empty_steps, 
+      path_simplifier.reduceVertices(path_geom,
+        path_geom.getStateCount()*planner_configuration_.reduce_vertices_max_steps,
+        path_geom.getStateCount()*planner_configuration_.reduce_vertices_max_empty_steps,
         planner_configuration_.reduce_vertices_range_ratio);
     }
     else{
-      path_simplifier.reduceVertices(path_geom, 
-        planner_configuration_.reduce_vertices_max_steps, 
-        planner_configuration_.reduce_vertices_max_empty_steps, 
+      path_simplifier.reduceVertices(path_geom,
+        planner_configuration_.reduce_vertices_max_steps,
+        planner_configuration_.reduce_vertices_max_empty_steps,
         planner_configuration_.reduce_vertices_range_ratio);
     }
     //path_simplifier.reduceVertices(path_geom, path_geom.getStateCount()/4, 0, 0.33);
@@ -477,7 +477,7 @@ bool RrtPathPlanner::isStateValid(const ob::State *state)
   return state_validity_checker_->isStateValid(state_vector);
 }
 
-ob::StateSpacePtr RrtPathPlanner::generateSpace(string type, int dimension, 
+ob::StateSpacePtr RrtPathPlanner::generateSpace(string type, int dimension,
   std::vector< std::vector <double> > space_bounds)
 {
   ob::StateSpacePtr space;

@@ -3,7 +3,7 @@
 GlobalPlanner::GlobalPlanner(string config_filename)
 {
   string username = "/home/";
-  username = username + getenv("USERNAME") + "/";
+  username = username + getenv("USER") + "/";
   size_t found = config_filename.find(username);
   if (found != string::npos) configureFromFile(config_filename);
   else configureFromFile(username + config_filename);
@@ -24,7 +24,7 @@ bool GlobalPlanner::configureFromFile(string config_filename)
     config["global_planner"]["trajectory_config_file"].as<string>());
   // Set up state validity interface
   string username = "/home/";
-  username = username + getenv("USERNAME") + "/";
+  username = username + getenv("USER") + "/";
   YAML::Node state_config = YAML::LoadFile(username + config["global_planner"]["state_validity_checker_config_file"].as<string>());
   state_validity_checker_type_ = state_config["state_validity_checker"]["type"].as<string>();
   //if (state_validity_checker_type_ == "point"){
@@ -32,7 +32,7 @@ bool GlobalPlanner::configureFromFile(string config_filename)
   //    map_interface_);
   //  cout << "State validity checker type is: point" << endl;
   //}
-  if (state_validity_checker_type_ == "ball" || 
+  if (state_validity_checker_type_ == "ball" ||
     state_validity_checker_type_ == "sphere" ||
     state_validity_checker_type_ == "point" ||
     state_validity_checker_type_ == "circle" ||
@@ -50,7 +50,7 @@ bool GlobalPlanner::configureFromFile(string config_filename)
       config["global_planner"]["kinematics_config_file"].as<string>());
     // Set up validity checker for uav and wp manipulator
     state_validity_checker_interface_ = make_shared<UavWpManipulatorStateValidityChecker>(
-      config["global_planner"]["state_validity_checker_config_file"].as<string>(), 
+      config["global_planner"]["state_validity_checker_config_file"].as<string>(),
       map_interface_, kinematics_interface_);
     cout << "State validity checker type is: uav_and_wp_manipulator" << endl;
   }
@@ -61,21 +61,21 @@ bool GlobalPlanner::configureFromFile(string config_filename)
   }
   // Set up path planning interface
   path_planner_interface_ = make_shared<RrtPathPlanner>(
-    config["global_planner"]["path_planner_config_file"].as<string>(), 
+    config["global_planner"]["path_planner_config_file"].as<string>(),
     state_validity_checker_interface_);
-  num_trajectory_restarts_ = 
+  num_trajectory_restarts_ =
     config["global_planner"]["trajectory"]["restarts"].as<int>();
-  num_path_and_trajectory_restarts_ = 
+  num_path_and_trajectory_restarts_ =
     config["global_planner"]["path_and_trajectory"]["restarts"].as<int>();
 
   // Planner might not start properly so give it a few attampts. This does not
   // happen a lot in practice, but just in case.
   num_path_restarts_ = config["global_planner"]["path"]["restarts"].as<int>();
   // If collision check fails how many times should planner restart.
-  num_collision_check_restarts_ = 
+  num_collision_check_restarts_ =
     config["global_planner"]["path"]["collision_check_restarts"].as<int>();
 
-  plan_path_collision_check_ = 
+  plan_path_collision_check_ =
     config["global_planner"]["path"]["collision_check"].as<bool>();
 
   return true;
@@ -100,7 +100,7 @@ bool GlobalPlanner::planPath(Eigen::MatrixXd waypoints)
   path_.resize(0,0);
 
   for (int i=1; i<waypoints.rows(); i++){
-    // Plan path through current two waypoints. Waypoints are taken out as a 
+    // Plan path through current two waypoints. Waypoints are taken out as a
     // block of size (2, num_columns) which takes two waypoints from the list.
     success &= this->planPathThroughTwoWaypoints(
       waypoints.block(i-1, 0, 2, waypoints.cols()));
@@ -110,14 +110,14 @@ bool GlobalPlanner::planPath(Eigen::MatrixXd waypoints)
     // Resize the path so it can hold currently planned one.
     path_.conservativeResize(
       path_.rows()+path_planner_interface_->getPath().rows(), waypoints.cols());
-    // Insert currently planned path into path_. It is used as a block of size 
+    // Insert currently planned path into path_. It is used as a block of size
     // of the new path and starts at rows where previous path has ended.
-    path_.block(rows, 0, path_planner_interface_->getPath().rows(), 
-      path_planner_interface_->getPath().cols()) << 
+    path_.block(rows, 0, path_planner_interface_->getPath().rows(),
+      path_planner_interface_->getPath().cols()) <<
       path_planner_interface_->getPath();
 
     // Finally, cut the last row because if we have multiple waypoints the last
-    // point on current path will be the first point on next path. That's why 
+    // point on current path will be the first point on next path. That's why
     // we simply remove that point, unless we are at the last waypoint.
     if (i != waypoints.rows()-1){
       path_.conservativeResize(path_.rows()-1, path_.cols());
@@ -145,7 +145,7 @@ bool GlobalPlanner::planPathAndTrajectory(Eigen::MatrixXd waypoints)
     // First obtain collision free path.
     success = this->planPath(waypoints);
     if (success == false) cout << "Planning waypoints failed!" << endl;
-    // Next plan trajectory based on the path. 
+    // Next plan trajectory based on the path.
     success &= this->planTrajectory(path_);
     if (success == false) cout << "Planning trajectory failed!" << endl;
     // Depending on the state validity checker type, check the collisions.
@@ -202,13 +202,13 @@ bool GlobalPlanner::planPathThroughTwoWaypoints(Eigen::MatrixXd waypoints)
     cout << "  Less than two waypoints provided. Unable to plan path." << endl;
     return false;
   }
-  
+
   bool success = false;
 
   // Outer loop checks for collision and restarts if path is not collision
   // free. Inner loop restarts if planner configuration was unsuccessful
   // or something unexpected happend.
-  for (int i=0; i<num_collision_check_restarts_ && success==false && 
+  for (int i=0; i<num_collision_check_restarts_ && success==false &&
     (plan_path_collision_check_==true || i==0); i++){
     for (int j=0; j<num_path_restarts_ && success==false; j++){
       success = path_planner_interface_->planPath(waypoints);
@@ -217,6 +217,6 @@ bool GlobalPlanner::planPathThroughTwoWaypoints(Eigen::MatrixXd waypoints)
       success &= this->collisionCheck(path_);
     }
   }
-  
+
   return success;
 }

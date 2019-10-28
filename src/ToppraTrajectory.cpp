@@ -3,7 +3,7 @@
 ToppraTrajectory::ToppraTrajectory(string config_filename)
 {
   string username = "/home/";
-  username = username + getenv("USERNAME") + "/";
+  username = username + getenv("USER") + "/";
 
   // Set up node handle and create service
   nh_ = ros::NodeHandle();
@@ -28,7 +28,7 @@ ToppraTrajectory::ToppraTrajectory(Eigen::MatrixXd config_matrix, double samplin
 
 ToppraTrajectory::~ToppraTrajectory()
 {
-  
+
 }
 
 bool ToppraTrajectory::configureFromFile(string config_filename)
@@ -123,28 +123,28 @@ void ToppraTrajectory::sampleTrajectory(
   // converts it to Trajectory type
 
   // First resize the trajectory to accomodate for all the points.
-  sampled_trajectory_.position.resize(joint_trajectory.points.size(), 
+  sampled_trajectory_.position.resize(joint_trajectory.points.size(),
     n_dofs_);
-  sampled_trajectory_.velocity.resize(joint_trajectory.points.size(), 
+  sampled_trajectory_.velocity.resize(joint_trajectory.points.size(),
     n_dofs_);
-  sampled_trajectory_.acceleration.resize(joint_trajectory.points.size(), 
+  sampled_trajectory_.acceleration.resize(joint_trajectory.points.size(),
     n_dofs_);
-  sampled_trajectory_.jerk.resize(joint_trajectory.points.size(), 
+  sampled_trajectory_.jerk.resize(joint_trajectory.points.size(),
     n_dofs_);
-  sampled_trajectory_.split.resize(joint_trajectory.points.size(), 
+  sampled_trajectory_.split.resize(joint_trajectory.points.size(),
     n_dofs_);
   sampled_trajectory_.time.resize(joint_trajectory.points.size());
 
   // Next, start packing trajectory
   for (int i=0; i<joint_trajectory.points.size(); i++){
-    sampled_trajectory_.time(i) = 
+    sampled_trajectory_.time(i) =
       joint_trajectory.points[i].time_from_start.toSec();
     for (int j=0; j<n_dofs_; j++){
-      sampled_trajectory_.position(i,j) = 
+      sampled_trajectory_.position(i,j) =
         joint_trajectory.points[i].positions[j];
-      sampled_trajectory_.velocity(i,j) = 
+      sampled_trajectory_.velocity(i,j) =
         joint_trajectory.points[i].velocities[j];
-      sampled_trajectory_.acceleration(i,j) = 
+      sampled_trajectory_.acceleration(i,j) =
         joint_trajectory.points[i].accelerations[j];
     }
   }

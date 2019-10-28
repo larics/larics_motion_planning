@@ -3,7 +3,7 @@
 LocalPlanner::LocalPlanner(string config_filename)
 {
   string username = "/home/";
-  username = username + getenv("USERNAME") + "/";
+  username = username + getenv("USER") + "/";
   configureFromFile(username + config_filename);
 
   // Publishers
@@ -32,7 +32,7 @@ bool LocalPlanner::configureFromFile(string config_filename)
     config["local_planner"]["map_config_file"].as<string>());
   // Set up state validity interface
   string username = "/home/";
-  username = username + getenv("USERNAME") + "/";
+  username = username + getenv("USER") + "/";
   YAML::Node state_config = YAML::LoadFile(username + config["local_planner"]["state_validity_checker_config_file"].as<string>());
   state_validity_checker_type_ = state_config["state_validity_checker"]["type"].as<string>();
   if (state_validity_checker_type_ == "point"){
@@ -46,7 +46,7 @@ bool LocalPlanner::configureFromFile(string config_filename)
       config["local_planner"]["kinematics_config_file"].as<string>());
     // Set up validity checker for uav and wp manipulator
     state_validity_checker_interface_ = make_shared<UavWpManipulatorStateValidityChecker>(
-      config["local_planner"]["state_validity_checker_config_file"].as<string>(), 
+      config["local_planner"]["state_validity_checker_config_file"].as<string>(),
       map_interface_, kinematics_interface_);
     cout << "State validity checker type is: uav_and_wp_manipulator" << endl;
   }
@@ -67,7 +67,7 @@ void LocalPlanner::run()
 }
 
 void LocalPlanner::jointTrajectoryCallback(
-  const trajectory_msgs::JointTrajectory &msg) 
+  const trajectory_msgs::JointTrajectory &msg)
 {
   // Fixed transformation between uav and manipulator
   Eigen::Affine3d t_b_l0;
@@ -89,7 +89,7 @@ void LocalPlanner::jointTrajectoryCallback(
 
     // Get planned transform of uav in world frame
     Eigen::Affine3d t_w_b = Eigen::Affine3d::Identity();
-    t_w_b.translate(Eigen::Vector3d(current_point.positions[0], 
+    t_w_b.translate(Eigen::Vector3d(current_point.positions[0],
       current_point.positions[1], current_point.positions[2]));
     Eigen::Matrix3d r_w_b;
     // At this point roll and pitch are 0 since we don't plan for them
@@ -109,7 +109,7 @@ void LocalPlanner::jointTrajectoryCallback(
     // Now we have desired end effector transformation
     // Get transform of uav in world frame
     t_w_b = Eigen::Affine3d::Identity();
-    t_w_b.translate(Eigen::Vector3d(uav_current_pose_.position.x, 
+    t_w_b.translate(Eigen::Vector3d(uav_current_pose_.position.x,
       uav_current_pose_.position.y, uav_current_pose_.position.z));
     Eigen::Quaterniond q;
     q.x() = uav_current_pose_.orientation.x;
@@ -122,7 +122,7 @@ void LocalPlanner::jointTrajectoryCallback(
 
 
     // With real uav state in transformation we can calculate desired transform
-    // of end effector in L0 frame. This will go into inverse kinematics to 
+    // of end effector in L0 frame. This will go into inverse kinematics to
     // calculate new joint positions for manipulator.
     t_l0_ee = t_b_l0.inverse()*t_w_b.inverse()*t_w_ee;
 

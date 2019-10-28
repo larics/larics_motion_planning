@@ -14,7 +14,7 @@ OctomapMap::OctomapMap(string octomap_config_file)
 {
   // Configures the map from yaml file.
   string username = "/home/";
-  username = username + getenv("USERNAME") + "/";
+  username = username + getenv("USER") + "/";
   configureFromFile(username + octomap_config_file);
 }
 
@@ -48,14 +48,14 @@ bool OctomapMap::isStateValid(Eigen::VectorXd state, int depth)
 
 bool OctomapMap::configureFromFile(string config_filename)
 {
-  cout << "Loading octomap from file: " << endl; 
+  cout << "Loading octomap from file: " << endl;
   cout << "  " << config_filename << endl;
   YAML::Node config = YAML::LoadFile(config_filename);
 
   // Load map from path provided in file.
   string username = "/home/";
-  username = username + getenv("USERNAME") + "/";
-  map_ = make_unique<octomap::OcTree>(username + 
+  username = username + getenv("USER") + "/";
+  map_ = make_unique<octomap::OcTree>(username +
     config["octomap"]["path_to_file"].as<string>());
   // Set search depth from file.
   search_depth_ = config["octomap"]["search_depth"].as<int>();
@@ -68,7 +68,7 @@ void OctomapMap::setDepth(int depth)
   search_depth_ = depth;
 }
 
-void OctomapMap::setOctomapFromRosMessage(const 
+void OctomapMap::setOctomapFromRosMessage(const
   octomap_msgs::Octomap::ConstPtr& ros_octomap)
 {
   cout << "Map received" << endl;
