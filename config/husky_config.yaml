@@ -40,6 +40,8 @@ path_planner:
     dimensions: [3]
     # Weights are important when using multiple spaces
     weights: [1.0]
+    # Types of spaces used
+    types: ["RealVector"]
     # Bounds are defined by 
     bounds: [[[-10.0, 10.0], [-20.0, 20.0], [-1.0, 1.0]]]
 
