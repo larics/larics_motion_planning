@@ -43,7 +43,7 @@ path_planner:
     # Types of spaces that are used
     types: ["RealVector", "SO2"]
     # Bounds are defined by 
-    bounds: [[[0, 10.0], [-20.0, 0.0], [0.2, 1.0]], [[-3.141592, 3.141592]]]
+    bounds: [[[-20, 20.0], [-20.0, 20.0], [0.0, 10.0]], [[-3.141592, 3.141592]]]
 
   # RRT* parameter set
 
