@@ -30,7 +30,7 @@ octomap:
   # Search depth of octomap tree. 16 is best resolution, slowest search(although
   # experience shows that there is no significant increase in search time by 
   # setting this parameter to < 16)
-  search_depth: 16
+  search_depth: 13
 
 path_planner:
   spaces:
@@ -43,7 +43,7 @@ path_planner:
     # Types of spaces that are used
     types: ["RealVector", "SO2"]
     # Bounds are defined by 
-    bounds: [[[-20, 20.0], [-20.0, 20.0], [0.0, 10.0]], [[-3.141592, 3.141592]]]
+    bounds: [[[-20, 20.0], [-20.0, 20.0], [0.0, 1.0]], [[-3.141592, 3.141592]]]
 
   # RRT* parameter set
 
@@ -55,7 +55,7 @@ path_planner:
   longest_valid_segment:
     is_used: true
     is_metric: true
-    value: 0.01
+    value: 0.04
   # Probability the planner will choose the goal state.
   goal_bias:
     is_used: true
@@ -107,8 +107,8 @@ path_planner:
     # If is_incremental is set to false, "time" becomes time limit and only
     # one search is conducted.
     is_incremental: true
-    time: 1.0
-    increment: 0.25
+    time: 5.0
+    increment: 0.5
 
   # After path is found, OMPL can simplify it and smooth it out.
   path_simplifier:
@@ -138,9 +138,9 @@ path_planner:
 
 toppra_trajectory:
   # Maximum velocities for [x, y, z, yaw]
-  velocities: [0.8, 0.8, 0.5, 0.3]
+  velocities: [0.5, 0.5, 0.5, 0.3]
   # Maximum accelerations for [x, y, z, yaw]
-  accelerations: [0.8, 0.8, 0.4, 0.8]
+  accelerations: [0.4, 0.4, 0.4, 0.4]
   # If using SO states angular must be set to 1
   is_angular: [0, 0, 0, 1]
   # Trajectory sampling frequency
@@ -180,7 +180,7 @@ state_validity_checker:
 
   # Prism will be a set of rectangles
   prism:
-    x_dimension: 0.6
-    y_dimension: 0.2
-    z_dimension: 0.4
+    x_dimension: 0.3
+    y_dimension: 0.3
+    z_dimension: 0.3
     resolution: 0.05
