@@ -196,11 +196,37 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
     cout << "RrtPathPlanner->planPath: " << endl;
     cout << "  Start point is not valid: " << endl << temp_state << endl;
   }
+  int k = 0;
+  for (int i=0; i<planner_configuration_.number_of_spaces; i++){
+    for (int j=0; j<planner_configuration_.spaces_dimensions[i]; j++){
+      if (temp_state(k) < planner_configuration_.spaces_bounds[i][j][0] ||
+        temp_state(k) > planner_configuration_.spaces_bounds[i][j][1]){
+        initial_check = false;
+        cout << "RrtPathPlanner->planPath: " << endl;
+        cout << "  Start point is out of bounds: " << endl << temp_state << endl;
+      }
+      k++;
+    }
+  }
   temp_state = (positions.block(1, 0, 2, positions.cols())).transpose();
+  cout << temp_state << endl;
   if (!state_validity_checker_->isStateValid(temp_state)){
     initial_check = false;
     cout << "RrtPathPlanner->planPath: " << endl;
     cout << "  Goal point is not valid: " << endl << temp_state << endl;
+  }
+  // Check if within bounds.
+  k = 0;
+  for (int i=0; i<planner_configuration_.number_of_spaces; i++){
+    for (int j=0; j<planner_configuration_.spaces_dimensions[i]; j++){
+      if (temp_state(k) < planner_configuration_.spaces_bounds[i][j][0] ||
+        temp_state(k) > planner_configuration_.spaces_bounds[i][j][1]){
+        initial_check = false;
+        cout << "RrtPathPlanner->planPath: " << endl;
+        cout << "  Goal point is out of bounds: " << endl << temp_state << endl;
+      }
+      k++;
+    }
   }
 
   if (initial_check == false) return initial_check;
