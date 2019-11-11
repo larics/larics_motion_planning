@@ -6,4 +6,5 @@ bool            plan_trajectory
 ---
 trajectory_msgs/MultiDOFJointTrajectory   trajectory
 nav_msgs/Path                             path
+bool                                      success
 float64                                   path_length

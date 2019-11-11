@@ -226,7 +226,8 @@ bool GlobalPlannerRosInterface::cartesianTrajectoryCallback(
     visualization_.setTrajectory(global_planner_->getTrajectory());
   }
   else{
-    return success;
+    res.success = success;
+    return true;
   }
 
   // If path or trajectory are to be published, then publish them.
@@ -237,7 +238,8 @@ bool GlobalPlannerRosInterface::cartesianTrajectoryCallback(
     cartesian_path_pub_.publish(res.path);
   }
 
-  return success;
+  res.success = success;
+  return true;
 }
 
 bool GlobalPlannerRosInterface::multiDofTrajectoryCallback(
@@ -250,7 +252,8 @@ bool GlobalPlannerRosInterface::multiDofTrajectoryCallback(
   // Convert waypoints to planner message type
   if (req.waypoints.points.size() < 2){
     cout << "At least two points required for generating trajectory." << endl;
-    return success;
+    res.success = success;
+    return true;
   }
   Eigen::MatrixXd waypoints = this->jointTrajectoryToEigenWaypoints(req.waypoints);
   visualization_.setWaypoints(waypoints);
@@ -283,7 +286,8 @@ bool GlobalPlannerRosInterface::multiDofTrajectoryCallback(
     visualization_.setTrajectory(global_planner_->getTrajectory());
   }
   else{
-    return success;
+    res.success = success;
+    return true;
   }
 
   // If path or trajectory are to be published, then publish them.
@@ -293,7 +297,9 @@ bool GlobalPlannerRosInterface::multiDofTrajectoryCallback(
   if (req.publish_path){
     cartesian_path_pub_.publish(res.path);
   }
-  return success;
+
+  res.success = success;
+  return true;
 }
 
 bool GlobalPlannerRosInterface::visualizeStateCallback(
