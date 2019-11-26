@@ -59,7 +59,7 @@ include_directories(
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 set(TRAJECTORY_SOURCES src/TrajectoryInterface.cpp 
-  src/ToppraTrajectory.cpp)
+  src/ToppraTrajectory.cpp src/SplineInterpolator.cpp)
 add_library(trajectory ${TRAJECTORY_SOURCES})
 target_link_libraries(trajectory ${catkin_LIBRARIES} yaml-cpp)
 

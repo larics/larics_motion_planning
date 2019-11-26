@@ -5,6 +5,7 @@
 #include <larics_motion_planning/RrtPathPlanner.h>
 #include <larics_motion_planning/Visualization.h>
 #include <larics_motion_planning/GlobalPlanner.h>
+#include <larics_motion_planning/SplineInterpolator.h>
 using namespace std;
 
 /*void octomapCallback(const octomap_msgs::Octomap::ConstPtr& msg)
@@ -20,6 +21,15 @@ using namespace std;
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "testing_node");
+
+  SplineInterpolator spline_interpolator;
+  Eigen::VectorXd conditions(6);
+  conditions << 0.0, 1.5321321, 0.0, 0.3, 0.0, 0.0;
+  Eigen::VectorXd constraints(2);
+  constraints << 0.5, 1.5;
+  spline_interpolator.generateSplineOrder5(conditions, constraints, 0.01);
+
+
   /*Eigen::MatrixXd constraints(2, 4);
   constraints << 0.5, 0.5, 0.5, 0.5, 1.2, 1.2, 1.2, 1.2;
   ToppraTrajectory a("/home/antun/catkin_ws/src/larics_motion_planning/config/toppra_config_example.yaml");
@@ -93,7 +103,7 @@ int main(int argc, char **argv)
   }
   //cout << viz.getPath() << endl;
   //cout << path_planner.getPath() << endl;*/
-  string username = "/home/";
+  /*string username = "/home/";
   username = username + getenv("USER") + "/";
   GlobalPlanner gp(username + "catkin_ws/src/larics_motion_planning/config/global_planner_config_example.yaml");
   Eigen::MatrixXd waypoints(5,3);
@@ -117,6 +127,6 @@ int main(int argc, char **argv)
     viz.publishPath();
     viz.publishTrajectory();
     viz.publishWaypoints();
-  }
+  }*/
   return 0;
 }
