@@ -24,10 +24,10 @@ int main(int argc, char **argv)
 
   SplineInterpolator spline_interpolator;
   Eigen::VectorXd conditions(6);
-  conditions << 0.0, 1.5321321, 0.0, 0.3, 0.0, 0.0;
+  conditions << 0.4, 1.5321321, 0.17, 0.3, 0.1, 0.0;
   Eigen::VectorXd constraints(2);
   constraints << 0.5, 1.5;
-  spline_interpolator.generateSplineOrder5(conditions, constraints, 0.01);
+  cout << spline_interpolator.generateSplineOrder5(conditions, constraints, 0.01) << endl;
 
 
   /*Eigen::MatrixXd constraints(2, 4);

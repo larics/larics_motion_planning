@@ -32,9 +32,19 @@ class SplineInterpolator
   private:
     double t_spline_;
     Eigen::VectorXd coefficients_;
+    Trajectory trajectory_;
 
     inline Eigen::VectorXd getSplineOrder5Coefficients(
       Eigen::VectorXd conditions, Eigen::VectorXd t);
+
+    inline Eigen::VectorXd calculatePolynomialValueOrder5(
+      Eigen::VectorXd coefficients, double time);
+
+    Trajectory sampleTrajectory(Eigen::VectorXd coefficients, 
+      double duration, double sample_time);
+
+    double calculateTimeScalingFactor(Eigen::VectorXd coefficients, 
+      Eigen::VectorXd constraints, double duration, double sample_time);
 };
 
 #endif // SPLINE_INTERPOLATOR_H
