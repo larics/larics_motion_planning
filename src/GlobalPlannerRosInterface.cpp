@@ -39,6 +39,10 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
   // Service for visualizing arbitrary robot state
   visualize_state_server_ = nh_.advertiseService("visualize_state", 
     &GlobalPlannerRosInterface::visualizeStateCallback, this);
+  // Service for parabolic airdrop trajectory planning.
+  parabolic_airdrop_trajectory_server_ = nh_.advertiseService(
+    "parabolic_airdrop_trajectory",
+    &GlobalPlannerRosInterface::parabolicAirdropTrajectoryCallback, this);
 }
 
 void GlobalPlannerRosInterface::run()
@@ -299,6 +303,19 @@ bool GlobalPlannerRosInterface::multiDofTrajectoryCallback(
   }
 
   res.success = success;
+  return true;
+}
+
+bool GlobalPlannerRosInterface::parabolicAirdropTrajectoryCallback(
+  larics_motion_planning::MultiDofTrajectory::Request &req, 
+  larics_motion_planning::MultiDofTrajectory::Response &res)
+{
+  cout << endl << "Parabolic trajectory service callback." << endl;
+  ParabolicAirdropTrajectory airdrop_trajectory(
+    "catkin_ws/src/larics_motion_planning/config/uav_only_config_example.yaml");
+  cout << "Parabolic trajectory service callback finished." << endl << endl;
+
+  
   return true;
 }
 

@@ -12,6 +12,7 @@
 #include <larics_motion_planning/TrajectoryInterface.h>
 #include <larics_motion_planning/ToppraTrajectory.h>
 #include <larics_motion_planning/GlobalPlanner.h>
+#include <larics_motion_planning/ParabolicAirdropTrajectory.h>
 #include <larics_motion_planning/Visualization.h>
 
 #include <eigen3/Eigen/Eigen>
@@ -90,6 +91,12 @@ class GlobalPlannerRosInterface
     bool visualizeStateCallback(
       larics_motion_planning::VisualizeState::Request &req, 
       larics_motion_planning::VisualizeState::Response &res);
+
+    // Parabolic airdrop trajectory service
+    ros::ServiceServer parabolic_airdrop_trajectory_server_;
+    bool parabolicAirdropTrajectoryCallback(
+      larics_motion_planning::MultiDofTrajectory::Request &req, 
+      larics_motion_planning::MultiDofTrajectory::Response &res);
 
 
     // Conversions between GlobalPlanner and ROS messages.
