@@ -33,6 +33,7 @@ add_service_files(
   CartesianTrajectory.srv
   MultiDofTrajectory.srv
   VisualizeState.srv
+  ParabolicAirdropTrajectory.srv
 )
 
 ## Generate added messages and services with any dependencies listed here
