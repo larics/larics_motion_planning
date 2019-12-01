@@ -7,6 +7,7 @@
 #include <larics_motion_planning/GlobalPlanner.h>
 
 #include <eigen3/Eigen/Eigen>
+#include <cmath>
 
 #include <iostream>
 using namespace std;
@@ -29,7 +30,11 @@ class ParabolicAirdropPlanner : public GlobalPlanner
       Eigen::VectorXd target_pose);
 
   private:
+    Eigen::MatrixXd constructParabola(double dx, double dz, double alpha,
+      double v, double t, double g);
 };
+
+inline double deg2rad(double deg);
 
 
 
