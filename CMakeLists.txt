@@ -92,7 +92,7 @@ add_library(visualization ${VISUALIZATION_SOURCES})
 target_link_libraries(visualization ${catkin_LIBRARIES} ${Eigen_LIBRARIES})
 
 set(GLOBAL_PLANNER_SOURCES src/GlobalPlanner.cpp 
-  src/GlobalPlannerRosInterface.cpp src/ParabolicAirdropTrajectory.cpp)
+  src/GlobalPlannerRosInterface.cpp src/ParabolicAirdropPlanner.cpp)
 add_library(global_planner ${GLOBAL_PLANNER_SOURCES})
 target_link_libraries(global_planner trajectory map path_planning 
   kinematics ${catkin_LIBRARIES} ${Eigen_LIBRARIES})

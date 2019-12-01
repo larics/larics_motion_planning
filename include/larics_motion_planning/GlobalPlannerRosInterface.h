@@ -12,7 +12,7 @@
 #include <larics_motion_planning/TrajectoryInterface.h>
 #include <larics_motion_planning/ToppraTrajectory.h>
 #include <larics_motion_planning/GlobalPlanner.h>
-#include <larics_motion_planning/ParabolicAirdropTrajectory.h>
+#include <larics_motion_planning/ParabolicAirdropPlanner.h>
 #include <larics_motion_planning/Visualization.h>
 
 #include <eigen3/Eigen/Eigen>
@@ -37,6 +37,7 @@
 #include <larics_motion_planning/CartesianTrajectory.h>
 #include <larics_motion_planning/MultiDofTrajectory.h>
 #include <larics_motion_planning/VisualizeState.h>
+#include <larics_motion_planning/ParabolicAirdropTrajectory.h>
 
 #include <iostream>
 using namespace std;
@@ -95,8 +96,8 @@ class GlobalPlannerRosInterface
     // Parabolic airdrop trajectory service
     ros::ServiceServer parabolic_airdrop_trajectory_server_;
     bool parabolicAirdropTrajectoryCallback(
-      larics_motion_planning::MultiDofTrajectory::Request &req, 
-      larics_motion_planning::MultiDofTrajectory::Response &res);
+      larics_motion_planning::ParabolicAirdropTrajectory::Request &req, 
+      larics_motion_planning::ParabolicAirdropTrajectory::Response &res);
 
 
     // Conversions between GlobalPlanner and ROS messages.

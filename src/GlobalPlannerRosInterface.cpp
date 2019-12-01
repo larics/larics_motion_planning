@@ -307,12 +307,27 @@ bool GlobalPlannerRosInterface::multiDofTrajectoryCallback(
 }
 
 bool GlobalPlannerRosInterface::parabolicAirdropTrajectoryCallback(
-  larics_motion_planning::MultiDofTrajectory::Request &req, 
-  larics_motion_planning::MultiDofTrajectory::Response &res)
+  larics_motion_planning::ParabolicAirdropTrajectory::Request &req, 
+  larics_motion_planning::ParabolicAirdropTrajectory::Response &res)
 {
   cout << endl << "Parabolic trajectory service callback." << endl;
-  ParabolicAirdropTrajectory airdrop_trajectory(
+  ParabolicAirdropPlanner airdrop_planner(
     "catkin_ws/src/larics_motion_planning/config/uav_only_config_example.yaml");
+
+  // Generate vectors from poses
+  Eigen::VectorXd uav_pose(7);
+  uav_pose << req.uav_pose.position.x, req.uav_pose.position.y, 
+    req.uav_pose.position.z, req.uav_pose.orientation.x, 
+    req.uav_pose.orientation.y, req.uav_pose.orientation.z, 
+    req.uav_pose.orientation.w;
+  Eigen::VectorXd target_pose(7);
+  target_pose << req.target_pose.position.x, req.target_pose.position.y, 
+    req.target_pose.position.z, req.target_pose.orientation.x, 
+    req.target_pose.orientation.y, req.target_pose.orientation.z, 
+    req.target_pose.orientation.w;
+
+  airdrop_planner.generateParabolicAirdropTrajectory(uav_pose, target_pose);
+
   cout << "Parabolic trajectory service callback finished." << endl << endl;
 
   
