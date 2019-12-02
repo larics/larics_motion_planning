@@ -23,6 +23,85 @@ SimpleStateValidityCheckers::SimpleStateValidityCheckers(
   }
 }
 
+SimpleStateValidityCheckers::SimpleStateValidityCheckers(
+  shared_ptr<MapInterface> map, string type, Eigen::VectorXd configuration)
+{
+  map_ = map;
+  checker_type_ = string(type);
+
+  if (checker_type_.compare("ball") == 0){
+    if (configuration.size() < 2) {
+      cout << "The " << type << " state validity checker requires 2 parameters: " << endl;
+      cout << "Ball radius" << endl << "Ball resolution" << endl;
+      exit(0);
+    }
+    ball_radius_ = configuration(0);
+    ball_resolution_ = configuration(1);
+    points_ = generateBall();
+  }
+  else if (checker_type_.compare("sphere") == 0){
+    if (configuration.size() < 2) {
+      cout << "The " << type << " state validity checker requires 2 parameters: " << endl;
+      cout << "Sphere radius" << endl << "Sphere resolution" << endl;
+      exit(0);
+    }
+    sphere_radius_ = configuration(0);
+    sphere_resolution_ = configuration(1);
+    points_ = generateSphere();
+  }
+  else if (checker_type_.compare("point") == 0){
+    points_ = generatePoint();
+  }
+  else if (checker_type_.compare("circle") == 0){
+    if (configuration.size() < 2) {
+      cout << "The " << type << " state validity checker requires 2 parameters: " << endl;
+      cout << "Circle radius" << endl << "Circle resolution" << endl;
+      exit(0);
+    }
+    circle_radius_ = configuration(0);
+    circle_resolution_ = configuration(1);
+    points_ = generateCircle();
+  }
+  else if (checker_type_.compare("cylinder") == 0){
+    if (configuration.size() < 3) {
+      cout << "The " << type << " state validity checker requires 3 parameters: " << endl;
+      cout << "Cylinder radius" << endl << "Cylinder height" << endl << "Cylinder resolution" << endl;
+      exit(0);
+    }
+    cylinder_radius_ = configuration(0);
+    cylinder_height_ = configuration(1);
+    cylinder_resolution_ = configuration(2);
+    points_ = generateCylinder();
+  }
+  else if (checker_type_.compare("rectangle") == 0){
+    if (configuration.size() < 3) {
+      cout << "The " << type << " state validity checker requires 3 parameters: " << endl;
+      cout << "Rectangle x" << endl << "Rectangle y" << endl << "Rectangle resolution" << endl;
+      exit(0);
+    }
+    rectangle_x_ = configuration(0);
+    rectangle_y_ = configuration(1);
+    rectangle_resolution_ = configuration(2);
+    points_ = generateRectangle();
+  }
+  else if (checker_type_.compare("prism") == 0){
+    if (configuration.size() < 4) {
+      cout << "The " << type << " state validity checker requires 4 parameters: " << endl;
+      cout << "Prism x" << endl << "Prism y" << endl << "Prism z" << endl << "Prism resolution" << endl;
+      exit(0);
+    }
+    prism_x_ = configuration(0);
+    prism_y_ = configuration(1);
+    prism_z_ = configuration(2);
+    prism_resolution_ = configuration(3);
+    points_ = generatePrism();
+  }
+  else{
+    cout << "The " << type << " state validity checker does not exist" << endl;
+    exit(0);
+  }
+}
+
 bool SimpleStateValidityCheckers::configureFromFile(string config_filename)
 {
   cout << "Configuring state validity checker from file: " << endl;

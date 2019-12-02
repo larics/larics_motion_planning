@@ -29,6 +29,13 @@ class SimpleStateValidityCheckers : public StateValidityCheckerInterface
     SimpleStateValidityCheckers(string config_filename, 
       shared_ptr<MapInterface> map, string type);
 
+    /// \brief Constructor that does not need file config.
+    /// \param map Map interface that is used for checking validity of a point.
+    /// \param type Type of state validity checker.
+    /// \param configuration Configuration vector for state validity checker.
+    SimpleStateValidityCheckers(shared_ptr<MapInterface> map, string type, 
+      Eigen::VectorXd configuration);
+
     /// \brief Validity of a robot state.
     /// \param state Vector of robot state.
     /// \return True if robot state does not interfere with obstacles. False
