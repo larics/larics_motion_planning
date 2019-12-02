@@ -32,6 +32,9 @@ class ParabolicAirdropPlanner : public GlobalPlanner
   private:
     Eigen::MatrixXd constructParabola(double dx, double dz, double alpha,
       double v, double t, double g);
+
+    Eigen::MatrixXd transformParabola(Eigen::MatrixXd parabola,
+      Eigen::VectorXd target, double yaw, double dp);
 };
 
 inline double deg2rad(double deg);
