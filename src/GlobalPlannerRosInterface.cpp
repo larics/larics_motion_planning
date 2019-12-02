@@ -327,6 +327,8 @@ bool GlobalPlannerRosInterface::parabolicAirdropTrajectoryCallback(
     req.target_pose.orientation.w;
 
   airdrop_planner.generateParabolicAirdropTrajectory(uav_pose, target_pose);
+  visualization_.setStatePoints(airdrop_planner.getParabola());
+  visualization_.publishStatePoints();
 
   cout << "Parabolic trajectory service callback finished." << endl << endl;
 

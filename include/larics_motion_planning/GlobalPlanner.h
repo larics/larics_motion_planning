@@ -89,7 +89,7 @@ class GlobalPlanner
     /// \return Shared pointer to kinematics interface.
     shared_ptr<KinematicsInterface> getKinematicsInterface();
 
-  private:
+  protected:
     shared_ptr<MapInterface> map_interface_;
     shared_ptr<TrajectoryInterface> trajectory_interface_;
     shared_ptr<StateValidityCheckerInterface> state_validity_checker_interface_;
