@@ -26,13 +26,42 @@ class SplineInterpolator
     /// \brief Generates 5th order spline based on specified initial+final
     ///   conditions and dynamic constraints. At least one dynamic constraint
     ///   must be specified.
+    /// \param conditions Initial and final position, velocity and acceleration.
+    /// \param constraints Maximum allowed velocity, acceleration etc.
+    /// \param sample_time Sampling time of the trajectory.
+    /// \return True if trajectory was successfully generated.
     bool generateSplineOrder5(Eigen::VectorXd conditions, 
       Eigen::VectorXd constraints, double sample_time);
 
+    /// \brief Generates 5th order spline with fixed duration. No constraints
+    ///   are needed.
+    /// \param conditions Initial and final position, velocity and acceleration.
+    /// \param duration Spline duration.
+    /// \param sample_time Sampling time of the trajectory.
+    /// \return True if trajectory was successfully generated.
+    bool generateSplineOrder5FixedTime(Eigen::VectorXd conditions, 
+      double duration, double sample_time);
+
+    /// \brief Generates a trajectory of n axes.
+    /// \param conditions Initial and final position, velocity and acceleration.
+    /// \param constraints Maximum allowed velocity, acceleration etc.
+    /// \param sample_time Sampling time of the trajectory.
+    /// \return True if trajectory was successfully generated.
+    bool generateTrajectory(Eigen::MatrixXd conditions, 
+      Eigen::MatrixXd constraints, double sample_time);
+
+    /// \brief Returns planned trajectory.
+    /// \return Generated trajectory.
+    Trajectory getTrajectory() {return trajectory_;}
+
+    /// \brief Returns duration of the trajectory.
+    /// \return Trajectory duration.
+    double getTrajectoryDuration() {return spline_duration_;}
+
   private:
-    double t_spline_;
+    double spline_duration_;
     Eigen::VectorXd coefficients_;
-    Trajectory trajectory_;
+    Trajectory trajectory_, spline_;
 
     inline Eigen::VectorXd getSplineOrder5Coefficients(
       Eigen::VectorXd conditions, Eigen::VectorXd t);

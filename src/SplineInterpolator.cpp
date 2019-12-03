@@ -22,7 +22,8 @@ bool SplineInterpolator::generateSplineOrder5(Eigen::VectorXd conditions,
   }
 
   // Assume the time and round it to nearest multiple of sample time.
-  double duration = fabs(conditions(1)-conditions(0))/constraints(0);
+  double duration = fabs(conditions(1)-conditions(0))/constraints(0) + 
+    fabs(conditions(3)-conditions(2)/constraints(1));
   duration = ceil(duration/sample_time)*sample_time;
 
   Eigen::VectorXd t(6); t(0) = 1.0;
@@ -47,7 +48,74 @@ bool SplineInterpolator::generateSplineOrder5(Eigen::VectorXd conditions,
     s = calculateTimeScalingFactor(coefficients, constraints, duration, 
     sample_time);
   }
-  trajectory_ = sampleTrajectory(coefficients, duration, sample_time);
+  spline_ = sampleTrajectory(coefficients, duration, sample_time);
+  spline_duration_ = spline_.time(spline_.time.size()-1);
+
+  return true;
+}
+
+bool SplineInterpolator::generateSplineOrder5FixedTime(
+  Eigen::VectorXd conditions, double duration, double sample_time)
+{
+  // Check if initial/final condions are properly provided.
+  if (conditions.rows() != 6){
+    cout << "Generate spline order 5 with fixed duration." << endl;
+    cout << "  Conditions must have 6 values!" << endl;
+    return false;
+  }
+
+  Eigen::VectorXd t(6); t(0) = 1.0;
+  for (int i=1; i<6; i++){ 
+    t(i) = t(i-1)*duration;
+  }
+  // Calculate spline coefficients
+  Eigen::VectorXd coefficients = getSplineOrder5Coefficients(conditions, t);
+
+  spline_ = sampleTrajectory(coefficients, duration, sample_time);
+  spline_duration_ = spline_.time(spline_.time.size()-1);
+
+  return true;
+}
+
+bool SplineInterpolator::generateTrajectory(Eigen::MatrixXd conditions,
+  Eigen::MatrixXd constraints, double sample_time)
+{
+  // There will be n trajectories depending on the rows of conditions
+  // TODO: check number of conditions and decide the spline order.
+
+  double max_time = 0.0;
+  for (int i=0; i<conditions.rows(); i++){
+    generateSplineOrder5((conditions.row(i)).transpose(),
+      (constraints.row(i)).transpose(), sample_time);
+    if (max_time < spline_duration_){
+      max_time = spline_duration_;
+    }
+  }
+
+  cout << "Max time " << max_time << endl;
+
+  // Sample all splines with max time
+  int n = int(round(max_time/sample_time)) + 1;
+  trajectory_.position.resize(n, conditions.rows());
+  trajectory_.velocity.resize(n, conditions.rows());
+  trajectory_.acceleration.resize(n, conditions.rows());
+  trajectory_.jerk.resize(n, conditions.rows());
+  trajectory_.split.resize(n, conditions.rows());
+  trajectory_.time.resize(n);
+
+  for (int i=0; i<conditions.rows(); i++){
+    generateSplineOrder5FixedTime((conditions.row(i)).transpose(), max_time, 
+      sample_time);
+    trajectory_.position.block(0, i, n, 1) = spline_.position;
+    trajectory_.velocity.block(i, 0, n, 1) = spline_.velocity;
+    trajectory_.acceleration.block(i, 0, n, 1) = spline_.acceleration;
+    trajectory_.jerk.block(i, 0, n, 1) = spline_.jerk;
+    trajectory_.split.block(i, 0, n, 1) = spline_.split;
+  }
+  trajectory_.time = spline_.time;
+
+  cout << trajectory_.position << endl;
+  exit(0);
 
   return true;
 }
@@ -126,7 +194,7 @@ Trajectory SplineInterpolator::sampleTrajectory(Eigen::VectorXd coefficients,
       coefficients, t);
     //cout << calculatePolynomialValueOrder5(coefficients, t) << endl;
 
-    trajectory.position(i,0) = 1.0; //current_point(0);
+    trajectory.position(i,0) = current_point(0);
     trajectory.velocity(i,0) = current_point(1);
     trajectory.acceleration(i,0) = current_point(2);
     trajectory.jerk(i,0) = current_point(3);
