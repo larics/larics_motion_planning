@@ -40,7 +40,18 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
               parabola_yaw, dx);
 
             // Plan stopping trajectory
-            //planSpline
+            Eigen::MatrixXd conditions(3, 6);
+            conditions << transformed_parabola(0,0), transformed_parabola(0,0), 
+              v*cos(alpha)*cos(parabola_yaw), 0, 0, 0,
+              transformed_parabola(0,1), transformed_parabola(0,1), 
+              v*cos(alpha)*sin(parabola_yaw), 0, 0, 0,
+              transformed_parabola(0,2), transformed_parabola(0,2), 
+              v*sin(alpha), 0, 0, 0;
+            Eigen::MatrixXd constraints(3, 2);
+            constraints << 8, 5, 8, 5, 5, 4;
+            spline_interpolator_.generateTrajectory(conditions, constraints, 
+              0.01);
+
 
             bool valid_flag = true;
             // Check parabola candidate for collision

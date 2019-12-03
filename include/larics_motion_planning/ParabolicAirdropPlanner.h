@@ -36,6 +36,7 @@ class ParabolicAirdropPlanner : public GlobalPlanner
   private:
     Eigen::MatrixXd parabola_set_points_;
     shared_ptr<StateValidityCheckerInterface> point_checker_;
+    SplineInterpolator spline_interpolator_;
 
     Eigen::MatrixXd constructParabola(double dx, double dz, double alpha,
       double v, double t, double g);
