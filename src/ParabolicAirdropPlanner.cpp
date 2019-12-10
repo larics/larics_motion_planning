@@ -51,13 +51,28 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
             constraints << 8, 5, 8, 5, 5, 4;
             spline_interpolator_.generateTrajectory(conditions, constraints, 
               0.01);
+            Trajectory stopping_trajectory = spline_interpolator_.getTrajectory();
 
 
             bool valid_flag = true;
             // Check parabola candidate for collision
             valid_flag &= checkParabolaForCollision(transformed_parabola);
             // Check stopping trajectory for collision
-            //valid_flag &= checkTrajectoryForCollision(stopping_trajectory);
+            valid_flag &= checkTrajectoryForCollision(stopping_trajectory);
+
+            // Plan collision free trajectory to dropoff point
+            // Set up waypoints
+            Eigen::MatrixXd waypoints(2, 4);
+            double q0 = uav_pose(3);
+            double q3 = uav_pose(2);
+            double yaw = atan2(2*q0*q3, 1-2*(q3*q3));
+            // Fill waypoints
+            waypoints << uav_pose(0), uav_pose(1), uav_pose(2), yaw, 
+              transformed_parabola(0, 0), transformed_parabola(0, 1), 
+              transformed_parabola(0, 2), yaw;
+            // Plan trajectory
+            this->planPathAndTrajectory(waypoints);
+            Trajectory trajectory = trajectory_interface_->getTrajectory();
 
 
             /*if (v > 3.0){
@@ -67,12 +82,10 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
                 parabola_set_points_.rows() - transformed_parabola.rows(), 0, 
                 transformed_parabola.rows(), 3) = transformed_parabola;
             }*/
-          
-            // Check the transformed parabola candidate for collisions
           }
         }
 
-        // Check stopping trajectory collision
+
         // Plan trajectory to dropoff point
         // Plan last segment with spline
         // Check collision of that spline part
@@ -132,6 +145,14 @@ bool ParabolicAirdropPlanner::checkParabolaForCollision(
   }
 
   return is_valid;
+}
+
+bool ParabolicAirdropPlanner::checkTrajectoryForCollision(
+  Trajectory trajectory)
+{
+  // TODO: implement this function, we don't need it know because we will not
+  // work in cluttered environments.
+  return true;
 }
 
 inline double deg2rad(double deg)

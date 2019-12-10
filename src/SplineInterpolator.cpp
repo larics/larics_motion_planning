@@ -92,8 +92,6 @@ bool SplineInterpolator::generateTrajectory(Eigen::MatrixXd conditions,
     }
   }
 
-  cout << "Max time " << max_time << endl;
-
   // Sample all splines with max time
   int n = int(round(max_time/sample_time)) + 1;
   trajectory_.position.resize(n, conditions.rows());
@@ -113,9 +111,6 @@ bool SplineInterpolator::generateTrajectory(Eigen::MatrixXd conditions,
     trajectory_.split.block(i, 0, n, 1) = spline_.split;
   }
   trajectory_.time = spline_.time;
-
-  cout << trajectory_.position << endl;
-  exit(0);
 
   return true;
 }

@@ -45,6 +45,8 @@ class ParabolicAirdropPlanner : public GlobalPlanner
       Eigen::VectorXd target, double yaw, double dp);
 
     bool checkParabolaForCollision(Eigen::MatrixXd parabola);
+
+    bool checkTrajectoryForCollision(Trajectory trajectory);
 };
 
 inline double deg2rad(double deg);
