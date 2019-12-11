@@ -74,6 +74,11 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
             this->planPathAndTrajectory(waypoints);
             Trajectory trajectory = trajectory_interface_->getTrajectory();
 
+            // Plan dropoff spline
+            Trajectory dropoff_trajectory;
+            dropoff_trajectory = planDropoffSpline(trajectory, v, 
+              alpha, parabola_yaw);
+
 
             /*if (v > 3.0){
               parabola_set_points_.conservativeResize(parabola_set_points_.rows() +
@@ -85,9 +90,6 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
           }
         }
 
-
-        // Plan trajectory to dropoff point
-        // Plan last segment with spline
         // Check collision of that spline part
         // Mozda da probamo naci najbolju parabolu ili set najboljih po nekom
         //   kriteriju. Zbroj dx i dz mozda da bude najmanji? Zbroj*v da je
@@ -153,6 +155,12 @@ bool ParabolicAirdropPlanner::checkTrajectoryForCollision(
   // TODO: implement this function, we don't need it know because we will not
   // work in cluttered environments.
   return true;
+}
+
+Trajectory ParabolicAirdropPlanner::planDropoffSpline(
+  Trajectory trajectory, double v, double alpha, double parabola_yaw)
+{
+  return trajectory;
 }
 
 inline double deg2rad(double deg)
