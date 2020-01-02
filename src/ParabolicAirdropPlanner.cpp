@@ -40,16 +40,22 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
             transformed_parabola = transformParabola(parabola, target_pose,
               parabola_yaw, dx);
 
+            // Yaw won't change in stopping trajectory but it still needs to 
+            // be planned
+            double q0 = uav_pose(3);
+            double q3 = uav_pose(2);
+            double yaw = atan2(2*q0*q3, 1-2*(q3*q3));
             // Plan stopping trajectory
-            Eigen::MatrixXd conditions(3, 6);
+            Eigen::MatrixXd conditions(4, 6);
             conditions << transformed_parabola(0,0), transformed_parabola(0,0), 
               v*cos(alpha)*cos(parabola_yaw), 0, 0, 0,
               transformed_parabola(0,1), transformed_parabola(0,1), 
               v*cos(alpha)*sin(parabola_yaw), 0, 0, 0,
               transformed_parabola(0,2), transformed_parabola(0,2), 
               v*sin(alpha), 0, 0, 0;
-            Eigen::MatrixXd constraints(3, 2);
-            constraints << 8, 5, 8, 5, 5, 4;
+              yaw, yaw, 0, 0, 0, 0;
+            Eigen::MatrixXd constraints(4, 2);
+            constraints << 8, 5, 8, 5, 5, 4, 2, 2;
             spline_interpolator_.generateTrajectory(conditions, constraints, 
               0.01);
             Trajectory stopping_trajectory = spline_interpolator_.getTrajectory();
@@ -65,9 +71,6 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
             // Plan collision free trajectory to dropoff point
             // Set up waypoints
             Eigen::MatrixXd waypoints(2, 4);
-            double q0 = uav_pose(3);
-            double q3 = uav_pose(2);
-            double yaw = atan2(2*q0*q3, 1-2*(q3*q3));
             // Fill waypoints
             waypoints << uav_pose(0), uav_pose(1), uav_pose(2), yaw, 
               transformed_parabola(0, 0), transformed_parabola(0, 1), 
@@ -86,7 +89,14 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
 
             // Now that we have all three trajectories we have to concatenate
             // them
+            Trajectory all = concatenateTrajectories(trajectory,
+              dropoff_trajectory, dropoff_index);
+            //cout << all.position.rows() << endl;
+            all = concatenateTrajectories(all, stopping_trajectory);
+            //cout << all.time << endl;
 
+
+            return true;
 
 
             /*if (v > 3.0){
@@ -108,7 +118,7 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
     }
   }
 
-  return true;
+  return false;
 }
 
 Eigen::MatrixXd ParabolicAirdropPlanner::constructParabola(double dx,
@@ -179,7 +189,7 @@ Trajectory ParabolicAirdropPlanner::planDropoffSpline(
   // Go backwards through the trajectory and find appropriate start point for
   // the dropoff spline.
   double length = 0.0;
-  int end = trajectory.position.size()-1;
+  int end = trajectory.position.rows()-1;
   for (int i=trajectory.position.rows()-2; i>=0; i--){
     double dx = trajectory.position(i+1, 0) - trajectory.position(i, 0);
     double dy = trajectory.position(i+1, 1) - trajectory.position(i, 1);
@@ -191,16 +201,18 @@ Trajectory ParabolicAirdropPlanner::planDropoffSpline(
     if (length > 2.0){
       double dt = trajectory.time(trajectory.time.size()-1) - trajectory.time(i);
       // Plan dropoff trajectory
-      Eigen::MatrixXd conditions(3, 6);
+      Eigen::MatrixXd conditions(4, 6);
       conditions << trajectory.position(i,0), trajectory.position(end,0), 
         trajectory.velocity(i,0), vx, trajectory.acceleration(i,0), 0,
         trajectory.position(i,1), trajectory.position(end,1), 
         trajectory.velocity(i,1), vy, trajectory.acceleration(i,1), 0,
         trajectory.position(i,2), trajectory.position(end,2), 
-        trajectory.velocity(i,2), vz, trajectory.acceleration(i,2), 0;
+        trajectory.velocity(i,2), vz, trajectory.acceleration(i,2), 0,
+        trajectory.position(i,3), trajectory.position(end,3), 
+        trajectory.velocity(i,3), 0, trajectory.acceleration(i,3), 0;
 
-      Eigen::MatrixXd constraints(3, 2);
-      constraints << 8, 5, 8, 5, 5, 4;
+      Eigen::MatrixXd constraints(4, 2);
+      constraints << 8, 5, 8, 5, 5, 4, 2, 2;
       spline_interpolator_.generateTrajectory(conditions, constraints, 
         0.01);
       Trajectory dropoff_spline = spline_interpolator_.getTrajectory();
@@ -214,6 +226,46 @@ Trajectory ParabolicAirdropPlanner::planDropoffSpline(
   // If there is no spline that is feasible then return empty trajectory.
   Trajectory empty_trajectory;
   return empty_trajectory;
+}
+
+Trajectory ParabolicAirdropPlanner::concatenateTrajectories(Trajectory first,
+  Trajectory second, int index)
+{
+  Trajectory concatenated;
+  // We want to extract the first trajectory up to penultimate point. 
+  // The last point of first trajectory is the same as first point of second
+  // trajectory, and the second one we will use from start.
+  if (index == -1) index = first.time.size()-2;
+
+  // Resizing the trajectory to appropriate size. Note that index is size up to
+  // penultimate point.
+  concatenated.position.resize(index + second.time.size(), first.position.cols());
+  concatenated.velocity.resize(index + second.time.size(), first.velocity.cols());
+  concatenated.acceleration.resize(index + second.time.size(), first.acceleration.cols());
+  concatenated.time.resize(index + second.time.size());
+
+  // Filling in the full trajectory.
+  // First we put all the elements of the first trajectory except the
+  // penultimate one.
+  concatenated.position.block(0, 0, index, first.position.cols()) = first.position.block(
+    0, 0, index, first.position.cols());
+  concatenated.velocity.block(0, 0, index, first.velocity.cols()) = first.velocity.block(
+    0, 0, index, first.velocity.cols());
+  concatenated.acceleration.block(0, 0, index, first.acceleration.cols()) = first.acceleration.block(
+    0, 0, index, first.acceleration.cols());
+  concatenated.time.block(0, 0, index, 1) = first.time.block(0, 0, index, 1);
+
+  // Second we put in the whole second trajectory.
+  concatenated.position.block(index, 0, second.position.rows(), second.position.cols()) = 
+    second.position.block(0, 0, second.position.rows(), second.position.cols());
+  concatenated.velocity.block(index, 0, second.velocity.rows(), second.velocity.cols()) = 
+    second.velocity.block(0, 0, second.velocity.rows(), second.velocity.cols());
+  concatenated.acceleration.block(index, 0, second.acceleration.rows(), second.acceleration.cols()) = 
+    second.acceleration.block(0, 0, second.acceleration.rows(), second.acceleration.cols());
+  second.time += Eigen::VectorXd::Constant(second.time.size(), first.time(index));
+  concatenated.time.block(index, 0, second.time.size(), 1) = second.time;
+
+  return concatenated;
 }
 
 inline double deg2rad(double deg)

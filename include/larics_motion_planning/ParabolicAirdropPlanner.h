@@ -50,6 +50,9 @@ class ParabolicAirdropPlanner : public GlobalPlanner
 
     Trajectory planDropoffSpline(Trajectory trajectory, double v,
       double alpha, double parabola_yaw, int &dropoff_index);
+
+    Trajectory concatenateTrajectories(Trajectory first, Trajectory second, 
+      int index=-1);
 };
 
 inline double deg2rad(double deg);
