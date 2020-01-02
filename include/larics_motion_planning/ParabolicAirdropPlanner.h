@@ -49,7 +49,7 @@ class ParabolicAirdropPlanner : public GlobalPlanner
     bool checkTrajectoryForCollision(Trajectory trajectory);
 
     Trajectory planDropoffSpline(Trajectory trajectory, double v,
-      double alpha, double parabola_yaw);
+      double alpha, double parabola_yaw, int &dropoff_index);
 };
 
 inline double deg2rad(double deg);

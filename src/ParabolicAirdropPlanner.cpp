@@ -13,6 +13,7 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
 {
   // Iterate through dx, velocity and alpha to get parabola parameters.
   // TODO: create lists for dx, v and alpha so the search time reduces.
+  //   THIS IS IMPORTANT TO DO!
 
   parabola_set_points_ = Eigen::MatrixXd(0,3);
   double g=9.81;
@@ -59,6 +60,7 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
             valid_flag &= checkParabolaForCollision(transformed_parabola);
             // Check stopping trajectory for collision
             valid_flag &= checkTrajectoryForCollision(stopping_trajectory);
+            if (valid_flag == false) continue;
 
             // Plan collision free trajectory to dropoff point
             // Set up waypoints
@@ -71,13 +73,20 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
               transformed_parabola(0, 0), transformed_parabola(0, 1), 
               transformed_parabola(0, 2), yaw;
             // Plan trajectory
-            this->planPathAndTrajectory(waypoints);
+            if (this->planPathAndTrajectory(waypoints) == false) continue;
             Trajectory trajectory = trajectory_interface_->getTrajectory();
 
             // Plan dropoff spline
             Trajectory dropoff_trajectory;
+            int dropoff_index = 0;
             dropoff_trajectory = planDropoffSpline(trajectory, v, 
-              alpha, parabola_yaw);
+              alpha, parabola_yaw, dropoff_index);
+            if (dropoff_trajectory.time.size() == 0) continue;
+
+
+            // Now that we have all three trajectories we have to concatenate
+            // them
+
 
 
             /*if (v > 3.0){
@@ -158,9 +167,53 @@ bool ParabolicAirdropPlanner::checkTrajectoryForCollision(
 }
 
 Trajectory ParabolicAirdropPlanner::planDropoffSpline(
-  Trajectory trajectory, double v, double alpha, double parabola_yaw)
+  Trajectory trajectory, double v, double alpha, double parabola_yaw, 
+  int &dropoff_index)
 {
-  return trajectory;
+  cout << "Planning dropoff spline" << endl;
+  // Calculate endpoint velocity
+  double vx = v*cos(alpha)*cos(parabola_yaw);
+  double vy = v*cos(alpha)*sin(parabola_yaw);
+  double vz = v*sin(alpha);
+
+  // Go backwards through the trajectory and find appropriate start point for
+  // the dropoff spline.
+  double length = 0.0;
+  int end = trajectory.position.size()-1;
+  for (int i=trajectory.position.rows()-2; i>=0; i--){
+    double dx = trajectory.position(i+1, 0) - trajectory.position(i, 0);
+    double dy = trajectory.position(i+1, 1) - trajectory.position(i, 1);
+    double dz = trajectory.position(i+1, 2) - trajectory.position(i, 2);
+    length += sqrt(dx*dx + dy*dy + dz*dz);
+
+    // If line integral from the end is greater than x meters than we can plan
+    // the dropoff trajectory.
+    if (length > 2.0){
+      double dt = trajectory.time(trajectory.time.size()-1) - trajectory.time(i);
+      // Plan dropoff trajectory
+      Eigen::MatrixXd conditions(3, 6);
+      conditions << trajectory.position(i,0), trajectory.position(end,0), 
+        trajectory.velocity(i,0), vx, trajectory.acceleration(i,0), 0,
+        trajectory.position(i,1), trajectory.position(end,1), 
+        trajectory.velocity(i,1), vy, trajectory.acceleration(i,1), 0,
+        trajectory.position(i,2), trajectory.position(end,2), 
+        trajectory.velocity(i,2), vz, trajectory.acceleration(i,2), 0;
+
+      Eigen::MatrixXd constraints(3, 2);
+      constraints << 8, 5, 8, 5, 5, 4;
+      spline_interpolator_.generateTrajectory(conditions, constraints, 
+        0.01);
+      Trajectory dropoff_spline = spline_interpolator_.getTrajectory();
+      if (checkTrajectoryForCollision(dropoff_spline) == true){
+        dropoff_index = i;
+        return dropoff_spline;
+      }
+    }
+  }
+
+  // If there is no spline that is feasible then return empty trajectory.
+  Trajectory empty_trajectory;
+  return empty_trajectory;
 }
 
 inline double deg2rad(double deg)
