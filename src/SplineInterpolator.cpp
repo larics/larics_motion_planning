@@ -105,10 +105,10 @@ bool SplineInterpolator::generateTrajectory(Eigen::MatrixXd conditions,
     generateSplineOrder5FixedTime((conditions.row(i)).transpose(), max_time, 
       sample_time);
     trajectory_.position.block(0, i, n, 1) = spline_.position;
-    trajectory_.velocity.block(i, 0, n, 1) = spline_.velocity;
-    trajectory_.acceleration.block(i, 0, n, 1) = spline_.acceleration;
-    trajectory_.jerk.block(i, 0, n, 1) = spline_.jerk;
-    trajectory_.split.block(i, 0, n, 1) = spline_.split;
+    trajectory_.velocity.block(0, i, n, 1) = spline_.velocity;
+    trajectory_.acceleration.block(0, i, n, 1) = spline_.acceleration;
+    trajectory_.jerk.block(0, i, n, 1) = spline_.jerk;
+    trajectory_.split.block(0, i, n, 1) = spline_.split;
   }
   trajectory_.time = spline_.time;
 

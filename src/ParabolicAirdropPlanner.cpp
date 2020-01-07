@@ -42,8 +42,8 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
 
             // Yaw won't change in stopping trajectory but it still needs to 
             // be planned
-            double q0 = uav_pose(3);
-            double q3 = uav_pose(2);
+            double q0 = uav_pose(6);
+            double q3 = uav_pose(5);
             double yaw = atan2(2*q0*q3, 1-2*(q3*q3));
             // Plan stopping trajectory
             Eigen::MatrixXd conditions(4, 6);
