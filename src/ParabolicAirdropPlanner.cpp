@@ -65,10 +65,10 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
               transformed_parabola(0,1), transformed_parabola(0,1), 
               v*cos(alpha)*sin(parabola_yaw), 0, 0, 0,
               transformed_parabola(0,2), transformed_parabola(0,2), 
-              v*sin(alpha), 0, 0, 0,
+              v*sin(alpha), 0, 0.3, 0,
               yaw, yaw, 0, 0, 0, 0;
             Eigen::MatrixXd constraints(4, 2);
-            constraints << 8, 5, 8, 5, 5, 4, 2, 2;
+            constraints << 8, 2.5, 8, 2.5, 5, 2.5, 2, 2;
             spline_interpolator_.generateTrajectory(conditions, constraints, 
               0.01);
             Trajectory stopping_trajectory = spline_interpolator_.getTrajectory();
@@ -227,12 +227,12 @@ Trajectory ParabolicAirdropPlanner::planDropoffSpline(
         trajectory.position(i,1), trajectory.position(end,1), 
         trajectory.velocity(i,1), vy, trajectory.acceleration(i,1), 0,
         trajectory.position(i,2), trajectory.position(end,2), 
-        trajectory.velocity(i,2), vz, trajectory.acceleration(i,2), 0,
+        trajectory.velocity(i,2), vz, trajectory.acceleration(i,2), 0.3,
         trajectory.position(i,3), trajectory.position(end,3), 
         trajectory.velocity(i,3), 0, trajectory.acceleration(i,3), 0;
 
       Eigen::MatrixXd constraints(4, 2);
-      constraints << 8, 5, 8, 5, 5, 4, 2, 2;
+      constraints << 8, 2.5, 8, 2.5, 5, 2.5, 2, 2;
       spline_interpolator_.generateTrajectory(conditions, constraints, 
         0.01);
       Trajectory dropoff_spline = spline_interpolator_.getTrajectory();
@@ -293,11 +293,20 @@ Trajectory ParabolicAirdropPlanner::addDropPointColumn(Trajectory trajectory,
 {
   trajectory.position.conservativeResize(trajectory.position.rows(), 
     trajectory.position.cols()+1);
+  trajectory.velocity.conservativeResize(trajectory.velocity.rows(), 
+    trajectory.velocity.cols()+1);
+  trajectory.acceleration.conservativeResize(trajectory.acceleration.rows(), 
+    trajectory.acceleration.cols()+1);
 
   trajectory.position.block(0, trajectory.position.cols()-1, index, 1) = 
     Eigen::VectorXd::Constant(index-1, 0);
   trajectory.position.block(index, trajectory.position.cols()-1, trajectory.position.rows()-index, 1) = 
     Eigen::VectorXd::Constant(trajectory.position.rows()-index, 1);
+
+  trajectory.velocity.block(0, trajectory.velocity.cols()-1, 
+    trajectory.velocity.rows(), 1) = trajectory.position.col(trajectory.position.cols()-1);
+  trajectory.acceleration.block(0, trajectory.acceleration.cols()-1, 
+    trajectory.acceleration.rows(), 1) = trajectory.position.col(trajectory.position.cols()-1);
 
   return trajectory;
 }

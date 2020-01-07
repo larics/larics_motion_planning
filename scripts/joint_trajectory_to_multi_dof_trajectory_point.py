@@ -15,7 +15,7 @@ class JointTrajectoryToMultiDofTrajectoryPoint:
 
     def __init__(self):
         # UAV publishers for trajectory
-        self.uav_trajectory_point_pub = rospy.Publisher('trajectory_point', 
+        self.uav_trajectory_point_pub = rospy.Publisher('trajectory_point_ref', 
             MultiDOFJointTrajectoryPoint, queue_size=1)
         self.executing_trajectory_pub = rospy.Publisher('executing_trajectory', 
             Int32, queue_size=1)
