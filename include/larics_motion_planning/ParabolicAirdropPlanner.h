@@ -33,10 +33,15 @@ class ParabolicAirdropPlanner : public GlobalPlanner
     /// 
     Eigen::MatrixXd getParabola() {return parabola_set_points_;}
 
+    ///
+    Trajectory getAirdropTrajectory() {return airdrop_trajectory_;}
+
   private:
     Eigen::MatrixXd parabola_set_points_;
     shared_ptr<StateValidityCheckerInterface> point_checker_;
     SplineInterpolator spline_interpolator_;
+    Trajectory airdrop_trajectory_;
+    Eigen::VectorXd dx_, v_, alpha_;
 
     Eigen::MatrixXd constructParabola(double dx, double dz, double alpha,
       double v, double t, double g);
@@ -53,6 +58,8 @@ class ParabolicAirdropPlanner : public GlobalPlanner
 
     Trajectory concatenateTrajectories(Trajectory first, Trajectory second, 
       int index=-1);
+
+    Trajectory addDropPointColumn(Trajectory trajectory, int index);
 };
 
 inline double deg2rad(double deg);

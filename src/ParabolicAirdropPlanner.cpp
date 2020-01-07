@@ -6,6 +6,13 @@ ParabolicAirdropPlanner::ParabolicAirdropPlanner(
   cout << "Constructor" << endl;
   point_checker_ = make_shared<SimpleStateValidityCheckers>(map_interface_,
     "point", Eigen::VectorXd());
+
+  dx_.resize(11);
+  dx_ << 2.5, 3.0, 2.0, 3.5, 1.5, 4.0, 1.0, 4.5, 5.0, 5.5, 6.0;
+  v_.resize(11);
+  v_ << 2.5, 3.0, 2.0, 3.5, 1.5, 4.0, 1.0, 4.5, 5.0, 5.5, 6.0;
+  alpha_.resize(10);
+  alpha_ << 20.0, 25.0, 15.0, 30.0, 10.0, 5.0, 0.0, 35.0, 40.0, 45.0;
 }
 
 bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
@@ -17,9 +24,15 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
 
   parabola_set_points_ = Eigen::MatrixXd(0,3);
   double g=9.81;
-  for (double dx=1.0; dx<=8.0; dx+=0.5){
-    for (double v=0.5; v<=6.0; v+=0.5){
-      for (double alpha=0.0; alpha<=deg2rad(45.0); alpha+=deg2rad(5.0)){
+  //for (double dx=1.0; dx<=8.0; dx+=0.5){
+    //for (double v=0.5; v<=6.0; v+=0.5){
+      //for (double alpha=0.0; alpha<=deg2rad(45.0); alpha+=deg2rad(5.0)){
+  for (int i=0; i<dx_.size(); i++){
+    double dx = dx_(i);
+    for (int j=0; j<v_.size(); j++){
+      double v = v_(j);
+      for (int k=0; k<alpha_.size(); k++){
+        double alpha = deg2rad(alpha_(k));
         // Calculate displacement in z axis and time of impact
         double dz = -tan(alpha)*(dx) + 0.5*g*dx*dx/(v*v*cos(alpha)*cos(alpha));
         double t = dx/(v*cos(alpha));
@@ -52,14 +65,14 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
               transformed_parabola(0,1), transformed_parabola(0,1), 
               v*cos(alpha)*sin(parabola_yaw), 0, 0, 0,
               transformed_parabola(0,2), transformed_parabola(0,2), 
-              v*sin(alpha), 0, 0, 0;
+              v*sin(alpha), 0, 0, 0,
               yaw, yaw, 0, 0, 0, 0;
             Eigen::MatrixXd constraints(4, 2);
             constraints << 8, 5, 8, 5, 5, 4, 2, 2;
             spline_interpolator_.generateTrajectory(conditions, constraints, 
               0.01);
             Trajectory stopping_trajectory = spline_interpolator_.getTrajectory();
-
+            //cout << stopping_trajectory.acceleration << endl;
 
             bool valid_flag = true;
             // Check parabola candidate for collision
@@ -92,7 +105,14 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
             Trajectory all = concatenateTrajectories(trajectory,
               dropoff_trajectory, dropoff_index);
             //cout << all.position.rows() << endl;
-            all = concatenateTrajectories(all, stopping_trajectory);
+            airdrop_trajectory_ = concatenateTrajectories(all, 
+              stopping_trajectory);
+            // Add drop point column to the trajectory. It is at the start of 
+            // stopping trajectory.
+            airdrop_trajectory_ = addDropPointColumn(airdrop_trajectory_, 
+              airdrop_trajectory_.position.rows() - 
+              stopping_trajectory.position.rows());
+            //cout << airdrop_trajectory_.velocity << endl;
             //cout << all.time << endl;
 
 
@@ -266,6 +286,20 @@ Trajectory ParabolicAirdropPlanner::concatenateTrajectories(Trajectory first,
   concatenated.time.block(index, 0, second.time.size(), 1) = second.time;
 
   return concatenated;
+}
+
+Trajectory ParabolicAirdropPlanner::addDropPointColumn(Trajectory trajectory,
+  int index)
+{
+  trajectory.position.conservativeResize(trajectory.position.rows(), 
+    trajectory.position.cols()+1);
+
+  trajectory.position.block(0, trajectory.position.cols()-1, index, 1) = 
+    Eigen::VectorXd::Constant(index-1, 0);
+  trajectory.position.block(index, trajectory.position.cols()-1, trajectory.position.rows()-index, 1) = 
+    Eigen::VectorXd::Constant(trajectory.position.rows()-index, 1);
+
+  return trajectory;
 }
 
 inline double deg2rad(double deg)
