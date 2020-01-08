@@ -333,6 +333,9 @@ bool GlobalPlannerRosInterface::parabolicAirdropTrajectoryCallback(
   visualization_.setStatePoints(airdrop_planner.getParabola());
   visualization_.publishStatePoints();
 
+  joint_trajectory_pub_.publish(trajectoryToJointTrajectory(
+    airdrop_planner.getAirdropTrajectory()));
+
   cout << "Parabolic trajectory service callback finished." << endl << endl;
 
   

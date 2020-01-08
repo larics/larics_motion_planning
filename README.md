@@ -13,10 +13,19 @@ rosrun octomap_server octomap_server_node greenhouse4096.binvox.bt _frame_id:="w
 roslaunch wp_manipulator planning_context.launch
 
 rosrun aerial_manipulators_control wp_manipulator_control __ns:=uav
+```
+
+And for parabolic airdrop
+```
+roslaunch mmuav_gazebo uav_attitude_position.launch mount_magnet:=true
 
 rosrun joy joy_node _autorepeat_rate:=30 __ns:=uav
 
 rosrun mmuav_joy uav_manipulator_joy_command_node.py __ns:=uav
+
+roslaunch larics_gazebo_worlds spawn_ball.launch
+
+rosrun larics_motion_planning joint_trajectory_to_multi_dof_trajectory_point.py __ns:=uav
 ```
 
 ./binvox -e -bb -20.0 -35.0 0.0 20 4.0 2.0 ../models/greenhouse/greenhouse.stl
