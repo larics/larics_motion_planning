@@ -195,6 +195,11 @@ shared_ptr<KinematicsInterface> GlobalPlanner::getKinematicsInterface()
   return kinematics_interface_;
 }
 
+shared_ptr<MapInterface> GlobalPlanner::getMapInterface()
+{
+  return map_interface_;
+}
+
 bool GlobalPlanner::planPathThroughTwoWaypoints(Eigen::MatrixXd waypoints)
 {
   if (waypoints.rows()<2){

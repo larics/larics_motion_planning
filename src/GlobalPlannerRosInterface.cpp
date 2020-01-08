@@ -12,6 +12,9 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
 
   // Global planner config
   global_planner_ = make_shared<GlobalPlanner>(global_planner_config_file);
+  octomapmap_ = dynamic_pointer_cast<OctomapMap>(global_planner_->getMapInterface());
+  octomap_sub_ = nh_.subscribe("/octomap_binary", 1, &OctomapMap::setOctomapFromRosMessage, 
+    octomapmap_.get());
   visualization_changed_ = false;
 
   // Publishers

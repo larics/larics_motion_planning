@@ -89,6 +89,10 @@ class GlobalPlanner
     /// \return Shared pointer to kinematics interface.
     shared_ptr<KinematicsInterface> getKinematicsInterface();
 
+    /// \brief Returns map interface used in planner
+    /// \return Shared pointer to map interface.
+    shared_ptr<MapInterface> getMapInterface();
+
   protected:
     shared_ptr<MapInterface> map_interface_;
     shared_ptr<TrajectoryInterface> trajectory_interface_;

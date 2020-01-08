@@ -54,6 +54,8 @@ class GlobalPlannerRosInterface
     void run();
 
   private:
+    ros::Subscriber octomap_sub_;
+    shared_ptr<OctomapMap> octomapmap_;
     // Instance of global planner
     shared_ptr<GlobalPlanner> global_planner_;
     // Instance of visualization and flag to track if visualization has changed
