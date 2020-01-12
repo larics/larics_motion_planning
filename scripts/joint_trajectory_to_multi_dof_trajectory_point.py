@@ -20,16 +20,21 @@ class JointTrajectoryToMultiDofTrajectoryPoint:
         self.executing_trajectory_pub = rospy.Publisher('executing_trajectory', 
             Int32, queue_size=1)
 
-        rospy.Subscriber('joint_trajectory', JointTrajectory, 
-            self.jointTrajectoryCallback, queue_size=1)
-
         self.rate = rospy.get_param('~rate', 100)
         self.ros_rate = rospy.Rate(self.rate) 
+        self.airdrop_flag = rospy.get_param('~airdrop', True)
+        if self.airdrop_flag == True:
+            self.magnet_pub = rospy.Publisher('magnet/gain', Float32, queue_size=1)
+            self.magnet_gain = 1.0
+            self.airdrop_counter = 0
         self.t_start = rospy.Time.now()
         self.executing_trajectory_flag = False
         self.joint_trajectory = JointTrajectory()
         self.current_trajectory_point = JointTrajectoryPoint()
         self.uav_current_trajectory_point = MultiDOFJointTrajectoryPoint()
+
+        rospy.Subscriber('joint_trajectory', JointTrajectory, 
+            self.jointTrajectoryCallback, queue_size=1)
 
     def run(self):
         
@@ -44,12 +49,24 @@ class JointTrajectoryToMultiDofTrajectoryPoint:
                 self.current_trajectory_point = self.joint_trajectory.points[0]
                 self.uav_current_trajectory_point = jointTrajectoryPointToMultiDofJointTrajectoryPoint(
                     self.current_trajectory_point)
+                if self.airdrop_flag == True:
+                    if abs(self.joint_trajectory.points[0].positions[4]) < 0.1:
+                        self.magnet_gain = 1.0
+                    elif abs(self.joint_trajectory.points[0].positions[4] - 1.0) < 0.1:
+                        self.airdrop_counter = self.airdrop_counter + 1
+                    if self.airdrop_counter >= 12:
+                        self.magnet_gain = 0.0
+                    self.magnet_pub.publish(self.magnet_gain)
                 self.publishAll()
                 #self.joint_trajectory_point_pub.publish(self.current_trajectory_point)
                 self.joint_trajectory.points.pop(0)
                 
                 if len(self.joint_trajectory.points) == 0:
                     self.executing_trajectory_flag = False
+                    if self.airdrop_flag == True:
+                        self.magnet_gain = 1.0
+                        self.airdrop_counter = 0
+                        self.magnet_pub.publish(self.magnet_gain)
             else:
                 self.executing_trajectory_pub.publish(0)
 
