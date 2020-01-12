@@ -22,13 +22,13 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "testing_node");
 
-  SplineInterpolator spline_interpolator;
+  /*SplineInterpolator spline_interpolator;
   Eigen::VectorXd conditions(6);
   conditions << 0.4, 1.5321321, 0.17, 0.3, 0.1, 0.0;
   Eigen::VectorXd constraints(2);
   constraints << 0.5, 1.5;
   cout << spline_interpolator.generateSplineOrder5(conditions, constraints, 0.01) << endl;
-
+  */
 
   /*Eigen::MatrixXd constraints(2, 4);
   constraints << 0.5, 0.5, 0.5, 0.5, 1.2, 1.2, 1.2, 1.2;
@@ -48,12 +48,12 @@ int main(int argc, char **argv)
   cout << ros::Time::now().toSec()-t << endl;
   */
 
-  /*cout << "Starting map testing." << endl;
+  cout << "Starting map testing." << endl;
   ros::NodeHandle n;
-  OctomapMap map(0.1);
-  map.setDepth(16);
+  shared_ptr<OctomapMap> map = make_shared<OctomapMap>(0.1);
+  map->setDepth(16);
   //auto octomapSub=n.subscribe("/octomap_binary", 1, &octomapCallback);
-  auto octomapSub=n.subscribe("/octomap_binary", 1, &OctomapMap::setOctomapFromRosMessage, &map);
+  auto octomapSub=n.subscribe("/octomap_binary", 1, &OctomapMap::setOctomapFromRosMessage, map.get());
   ros::Rate r(10);
   Eigen::VectorXd state(3);
   state(0) = -5;
@@ -61,7 +61,7 @@ int main(int argc, char **argv)
   state(2) = 2.68;
   usleep(1000000);
   double t, t1;
-  while (ros::ok()){
+  /*while (ros::ok()){
     ros::spinOnce();
     r.sleep();
     t = ros::Time::now().toSec();
