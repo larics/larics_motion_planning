@@ -1,0 +1,98 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root version="2.3.8">
+ <tabbed_widget parent="main_window" name="Main Window">
+  <plotmatrix tab_name="plot" rows="2" columns="2">
+   <plot col="0" row="0">
+    <range top="3.254275" right="19.703336" left="0.000000" bottom="-5.202151"/>
+    <limitY/>
+    <curve G="119" B="180" name="/ball/pose/pose/position/x" custom_transform="noTransform" R="31"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot col="0" row="1">
+    <range top="0.100529" right="-0.056261" left="-0.060595" bottom="0.097989"/>
+    <limitY/>
+    <curve curve_y="/ball/pose/pose/position/z" curve_x="/ball/pose/pose/position/x" G="127" B="14" name="/ball/pose/pose/position/[x;z]" custom_transform="XYPlot" R="255"/>
+    <transform value="XYPlot"/>
+   </plot>
+   <plot col="1" row="0">
+    <range top="4.614676" right="19.703336" left="0.000000" bottom="-0.011138"/>
+    <limitY/>
+    <curve G="39" B="40" name="/ball/pose/pose/position/z" custom_transform="noTransform" R="214"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot col="1" row="1">
+    <range top="1.000000" right="-1578853983.962297" left="-1578853984.962297" bottom="0.000000"/>
+    <limitY/>
+    <transform value="noTransform"/>
+   </plot>
+  </plotmatrix>
+  <currentPlotMatrix index="0"/>
+ </tabbed_widget>
+ <use_relative_time_offset enabled="1"/>
+ <!-- - - - - - - - - - - - - - - -->
+ <!-- - - - - - - - - - - - - - - -->
+ <Plugins>
+  <plugin ID="DataLoad CSV">
+   <default time_axis=""/>
+  </plugin>
+  <plugin ID="DataLoad ROS bags">
+   <use_header_stamp value="false"/>
+   <use_renaming_rules value="true"/>
+   <discard_large_arrays value="true"/>
+   <max_array_size value="100"/>
+  </plugin>
+  <plugin ID="DataLoad ULog"/>
+  <plugin ID="ROS Topic Subscriber">
+   <use_header_stamp value="false"/>
+   <use_renaming_rules value="true"/>
+   <discard_large_arrays value="true"/>
+   <max_array_size value="100"/>
+  </plugin>
+  <plugin status="idle" ID="ROS /rosout Visualization"/>
+  <plugin status="idle" ID="ROS Topic Re-Publisher"/>
+ </Plugins>
+ <!-- - - - - - - - - - - - - - - -->
+ <previouslyLoaded_Datafiles/>
+ <previouslyLoaded_Streamer name="ROS Topic Subscriber"/>
+ <!-- - - - - - - - - - - - - - - -->
+ <customMathEquations/>
+ <snippets>
+  <snippet name="1st_derivative">
+   <global>var prevX = 0
+var prevY = 0</global>
+   <equation>dx = time - prevX
+dy = value - prevY
+prevX = time
+prevY = value
+
+return dy/dx</equation>
+  </snippet>
+  <snippet name="1st_order_lowpass">
+   <global>var prevY = 0
+var alpha = 0.1</global>
+   <equation>prevY = alpha * value + (1.-alpha) * prevY
+
+return prevY</equation>
+  </snippet>
+  <snippet name="sum_A_B">
+   <global></global>
+   <equation>return $$PLOT_A$$ + $$PLOT_B$$</equation>
+  </snippet>
+  <snippet name="yaw_from_quaternion">
+   <global>// source: https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+
+function quaternionToYaw(x, y, z, w)
+{
+  // yaw (z-axis rotation)
+  t1 = 2.0 * (w * z + x * y);
+  t2 = 1.0 - 2.0 * (y * y + z * z);
+  yaw = Math.atan2(t1, t2);
+
+  return yaw
+}</global>
+   <equation>return quaternionToYaw(x, y, z, w);</equation>
+  </snippet>
+ </snippets>
+ <!-- - - - - - - - - - - - - - - -->
+</root>
+
