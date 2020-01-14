@@ -15,6 +15,44 @@ ParabolicAirdropPlanner::ParabolicAirdropPlanner(
   alpha_ << 20.0, 25.0, 15.0, 30.0, 10.0, 5.0, 0.0, 35.0, 40.0, 45.0;
 }
 
+void ParabolicAirdropPlanner::setMapInterface(shared_ptr<MapInterface> map)
+{
+  map_interface_ = map;
+  YAML::Node config = YAML::LoadFile(config_filename_);
+  // Reset state validity checkers
+  if (state_validity_checker_type_ == "ball" ||
+    state_validity_checker_type_ == "sphere" ||
+    state_validity_checker_type_ == "point" ||
+    state_validity_checker_type_ == "circle" ||
+    state_validity_checker_type_ == "cylinder" ||
+    state_validity_checker_type_ == "rectangle" ||
+    state_validity_checker_type_ == "prism"){
+    state_validity_checker_interface_ = make_shared<SimpleStateValidityCheckers>(
+      config["global_planner"]["state_validity_checker_config_file"].as<string>(),
+      map_interface_, state_validity_checker_type_);
+    cout << "State validity checker type is: " << state_validity_checker_type_ << endl;
+  }
+  else if (state_validity_checker_type_ == "uav_and_wp_manipulator"){
+    // First set up kinematics for wp manipulator.
+    kinematics_interface_ = make_shared<WpManipulatorKinematics>(
+      config["global_planner"]["kinematics_config_file"].as<string>());
+    // Set up validity checker for uav and wp manipulator
+    state_validity_checker_interface_ = make_shared<UavWpManipulatorStateValidityChecker>(
+      config["global_planner"]["state_validity_checker_config_file"].as<string>(),
+      map_interface_, kinematics_interface_);
+    cout << "State validity checker type is: uav_and_wp_manipulator" << endl;
+  }
+  else{
+    cout << "State validity checker type is: " << state_validity_checker_type_ << endl;
+    cout << "  This type is not supported!" << endl;
+    exit(0);
+  }
+
+  // Reset point checker for parabola
+  point_checker_ = make_shared<SimpleStateValidityCheckers>(map_interface_,
+    "point", Eigen::VectorXd());
+}
+
 bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
   Eigen::VectorXd uav_pose, Eigen::VectorXd target_pose)
 {

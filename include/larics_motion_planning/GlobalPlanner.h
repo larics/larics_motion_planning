@@ -100,7 +100,7 @@ class GlobalPlanner
     shared_ptr<PathPlanningInterface> path_planner_interface_;
     shared_ptr<KinematicsInterface> kinematics_interface_;
 
-    string state_validity_checker_type_;
+    string state_validity_checker_type_, config_filename_;
 
     // Local copy of path
     Eigen::MatrixXd path_;

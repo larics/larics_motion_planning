@@ -316,7 +316,7 @@ bool GlobalPlannerRosInterface::parabolicAirdropTrajectoryCallback(
   cout << endl << "Parabolic trajectory service callback." << endl;
   ParabolicAirdropPlanner airdrop_planner(
     "catkin_ws/src/larics_motion_planning/config/uav_only_config_example.yaml");
-
+  airdrop_planner.setMapInterface(global_planner_->getMapInterface());
   // Generate vectors from poses
   Eigen::VectorXd uav_pose(7);
   uav_pose << req.uav_pose.position.x, req.uav_pose.position.y, 

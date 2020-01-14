@@ -23,6 +23,9 @@ class ParabolicAirdropPlanner : public GlobalPlanner
     /// \param config_filename Path to global planner configuration.
     ParabolicAirdropPlanner(string config_filename);
 
+    ///
+    void setMapInterface(shared_ptr<MapInterface> map);
+
     /// \brief Generates collision free parabolic airdrop trajectory.
     /// \param uav_pose Current uav pose from which we plan the trajectory.
     /// \param target_position Position where we have to drop the package.

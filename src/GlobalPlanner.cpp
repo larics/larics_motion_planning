@@ -15,6 +15,7 @@ bool GlobalPlanner::configureFromFile(string config_filename)
   cout << "  " << config_filename << endl;
   // Open yaml file with configuration
   YAML::Node config = YAML::LoadFile(config_filename);
+  config_filename_ = config_filename;
 
   // Set up map interface
   map_interface_ = make_shared<OctomapMap>(
