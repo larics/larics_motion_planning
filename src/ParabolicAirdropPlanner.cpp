@@ -7,12 +7,58 @@ ParabolicAirdropPlanner::ParabolicAirdropPlanner(
   point_checker_ = make_shared<SimpleStateValidityCheckers>(map_interface_,
     "point", Eigen::VectorXd());
 
-  dx_.resize(11);
-  dx_ << 2.5, 3.0, 2.0, 3.5, 1.5, 4.0, 1.0, 4.5, 5.0, 5.5, 6.0;
-  v_.resize(11);
-  v_ << 2.5, 3.0, 2.0, 3.5, 1.5, 4.0, 1.0, 4.5, 5.0, 5.5, 6.0;
-  alpha_.resize(10);
-  alpha_ << 20.0, 25.0, 15.0, 30.0, 10.0, 5.0, 0.0, 35.0, 40.0, 45.0;
+  //dx_.resize(11);
+  //dx_ << 2.5, 3.0, 2.0, 3.5, 1.5, 4.0, 1.0, 4.5, 5.0, 5.5, 6.0;
+  //v_.resize(11);
+  //v_ << 2.5, 3.0, 2.0, 3.5, 1.5, 4.0, 1.0, 4.5, 5.0, 5.5, 6.0;
+  //alpha_.resize(10);
+  //alpha_ << 20.0, 25.0, 15.0, 30.0, 10.0, 5.0, 0.0, 35.0, 40.0, 45.0;
+
+  string username = "/home/";
+  username = username + getenv("USER") + "/";
+  size_t found = config_filename.find(username);
+  if (found != string::npos) configureParabolicAirdropFromFile(config_filename);
+  else configureParabolicAirdropFromFile(username + config_filename);
+}
+
+bool ParabolicAirdropPlanner::configureParabolicAirdropFromFile(
+  string config_filename)
+{
+  cout << "Additional configuration of parabolic airdrop params from file: " << endl;
+  cout << "  " << config_filename << endl;
+
+  YAML::Node config = YAML::LoadFile(config_filename_);
+
+  dx_ = config["global_planner"]["parabolic_airdrop"]["d"].as<std::vector<double> >();
+  v_ = config["global_planner"]["parabolic_airdrop"]["v"].as<std::vector<double> >();
+  alpha_ = config["global_planner"]["parabolic_airdrop"]["alpha"].as<std::vector<double> >();
+
+  std::vector<double> stop_vel;
+  std::vector<double> stop_acc;
+  std::vector<double> drop_vel;
+  std::vector<double> drop_acc;
+  std::vector<double> intermediate_acc;
+  stop_vel = config["global_planner"]["parabolic_airdrop"]["stopping_velocity"].as<std::vector<double> >();
+  stop_acc = config["global_planner"]["parabolic_airdrop"]["stopping_acceleration"].as<std::vector<double> >();
+  drop_vel = config["global_planner"]["parabolic_airdrop"]["dropoff_velocity"].as<std::vector<double> >();
+  drop_acc = config["global_planner"]["parabolic_airdrop"]["dropoff_acceleration"].as<std::vector<double> >();
+  intermediate_acc = config["global_planner"]["parabolic_airdrop"]["intermediate_acceleration"].as<std::vector<double> >();
+  stopping_trajectory_constraints_.resize(4,2);
+  dropoff_trajectory_constraints_.resize(4,2);
+  intermediate_acceleration_.resize(4);
+  for (int i=0; i<4; i++){
+    stopping_trajectory_constraints_(i,0) = stop_vel[i];
+    stopping_trajectory_constraints_(i,1) = stop_acc[i];
+    dropoff_trajectory_constraints_(i,0) = drop_vel[i];
+    dropoff_trajectory_constraints_(i,1) = drop_acc[i];
+    intermediate_acceleration_(i) = intermediate_acc[i];
+  }
+
+  yaw_increment_ = config["global_planner"]["parabolic_airdrop"]["yaw_increment"].as<double>();
+  max_dz_ = config["global_planner"]["parabolic_airdrop"]["max_dz"].as<double>();
+  spline_sampling_time_ = config["global_planner"]["parabolic_airdrop"]["spline_sampling_time"].as<double>();
+
+  return true;
 }
 
 void ParabolicAirdropPlanner::setMapInterface(shared_ptr<MapInterface> map)
@@ -66,16 +112,16 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
     //for (double v=0.5; v<=6.0; v+=0.5){
       //for (double alpha=0.0; alpha<=deg2rad(45.0); alpha+=deg2rad(5.0)){
   for (int i=0; i<dx_.size(); i++){
-    double dx = dx_(i);
+    double dx = dx_[i];
     for (int j=0; j<v_.size(); j++){
-      double v = v_(j);
+      double v = v_[j];
       for (int k=0; k<alpha_.size(); k++){
-        double alpha = deg2rad(alpha_(k));
+        double alpha = deg2rad(alpha_[k]);
         // Calculate displacement in z axis and time of impact
         double dz = -tan(alpha)*(dx) + 0.5*g*dx*dx/(v*v*cos(alpha)*cos(alpha));
         double t = dx/(v*cos(alpha));
 
-        if (dz < 50.0){
+        if (dz < max_dz_){
 
           // Construct the parabola. Note that this is not final one, it still
           // has to be transformed to world.
@@ -85,11 +131,11 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
           // Translate and rotate parabola to find suitable one. We do this in
           // a for loop by changing yaw angle.
           for (double parabola_yaw=0.0; parabola_yaw<=deg2rad(360.0);
-            parabola_yaw+=deg2rad(22.5)){
+            parabola_yaw+=deg2rad(yaw_increment_)){
 
             Eigen::MatrixXd transformed_parabola;
             transformed_parabola = transformParabola(parabola, target_pose,
-              parabola_yaw, dx);
+              parabola_yaw, dx); 
 
             // Yaw won't change in stopping trajectory but it still needs to 
             // be planned
@@ -99,16 +145,14 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
             // Plan stopping trajectory
             Eigen::MatrixXd conditions(4, 6);
             conditions << transformed_parabola(0,0), transformed_parabola(0,0), 
-              v*cos(alpha)*cos(parabola_yaw), 0, 0, 0,
+              v*cos(alpha)*cos(parabola_yaw), 0, intermediate_acceleration_(0), 0,
               transformed_parabola(0,1), transformed_parabola(0,1), 
-              v*cos(alpha)*sin(parabola_yaw), 0, 0, 0,
+              v*cos(alpha)*sin(parabola_yaw), 0, intermediate_acceleration_(1), 0,
               transformed_parabola(0,2), transformed_parabola(0,2), 
-              v*sin(alpha), 0, 0.3, 0,
-              yaw, yaw, 0, 0, 0, 0;
-            Eigen::MatrixXd constraints(4, 2);
-            constraints << 8, 2.5, 8, 2.5, 5, 2.5, 2, 2;
-            spline_interpolator_.generateTrajectory(conditions, constraints, 
-              0.01);
+              v*sin(alpha), 0, intermediate_acceleration_(2), 0,
+              yaw, yaw, 0, 0, intermediate_acceleration_(3), 0;
+            spline_interpolator_.generateTrajectory(conditions, 
+              stopping_trajectory_constraints_, spline_sampling_time_);
             Trajectory stopping_trajectory = spline_interpolator_.getTrajectory();
             //cout << stopping_trajectory.acceleration << endl;
 
@@ -182,7 +226,7 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
 Eigen::MatrixXd ParabolicAirdropPlanner::constructParabola(double dx,
   double dz, double alpha, double v, double duration, double g)
 {
-  double ts = 0.01;
+  double ts = spline_sampling_time_;
   int n = round(duration/ts);
   double t = 0.0;
   Eigen::MatrixXd parabola(n+1, 3);
@@ -219,7 +263,7 @@ bool ParabolicAirdropPlanner::checkParabolaForCollision(
   bool is_valid = true;
   
   for (int i=0; i<parabola.rows(); i++){
-    if (parabola(i, 2) > 100) cout << parabola.row(i) << endl;
+    if (parabola(i, 2) > 100) cout << "Parabola row: " << endl << parabola.row(i) << endl;
     is_valid &= point_checker_->isStateValid((parabola.row(i)).transpose());
   }
 
@@ -261,18 +305,16 @@ Trajectory ParabolicAirdropPlanner::planDropoffSpline(
       // Plan dropoff trajectory
       Eigen::MatrixXd conditions(4, 6);
       conditions << trajectory.position(i,0), trajectory.position(end,0), 
-        trajectory.velocity(i,0), vx, trajectory.acceleration(i,0), 0,
+        trajectory.velocity(i,0), vx, trajectory.acceleration(i,0), intermediate_acceleration_(0),
         trajectory.position(i,1), trajectory.position(end,1), 
-        trajectory.velocity(i,1), vy, trajectory.acceleration(i,1), 0,
+        trajectory.velocity(i,1), vy, trajectory.acceleration(i,1), intermediate_acceleration_(1),
         trajectory.position(i,2), trajectory.position(end,2), 
-        trajectory.velocity(i,2), vz, trajectory.acceleration(i,2), 0.3,
+        trajectory.velocity(i,2), vz, trajectory.acceleration(i,2), intermediate_acceleration_(2),
         trajectory.position(i,3), trajectory.position(end,3), 
-        trajectory.velocity(i,3), 0, trajectory.acceleration(i,3), 0;
+        trajectory.velocity(i,3), 0, trajectory.acceleration(i,3), intermediate_acceleration_(3);
 
-      Eigen::MatrixXd constraints(4, 2);
-      constraints << 8, 2.5, 8, 2.5, 5, 2.5, 2, 2;
-      spline_interpolator_.generateTrajectory(conditions, constraints, 
-        0.01);
+      spline_interpolator_.generateTrajectory(conditions, 
+        dropoff_trajectory_constraints_, spline_sampling_time_);
       Trajectory dropoff_spline = spline_interpolator_.getTrajectory();
       if (checkTrajectoryForCollision(dropoff_spline) == true){
         dropoff_index = i;

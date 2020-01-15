@@ -209,7 +209,6 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
     }
   }
   temp_state = (positions.block(1, 0, 2, positions.cols())).transpose();
-  cout << temp_state << endl;
   if (!state_validity_checker_->isStateValid(temp_state)){
     initial_check = false;
     cout << "RrtPathPlanner->planPath: " << endl;

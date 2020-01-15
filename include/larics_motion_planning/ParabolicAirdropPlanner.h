@@ -24,6 +24,9 @@ class ParabolicAirdropPlanner : public GlobalPlanner
     ParabolicAirdropPlanner(string config_filename);
 
     ///
+    bool configureParabolicAirdropFromFile(string config_filename);
+
+    ///
     void setMapInterface(shared_ptr<MapInterface> map);
 
     /// \brief Generates collision free parabolic airdrop trajectory.
@@ -44,7 +47,13 @@ class ParabolicAirdropPlanner : public GlobalPlanner
     shared_ptr<StateValidityCheckerInterface> point_checker_;
     SplineInterpolator spline_interpolator_;
     Trajectory airdrop_trajectory_;
-    Eigen::VectorXd dx_, v_, alpha_;
+    std::vector<double> dx_, v_, alpha_;
+    double yaw_increment_;
+    double max_dz_;
+    Eigen::MatrixXd stopping_trajectory_constraints_, 
+      dropoff_trajectory_constraints_;
+    Eigen::VectorXd intermediate_acceleration_;
+    double spline_sampling_time_;
 
     Eigen::MatrixXd constructParabola(double dx, double dz, double alpha,
       double v, double t, double g);
