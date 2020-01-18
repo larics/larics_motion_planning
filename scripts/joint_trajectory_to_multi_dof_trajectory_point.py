@@ -22,7 +22,7 @@ class JointTrajectoryToMultiDofTrajectoryPoint:
 
         self.rate = rospy.get_param('~rate', 100)
         self.ros_rate = rospy.Rate(self.rate) 
-        self.airdrop_flag = rospy.get_param('~airdrop', True)
+        self.airdrop_flag = rospy.get_param('~airdrop', False)
         if self.airdrop_flag == True:
             self.magnet_pub = rospy.Publisher('magnet/gain', Float32, queue_size=1)
             self.magnet_gain = 1.0
