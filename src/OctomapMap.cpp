@@ -71,7 +71,12 @@ void OctomapMap::setDepth(int depth)
 void OctomapMap::setOctomapFromRosMessage(const
   octomap_msgs::Octomap::ConstPtr& ros_octomap)
 {
-  cout << "Map received" << endl;
+  cout << "Octomap received" << endl;
   map_.reset(dynamic_cast<octomap::OcTree*>(octomap_msgs::binaryMsgToMap(
     *ros_octomap)));
+  cout << "  Memory usage: " << map_->memoryUsage()/1000000.0 << " MB" << endl;
+  double x, y, z;
+  map_->getMetricSize(x, y, z);
+  cout << "  Map bounds: x=" << x << " y=" << y << " z=" << z << endl;
+  cout << "  Map resolution: " << map_->getResolution() << endl;
 }
