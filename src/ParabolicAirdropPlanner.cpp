@@ -102,10 +102,6 @@ void ParabolicAirdropPlanner::setMapInterface(shared_ptr<MapInterface> map)
 bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
   Eigen::VectorXd uav_pose, Eigen::VectorXd target_pose)
 {
-  // Iterate through dx, velocity and alpha to get parabola parameters.
-  // TODO: create lists for dx, v and alpha so the search time reduces.
-  //   THIS IS IMPORTANT TO DO!
-
   parabola_set_points_ = Eigen::MatrixXd(0,3);
   double g=9.81;
   //for (double dx=1.0; dx<=8.0; dx+=0.5){
@@ -143,6 +139,8 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
             double q3 = uav_pose(5);
             double yaw = atan2(2*q0*q3, 1-2*(q3*q3));
             // Plan stopping trajectory
+            // TODO: check why stopping trajectory does not meet constraints
+            // with new spline planning hack
             Eigen::MatrixXd conditions(4, 6);
             conditions << transformed_parabola(0,0), transformed_parabola(0,0), 
               v*cos(alpha)*cos(parabola_yaw), 0, intermediate_acceleration_(0), 0,
@@ -290,17 +288,24 @@ Trajectory ParabolicAirdropPlanner::planDropoffSpline(
 
   // Go backwards through the trajectory and find appropriate start point for
   // the dropoff spline.
-  double length = 0.0;
+  double line_integral = 0.0;
+  double max_line_integral = 5.0;
+  double line_integral_increment = 0.5;
+  double current_cutoff = 0.0;
   int end = trajectory.position.rows()-1;
+  std::vector<Trajectory> spline_list;
+  std::vector<int> spline_index;
   for (int i=trajectory.position.rows()-2; i>=0; i--){
     double dx = trajectory.position(i+1, 0) - trajectory.position(i, 0);
     double dy = trajectory.position(i+1, 1) - trajectory.position(i, 1);
     double dz = trajectory.position(i+1, 2) - trajectory.position(i, 2);
-    length += sqrt(dx*dx + dy*dy + dz*dz);
+    line_integral += sqrt(dx*dx + dy*dy + dz*dz);
 
     // If line integral from the end is greater than x meters than we can plan
-    // the dropoff trajectory.
-    if (length > 2.0){
+    // the dropoff trajectory. We are incrementing this integral from end until
+    // max_line_integral.
+    if ((line_integral > current_cutoff) && (line_integral <= max_line_integral)){
+      current_cutoff += line_integral_increment;
       double dt = trajectory.time(trajectory.time.size()-1) - trajectory.time(i);
       // Plan dropoff trajectory
       Eigen::MatrixXd conditions(4, 6);
@@ -313,19 +318,164 @@ Trajectory ParabolicAirdropPlanner::planDropoffSpline(
         trajectory.position(i,3), trajectory.position(end,3), 
         trajectory.velocity(i,3), 0, trajectory.acceleration(i,3), intermediate_acceleration_(3);
 
+      // Generate current spline
       spline_interpolator_.generateTrajectory(conditions, 
         dropoff_trajectory_constraints_, spline_sampling_time_);
       Trajectory dropoff_spline = spline_interpolator_.getTrajectory();
-      if (checkTrajectoryForCollision(dropoff_spline) == true){
-        dropoff_index = i;
-        return dropoff_spline;
-      }
+      //if (checkTrajectoryForCollision(dropoff_spline) == true){
+      //  dropoff_index = i;
+      //  return dropoff_spline;
+      //}
+
+      spline_list.push_back(dropoff_spline);
+      spline_index.push_back(dropoff_index);
     }
+  }
+
+  int best_trajectory_index = chooseBestTrajectory(spline_list, spline_index, 
+    trajectory);
+  
+  // Set it up for visualization
+  parabola_set_points_ = Eigen::MatrixXd(0,3);
+  for (int i=0; i<spline_list.size(); i++){
+    parabola_set_points_.conservativeResize(parabola_set_points_.rows() +
+      spline_list[i].position.rows(), 3);
+     parabola_set_points_.block(
+      parabola_set_points_.rows() - spline_list[i].position.rows(), 0, 
+      spline_list[i].position.rows(), 3) = spline_list[i].position.block(
+      0, 0, spline_list[i].position.rows(), 3);
+  }
+  parabola_set_points_.conservativeResize(parabola_set_points_.rows() +
+    trajectory.position.rows(), 3);
+  parabola_set_points_.block(
+      parabola_set_points_.rows() - trajectory.position.rows(), 0, 
+      trajectory.position.rows(), 3) = trajectory.position.block(
+      0, 0, trajectory.position.rows(), 3);
+
+  if (best_trajectory_index == -1){
+    Trajectory empty_trajectory;
+    return empty_trajectory;
+  }
+  else {
+    return spline_list[best_trajectory_index];
   }
 
   // If there is no spline that is feasible then return empty trajectory.
   Trajectory empty_trajectory;
   return empty_trajectory;
+}
+
+int ParabolicAirdropPlanner::chooseBestTrajectory(
+  std::vector<Trajectory> spline_list, std::vector<int> spline_index, 
+  Trajectory initial_trajectory)
+{
+  int best_index = -1;
+  double min_measure = 10000.0; // something unrealistically big
+
+  // Go through all splines and find the one with 
+  for (int i=0; i<spline_index.size(); i++){
+    // Consider only trajectories with no collision.
+    if (checkTrajectoryForCollision(spline_list[i]) == true){
+      double line_integral = trajectoryLineIntegral(spline_list[i]);
+      double duration = spline_list[i].time(spline_list[i].time.size()-1);
+      double position_rms = calculateTrajectoryRms(spline_list[i], 
+        initial_trajectory, "position");
+      double velocity_rms = calculateTrajectoryRms(spline_list[i], 
+        initial_trajectory, "velocity");
+      double acceleration_rms = calculateTrajectoryRms(spline_list[i], 
+        initial_trajectory, "acceleration");
+      cout << "Spline " << i << endl;
+      cout << "Line integral " << line_integral << endl;
+      cout << "Duration " << duration << endl;
+      cout << "RMS position " << position_rms << endl;
+      cout << "RMS velocity " << velocity_rms << endl;
+      cout << "RMS acceleration " << acceleration_rms << endl;
+
+      double measure = line_integral;
+      //cout << "Line integral is " << i << " " << line_integral << endl;
+      //cout << "Trajectory length " << spline_list[i].position.rows() << endl;
+      // If this indeed is a better trajectory then set it as such
+      if (measure < min_measure){
+        min_measure = measure;
+        best_index = i;
+      }
+    }
+  }
+
+  return best_index;
+}
+
+double ParabolicAirdropPlanner::trajectoryLineIntegral(Trajectory trajectory)
+{
+  double line_integral = 0.0;
+  for (int i=0; i<trajectory.position.rows()-1; i++){
+    // Find delta
+    double dx = trajectory.position(i,0) - trajectory.position(i+1,0);
+    double dy = trajectory.position(i,1) - trajectory.position(i+1,1);
+    double dz = trajectory.position(i,2) - trajectory.position(i+1,2);
+
+    line_integral += sqrt(dx*dx + dy*dy + dz*dz);
+  }
+
+  return line_integral;
+}
+
+double ParabolicAirdropPlanner::calculateTrajectoryRms(Trajectory spline, 
+  Trajectory trajectory, string field)
+{
+  double rms_squared = 0.0;
+  double rms = -1.0;
+
+  if (field.compare("position") == 0){
+    int trajectory_index_offset = trajectory.position.rows() - 
+      spline.position.rows();
+    for (int i=0; i<spline.position.rows(); i++){
+      double dx = trajectory.position(i+trajectory_index_offset, 0) - 
+        spline.position(i,0);
+      double dy = trajectory.position(i+trajectory_index_offset, 1) - 
+        spline.position(i,1);
+      double dz = trajectory.position(i+trajectory_index_offset, 2) - 
+        spline.position(i,2);
+
+      rms_squared += dx*dx + dy*dy*dz*dz;
+    }
+
+    rms = sqrt(rms_squared/double(spline.position.rows()));
+  }
+  else if (field.compare("velocity") == 0){
+    int trajectory_index_offset = trajectory.velocity.rows() - 
+      spline.velocity.rows();
+    for (int i=0; i<spline.velocity.rows(); i++){
+      double dx = trajectory.velocity(i+trajectory_index_offset, 0) - 
+        spline.velocity(i,0);
+      double dy = trajectory.velocity(i+trajectory_index_offset, 1) - 
+        spline.velocity(i,1);
+      double dz = trajectory.velocity(i+trajectory_index_offset, 2) - 
+        spline.velocity(i,2);
+
+      rms_squared += dx*dx + dy*dy*dz*dz;
+    }
+
+    rms = sqrt(rms_squared/double(spline.velocity.rows()));
+  }
+  else if (field.compare("acceleration") == 0){
+    int trajectory_index_offset = trajectory.acceleration.rows() - 
+      spline.acceleration.rows();
+    for (int i=0; i<spline.acceleration.rows(); i++){
+      double dx = trajectory.acceleration(i+trajectory_index_offset, 0) - 
+        spline.acceleration(i,0);
+      double dy = trajectory.acceleration(i+trajectory_index_offset, 1) - 
+        spline.acceleration(i,1);
+      double dz = trajectory.acceleration(i+trajectory_index_offset, 2) - 
+        spline.acceleration(i,2);
+
+      rms_squared += dx*dx + dy*dy*dz*dz;
+    }
+
+    rms = sqrt(rms_squared/double(spline.acceleration.rows()));
+  }
+
+  return rms;
 }
 
 Trajectory ParabolicAirdropPlanner::concatenateTrajectories(Trajectory first,

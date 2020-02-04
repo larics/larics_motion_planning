@@ -68,6 +68,13 @@ class ParabolicAirdropPlanner : public GlobalPlanner
     Trajectory planDropoffSpline(Trajectory trajectory, double v,
       double alpha, double parabola_yaw, int &dropoff_index);
 
+    int chooseBestTrajectory(std::vector<Trajectory> spline_list, 
+      std::vector<int> spline_index, Trajectory initial_trajectory);
+
+    double trajectoryLineIntegral(Trajectory trajectory);
+    double calculateTrajectoryRms(Trajectory spline, Trajectory trajectory, 
+      string field="position");
+
     Trajectory concatenateTrajectories(Trajectory first, Trajectory second, 
       int index=-1);
 

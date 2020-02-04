@@ -32,7 +32,7 @@ global_planner:
     # v is linear speed of the projectile in airdrop direction
     v: [2.5, 3.0, 2.0, 3.5, 1.5, 4.0, 1.0, 4.5, 5.0, 5.5, 6.0]
     # alpha is angle at which the projectile is launched
-    alpha: [20.0, 25.0, 15.0, 30.0, 10.0, 5.0, 0.0, 35.0, 40.0, 45.0]
+    alpha: [0.0, 25.0, 15.0, 30.0, 10.0, 5.0, 0.0, 35.0, 40.0, 45.0]
     # We search for all 360 degrees for the direction of parabola. This 
     # parameter defines increment in degrees
     yaw_increment: 22.5
@@ -41,15 +41,15 @@ global_planner:
     max_dz: 50
 
     # Stopping trajectory parameters [x, y, z, yaw]
-    stopping_velocity: [8, 8, 5, 2]
-    stopping_acceleration: [2.5, 2.5, 2.5, 2.0]
+    stopping_velocity: [8, 8, 3, 2]
+    stopping_acceleration: [3.5, 3.5, 2, 2.0]
     # Dropoff trajectory parameters [x, y, z, yaw]
-    dropoff_velocity: [8, 8, 5, 2]
-    dropoff_acceleration: [2.5, 2.5, 2.5, 2.0]
+    dropoff_velocity: [8, 8, 3, 2]
+    dropoff_acceleration: [2.5, 2.5, 2, 2.0]
     # Common for both trajectories is acceleration between dropoff and stopping
     # trajectories. The idea is to have a positive z-direction acceleration so
     # the uav does not interact with dropped object. [x, y, z, yaw]
-    intermediate_acceleration: [0, 0, 0.3, 0]
+    intermediate_acceleration: [0, 0, 0, 0]
 
     spline_sampling_time: 0.01
 

@@ -37,7 +37,7 @@ class JointTrajectoryToMultiDofTrajectoryPoint:
             self.jointTrajectoryCallback, queue_size=1)
 
     def run(self):
-        
+        ball_released_flag = False
         rate = rospy.Rate(self.rate)
         while not rospy.is_shutdown():
             rate.sleep()
@@ -54,8 +54,11 @@ class JointTrajectoryToMultiDofTrajectoryPoint:
                         self.magnet_gain = 1.0
                     elif abs(self.joint_trajectory.points[0].positions[4] - 1.0) < 0.1:
                         self.airdrop_counter = self.airdrop_counter + 1
-                    if self.airdrop_counter >= 12:
+                    if self.airdrop_counter >= 1:
                         self.magnet_gain = 0.0
+                        if ball_released_flag == False:
+                            rospy.loginfo("Ball released")
+                            ball_released_flag = True
                     self.magnet_pub.publish(self.magnet_gain)
                 self.publishAll()
                 #self.joint_trajectory_point_pub.publish(self.current_trajectory_point)
@@ -66,10 +69,13 @@ class JointTrajectoryToMultiDofTrajectoryPoint:
                     if self.airdrop_flag == True:
                         self.magnet_gain = 1.0
                         self.airdrop_counter = 0
+                        ball_released_flag = False
                         self.magnet_pub.publish(self.magnet_gain)
             else:
                 self.executing_trajectory_pub.publish(0)
-
+# Parabolic airdrop counter values
+# acc: 2.5, cnt: 12
+# acc: 3.5, cnt
 
     def jointTrajectoryCallback(self, msg):
         print "Received a trajectory."

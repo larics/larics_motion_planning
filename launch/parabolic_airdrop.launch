@@ -13,7 +13,9 @@
       <param name="waypoints_scale" value="0.5" />
     </node>
 
-    <node name="joint_trajectory_to_multi_dof_trajectory_point" pkg="larics_motion_planning" type="joint_trajectory_to_multi_dof_trajectory_point.py" output="screen"/>
+    <node name="joint_trajectory_to_multi_dof_trajectory_point" pkg="larics_motion_planning" type="joint_trajectory_to_multi_dof_trajectory_point.py" output="screen">
+      <param name="airdrop" value="true"/>
+    </node>
 
     <node name="uav_trajectory_go_to" pkg="larics_motion_planning" type="uav_trajectory_go_to.py" output="screen"/>
   </group>
