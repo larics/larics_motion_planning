@@ -4,7 +4,7 @@ __author__ = 'aivanovic'
 
 import rospy, math
 from math import sin, cos
-from geometry_msgs.msg import Pose, PoseStamped
+from geometry_msgs.msg import Pose, PoseStamped, PoseWithCovarianceStamped
 from nav_msgs.msg import Odometry
 from std_msgs.msg import Float64, Empty, Int32, Float32
 from trajectory_msgs.msg import MultiDOFJointTrajectoryPoint, \
@@ -24,8 +24,10 @@ class UavGoTo:
         self.first_pose_received = False
         self.uav_current_pose = Pose()
         self.uav_reference_pose = Pose()
-        rospy.Subscriber('pose', PoseStamped, self.uavPoseCallback, 
-            queue_size=1)
+        #rospy.Subscriber('pose', PoseStamped, self.uavPoseCallback, 
+        #    queue_size=1)
+        rospy.Subscriber('msf_core/pose', PoseWithCovarianceStamped, 
+            self.msfCorePoseCallback, queue_size=1)
         rospy.Subscriber('go_to/reference', Pose, 
             self.uavReferenceCallback, queue_size=1)
 
@@ -34,6 +36,10 @@ class UavGoTo:
 
     def uavPoseCallback(self, msg):
         self.uav_current_pose = msg.pose
+        self.first_pose_received = True
+
+    def msfCorePoseCallback(self, msg):
+        self.uav_current_pose = msg.pose.pose
         self.first_pose_received = True
 
     def uavReferenceCallback(self, msg):
@@ -62,8 +68,8 @@ class UavGoTo:
         waypoint.positions = [self.uav_current_pose.position.x, \
             self.uav_current_pose.position.y, \
             self.uav_current_pose.position.z, current_yaw, 0]
-        waypoint.velocities = [2, 2, 2, 1, 100]
-        waypoint.accelerations = [2, 2, 2, 1, 100]
+        waypoint.velocities = [0.8, 0.8, 0.8, 0.8, 100]
+        waypoint.accelerations = [0.4, 0.4, 0.4, 0.4, 100]
         request.waypoints.points.append(copy.deepcopy(waypoint))
         # Add second waypoint as current uav pose
         waypoint.positions = [msg.position.x, \

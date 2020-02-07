@@ -1,0 +1,12 @@
+<launch>
+  <arg name="rate" default="10" />
+  <arg name="namespace" default="euroc3" />
+
+  <group ns="$(arg namespace)">
+    <node name="generate_toppra_trajectory" pkg="topp_ros" type="generate_toppra_trajectory.py" output="screen" />
+
+    <node name="joint_trajectory_to_neo" pkg="larics_motion_planning" type="joint_trajectory_to_neo.py" output="screen"/>
+
+    <node name="uav_trajectory_go_to" pkg="larics_motion_planning" type="uav_trajectory_go_to.py" output="screen"/>
+  </group>
+</launch>

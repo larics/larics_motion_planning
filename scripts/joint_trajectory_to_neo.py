@@ -15,10 +15,10 @@ class JointTrajectoryToUavAndWpManipulatorReference:
 
     def __init__(self):
         # UAV publishers for trajectory
-        self.uav_trajectory_point_pub = rospy.Publisher('/euroc3/command/trajectory', 
+        self.uav_trajectory_point_pub = rospy.Publisher('command/trajectory', 
             MultiDOFJointTrajectory, queue_size=1)
 
-        rospy.Subscriber('/uav/joint_trajectory', JointTrajectory, 
+        rospy.Subscriber('joint_trajectory', JointTrajectory, 
             self.jointTrajectoryCallback, queue_size=1)
 
         self.rate = rospy.get_param('~rate', 100)
@@ -55,8 +55,8 @@ def jointTrajectoryPointToMultiDofJointTrajectoryPoint(joint):
     transform.translation.x = joint.positions[0]
     transform.translation.y = joint.positions[1]
     transform.translation.z = joint.positions[2]
-    transform.rotation.z = math.sin(joint.positions[3+2]/2.0)
-    transform.rotation.w = math.cos(joint.positions[3+2]/2.0)
+    transform.rotation.z = math.sin(joint.positions[3]/2.0)
+    transform.rotation.w = math.cos(joint.positions[3]/2.0)
 
     vel = Twist()
     vel.linear.x = joint.velocities[0]
