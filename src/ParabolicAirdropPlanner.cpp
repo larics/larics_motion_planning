@@ -334,6 +334,7 @@ Trajectory ParabolicAirdropPlanner::planDropoffSpline(
       //  return dropoff_spline;
       //}
 
+      dropoff_index = i;
       spline_list.push_back(dropoff_spline);
       spline_index.push_back(dropoff_index);
     }
@@ -364,6 +365,8 @@ Trajectory ParabolicAirdropPlanner::planDropoffSpline(
     return empty_trajectory;
   }
   else {
+    dropoff_index = spline_index[best_trajectory_index];
+    cout << "Dropoff: " << dropoff_index << endl;
     return spline_list[best_trajectory_index];
   }
 
@@ -391,14 +394,24 @@ int ParabolicAirdropPlanner::chooseBestTrajectory(
         initial_trajectory, "velocity");
       double acceleration_rms = calculateTrajectoryRms(spline_list[i], 
         initial_trajectory, "acceleration");
+      int start_index = spline_index[i];//initial_trajectory.position.rows() - 
+        //spline_list[i].position.rows() - 1;
+      double trajectory_segment_line_integral = trajectoryLineIntegral(
+        initial_trajectory, start_index, -1);
+      double ratio = line_integral/trajectory_segment_line_integral;
       cout << "Spline " << i << endl;
+      cout << "Start index " << start_index << endl;
+      cout << "Traj len " << initial_trajectory.position.rows() << endl;
+      cout << "Spline len " << spline_list[i].position.rows() << endl;
       cout << "Line integral " << line_integral << endl;
+      cout << "Initial trajectory line integral " << trajectory_segment_line_integral << endl;
+      cout << "Ratio " << ratio << endl;
       cout << "Duration " << duration << endl;
       cout << "RMS position " << position_rms << endl;
       cout << "RMS velocity " << velocity_rms << endl;
       cout << "RMS acceleration " << acceleration_rms << endl;
 
-      double measure = line_integral;
+      double measure = ratio;
       //cout << "Line integral is " << i << " " << line_integral << endl;
       //cout << "Trajectory length " << spline_list[i].position.rows() << endl;
       // If this indeed is a better trajectory then set it as such
@@ -416,6 +429,28 @@ double ParabolicAirdropPlanner::trajectoryLineIntegral(Trajectory trajectory)
 {
   double line_integral = 0.0;
   for (int i=0; i<trajectory.position.rows()-1; i++){
+    // Find delta
+    double dx = trajectory.position(i,0) - trajectory.position(i+1,0);
+    double dy = trajectory.position(i,1) - trajectory.position(i+1,1);
+    double dz = trajectory.position(i,2) - trajectory.position(i+1,2);
+
+    line_integral += sqrt(dx*dx + dy*dy + dz*dz);
+  }
+
+  return line_integral;
+}
+
+double ParabolicAirdropPlanner::trajectoryLineIntegral(Trajectory trajectory,
+  int start_index, int end_index)
+{
+  double line_integral = 0.0;
+  if ((end_index < 0) || (end_index > (trajectory.position.rows()-1))){
+    end_index = trajectory.position.rows() - 1;
+  }
+  if ((start_index < 0) || (start_index > end_index)){
+    start_index = 0;
+  }
+  for (int i=start_index; i<end_index; i++){
     // Find delta
     double dx = trajectory.position(i,0) - trajectory.position(i+1,0);
     double dy = trajectory.position(i,1) - trajectory.position(i+1,1);

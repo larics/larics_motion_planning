@@ -49,7 +49,7 @@ class ParabolicAirdropPlanner : public GlobalPlanner
     Trajectory airdrop_trajectory_;
     std::vector<double> dx_, v_, alpha_;
     double yaw_increment_;
-    double max_dz_;
+    double max_dz_, payload_z_offset_;
     Eigen::MatrixXd stopping_trajectory_constraints_, 
       dropoff_trajectory_constraints_;
     Eigen::VectorXd intermediate_acceleration_;
@@ -72,6 +72,8 @@ class ParabolicAirdropPlanner : public GlobalPlanner
       std::vector<int> spline_index, Trajectory initial_trajectory);
 
     double trajectoryLineIntegral(Trajectory trajectory);
+    double trajectoryLineIntegral(Trajectory trajectory, int start_index, 
+      int end_index);
     double calculateTrajectoryRms(Trajectory spline, Trajectory trajectory, 
       string field="position");
 
