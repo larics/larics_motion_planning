@@ -39,6 +39,8 @@ bool SplineInterpolator::generateSplineOrder5(Eigen::VectorXd conditions,
     sample_time);
 
   while (fabs(s-1.0) > 0.01){
+    if (s>1.0) s = 1.01;
+    else s = 0.99;
     duration *= s;
     t(0) = 1.0;
     for (int i=1; i<6; i++){ 
@@ -87,6 +89,7 @@ bool SplineInterpolator::generateTrajectory(Eigen::MatrixXd conditions,
   for (int i=0; i<conditions.rows(); i++){
     generateSplineOrder5((conditions.row(i)).transpose(),
       (constraints.row(i)).transpose(), sample_time);
+    //cout << "Spline duration " << spline_duration_ << endl;
     if (max_time < spline_duration_){
       max_time = spline_duration_;
     }
@@ -206,14 +209,17 @@ double SplineInterpolator::calculateTimeScalingFactor(
   Eigen::VectorXd coefficients, Eigen::VectorXd constraints, 
   double duration, double sample_time)
 {
+  //cout << "Calculate s" << endl;
   double s = 1.0;
+  //cout << constraints << endl;
 
   Eigen::VectorXd max_dynamic(constraints.size());
   trajectory_ = sampleTrajectory(coefficients, duration, sample_time);
-  max_dynamic(0) = max(trajectory_.velocity.maxCoeff(), fabs(
+  max_dynamic(0) = max(fabs(trajectory_.velocity.maxCoeff()), fabs(
     trajectory_.velocity.minCoeff()));
-  max_dynamic(1) = max(trajectory_.acceleration.maxCoeff(), fabs(
+  max_dynamic(1) = max(fabs(trajectory_.acceleration.maxCoeff()), fabs(
     trajectory_.acceleration.minCoeff()));
+  //cout << max_dynamic << endl;
 
   s = max(max_dynamic(0)/constraints(0), sqrt(max_dynamic(1)/constraints(1)));
 
