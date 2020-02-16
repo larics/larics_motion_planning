@@ -11,7 +11,8 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
   nh_private.param("rate", rate_, int(10));
 
   // Global planner config
-  global_planner_ = make_shared<GlobalPlanner>(global_planner_config_file);
+  //global_planner_ = make_shared<GlobalPlanner>(global_planner_config_file);
+  global_planner_ = make_shared<ParabolicAirdropPlanner>(global_planner_config_file);
   octomapmap_ = dynamic_pointer_cast<OctomapMap>(global_planner_->getMapInterface());
   octomap_sub_ = nh_.subscribe("/octomap_binary", 1, &OctomapMap::setOctomapFromRosMessage, 
     octomapmap_.get());
@@ -314,9 +315,9 @@ bool GlobalPlannerRosInterface::parabolicAirdropTrajectoryCallback(
   larics_motion_planning::ParabolicAirdropTrajectory::Response &res)
 {
   cout << endl << "Parabolic trajectory service callback." << endl;
-  ParabolicAirdropPlanner airdrop_planner(
-    "catkin_ws/src/larics_motion_planning/config/uav_only_config_example.yaml");
-  airdrop_planner.setMapInterface(global_planner_->getMapInterface());
+  //ParabolicAirdropPlanner airdrop_planner(
+  //  "catkin_ws/src/larics_motion_planning/config/uav_only_config_example.yaml");
+  //airdrop_planner.setMapInterface(global_planner_->getMapInterface());
   // Generate vectors from poses
   Eigen::VectorXd uav_pose(7);
   uav_pose << req.uav_pose.position.x, req.uav_pose.position.y, 
@@ -329,12 +330,37 @@ bool GlobalPlannerRosInterface::parabolicAirdropTrajectoryCallback(
     req.target_pose.orientation.y, req.target_pose.orientation.z, 
     req.target_pose.orientation.w;
 
-  airdrop_planner.generateParabolicAirdropTrajectory(uav_pose, target_pose);
-  visualization_.setStatePoints(airdrop_planner.getParabola());
-  visualization_.publishStatePoints();
+  if (req.plan_trajectory == false){
+    res.success = false;
+    cout << "Plan trajectory must be set to true for parabolic trajectory" << endl;
+    return true;
+  }
+  else {
+    res.success = global_planner_->generateParabolicAirdropTrajectory(
+      uav_pose, target_pose, req.plan_path);
 
-  joint_trajectory_pub_.publish(trajectoryToJointTrajectory(
-    airdrop_planner.getAirdropTrajectory()));
+    // Set up visualization
+    visualization_.setStatePoints(global_planner_->getParabola());
+    visualization_.publishStatePoints();
+    visualization_.setTrajectory(global_planner_->getAirdropTrajectory());
+    visualization_changed_ = true;
+    //cout << global_planner_->getAirdropTrajectory().position << endl;
+
+    // Set up response
+    res.trajectory = this->trajectoryToJointTrajectory(
+      global_planner_->getAirdropTrajectory());
+    if (req.plan_path == true){
+      res.path = this->eigenPathToJointTrajectory(global_planner_->getPath());
+    }
+  }
+
+  if (req.publish_trajectory){
+    joint_trajectory_pub_.publish(trajectoryToJointTrajectory(
+      global_planner_->getAirdropTrajectory()));
+  }
+  if (req.publish_path){
+
+  }
 
   cout << "Parabolic trajectory service callback finished." << endl << endl;
 

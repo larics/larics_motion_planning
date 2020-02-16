@@ -101,7 +101,7 @@ void ParabolicAirdropPlanner::setMapInterface(shared_ptr<MapInterface> map)
 }
 
 bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
-  Eigen::VectorXd uav_pose, Eigen::VectorXd target_pose)
+  Eigen::VectorXd uav_pose, Eigen::VectorXd target_pose, bool plan_path)
 {
   parabola_set_points_ = Eigen::MatrixXd(0,3);
   double g=9.81;
@@ -170,7 +170,12 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
               transformed_parabola(0, 0), transformed_parabola(0, 1), 
               transformed_parabola(0, 2)+payload_z_offset_, yaw;
             // Plan trajectory
-            if (this->planPathAndTrajectory(waypoints) == false) continue;
+            if (plan_path == true) {
+              if (this->planPathAndTrajectory(waypoints) == false) continue;
+            }
+            else {
+              if (this->planTrajectory(waypoints) == false) continue;
+            }
             Trajectory trajectory = trajectory_interface_->getTrajectory();
 
             // Plan dropoff spline

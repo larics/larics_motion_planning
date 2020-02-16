@@ -34,7 +34,7 @@ class ParabolicAirdropPlanner : public GlobalPlanner
     /// \param target_position Position where we have to drop the package.
     /// \return True if trajectory was successfully generated, false otherwise.
     bool generateParabolicAirdropTrajectory(Eigen::VectorXd uav_pose, 
-      Eigen::VectorXd target_pose);
+      Eigen::VectorXd target_pose, bool plan_path);
 
     /// 
     Eigen::MatrixXd getParabola() {return parabola_set_points_;}

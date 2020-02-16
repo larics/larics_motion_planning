@@ -57,7 +57,8 @@ class GlobalPlannerRosInterface
     ros::Subscriber octomap_sub_;
     shared_ptr<OctomapMap> octomapmap_;
     // Instance of global planner
-    shared_ptr<GlobalPlanner> global_planner_;
+    //shared_ptr<GlobalPlanner> global_planner_;
+    shared_ptr<ParabolicAirdropPlanner> global_planner_;
     // Instance of visualization and flag to track if visualization has changed
     Visualization visualization_;
     bool visualization_changed_;
