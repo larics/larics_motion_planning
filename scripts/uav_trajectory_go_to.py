@@ -24,10 +24,10 @@ class UavGoTo:
         self.first_pose_received = False
         self.uav_current_pose = Pose()
         self.uav_reference_pose = Pose()
-        #rospy.Subscriber('pose', PoseStamped, self.uavPoseCallback, 
-        #    queue_size=1)
-        rospy.Subscriber('msf_core/pose', PoseWithCovarianceStamped, 
-            self.msfCorePoseCallback, queue_size=1)
+        rospy.Subscriber('pose', PoseStamped, self.uavPoseCallback, 
+            queue_size=1)
+        #rospy.Subscriber('msf_core/pose', PoseWithCovarianceStamped, 
+        #    self.msfCorePoseCallback, queue_size=1)
         rospy.Subscriber('go_to/reference', Pose, 
             self.uavReferenceCallback, queue_size=1)
 
