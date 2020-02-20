@@ -11,6 +11,7 @@ from std_srvs.srv import Empty, EmptyRequest
 from trajectory_msgs.msg import MultiDOFJointTrajectoryPoint, \
     MultiDOFJointTrajectory, JointTrajectory, JointTrajectoryPoint
 import copy
+import time
 
 class ParabolicAirdropDequeue:
 
@@ -93,8 +94,8 @@ class ParabolicAirdropDequeue:
                         self.magnet_gain = 1.0
                     elif abs(self.joint_trajectory.points[0].positions[4] - 1.0) < 0.1:
                         self.airdrop_counter = self.airdrop_counter + 1
-                    if self.airdrop_counter >= 1 and (self.delta < 0.025 or 
-                        self.delta > self.delta_previous):
+                    if self.airdrop_counter >= 100: #or (self.delta < 0.025 or 
+                        #self.delta > self.delta_previous):
                         self.magnet_gain = 0.0
                         self.magnet_off_service.call(EmptyRequest())
                         if ball_released_flag == False:
@@ -111,6 +112,9 @@ class ParabolicAirdropDequeue:
                 if len(self.joint_trajectory.points) == 0:
                     self.executing_trajectory_flag = False
                     if self.airdrop_flag == True:
+                    	if self.magnet_gain < 0.1:
+                    		self.magnet_off_service.call(EmptyRequest())
+                    		time.sleep(1)
                         self.magnet_gain = 1.0
                         self.magnet_on_service.call(EmptyRequest())
                         self.airdrop_counter = 0
