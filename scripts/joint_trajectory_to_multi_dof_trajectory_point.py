@@ -119,8 +119,7 @@ class JointTrajectoryToMultiDofTrajectoryPoint:
 
     def jointTrajectoryCallback(self, msg):
         print "Received a trajectory."
-        if self.executing_trajectory_flag == False and \
-            len(msg.points) > 0:
+        if len(msg.points) > 0:
             self.joint_trajectory = copy.deepcopy(msg)
             self.executing_trajectory_flag = True
             if self.airdrop_flag == True:
