@@ -90,7 +90,7 @@ class JointTrajectoryToMultiDofTrajectoryPoint:
                         self.magnet_gain = 1.0
                     elif abs(self.joint_trajectory.points[0].positions[4] - 1.0) < 0.1:
                         self.airdrop_counter = self.airdrop_counter + 1
-                    if self.airdrop_counter >= 1 and (self.delta < 0.025 or 
+                    if self.airdrop_counter >= 1 and (self.delta < 0.1 or 
                         self.delta > self.delta_previous):
                         self.magnet_gain = 0.0
                         if ball_released_flag == False:

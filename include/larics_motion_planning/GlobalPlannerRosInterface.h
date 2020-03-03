@@ -57,6 +57,8 @@ class GlobalPlannerRosInterface
     ros::Subscriber octomap_sub_;
     shared_ptr<OctomapMap> octomapmap_;
     // Instance of global planner
+    // TODO: IMPORTANT: Add logic to switch between planners. Do this with shared
+    // pointer and interface class as you did for trajectory.
     //shared_ptr<GlobalPlanner> global_planner_;
     shared_ptr<ParabolicAirdropPlanner> global_planner_;
     // Instance of visualization and flag to track if visualization has changed
