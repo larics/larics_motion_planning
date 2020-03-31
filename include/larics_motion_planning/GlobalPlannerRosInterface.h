@@ -54,6 +54,10 @@ class GlobalPlannerRosInterface
     void run();
 
   private:
+    // Global planner configuration file
+    string global_planner_config_file_;
+
+    
     ros::Subscriber octomap_sub_;
     shared_ptr<OctomapMap> octomapmap_;
     // Instance of global planner

@@ -155,6 +155,18 @@ Trajectory ToppraTrajectory::getTrajectory()
   return sampled_trajectory_;
 }
 
+bool ToppraTrajectory::setDynamicConstraints(Eigen::MatrixXd dynamic_constraints)
+{
+  if ((dynamic_constraints_.rows() == dynamic_constraints.rows()) && 
+    (dynamic_constraints_.cols() == dynamic_constraints.cols())){
+    dynamic_constraints_ = dynamic_constraints;
+  }
+  else{
+    return false;
+  }
+  return true;
+}
+
 
 void ToppraTrajectory::sampleTrajectory(
       trajectory_msgs::JointTrajectory joint_trajectory)

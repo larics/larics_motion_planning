@@ -17,6 +17,7 @@ class TrajectoryInterface
     virtual bool generateTrajectory(Eigen::MatrixXd positions) = 0;
     virtual Trajectory getTrajectory() = 0;
     virtual bool configureFromFile(string config_filename) = 0;
+    virtual bool setDynamicConstraints(Eigen::MatrixXd dynamic_constraints) {}
 };
 
 #endif // TRAJECTORY_INTERFACE_H

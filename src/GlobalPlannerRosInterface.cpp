@@ -2,17 +2,15 @@
 
 GlobalPlannerRosInterface::GlobalPlannerRosInterface()
 {
-  string global_planner_config_file;
-
   ros::NodeHandle nh_private = ros::NodeHandle("~");
 
-  nh_private.param("global_planner_config_file", global_planner_config_file, 
+  nh_private.param("global_planner_config_file", global_planner_config_file_, 
     string("catkin_ws/src/larics_motion_planning/config/uav_and_wp_manipulator_3r_config.yaml"));
   nh_private.param("rate", rate_, int(10));
 
   // Global planner config
-  //global_planner_ = make_shared<GlobalPlanner>(global_planner_config_file);
-  global_planner_ = make_shared<ParabolicAirdropPlanner>(global_planner_config_file);
+  //global_planner_ = make_shared<GlobalPlanner>(global_planner_config_file_);
+  global_planner_ = make_shared<ParabolicAirdropPlanner>(global_planner_config_file_);
   octomapmap_ = dynamic_pointer_cast<OctomapMap>(global_planner_->getMapInterface());
   octomap_sub_ = nh_.subscribe("/octomap_binary", 1, &OctomapMap::setOctomapFromRosMessage, 
     octomapmap_.get());
@@ -263,6 +261,30 @@ bool GlobalPlannerRosInterface::multiDofTrajectoryCallback(
     res.success = success;
     return true;
   }
+
+  // Check if user overrides trajectory dynamic constraints set through
+  // config file
+  if (req.override_dynamic_constraints == true){
+    cout << "Override dynamic constraints requested" << endl;
+    if ((req.velocity_constraints.size() != req.acceleration_constraints.size()) || 
+      ((req.velocity_constraints.size() + req.acceleration_constraints.size()) == 0)){
+      cout << "Velocity and acceleration constraints must be of same dimensions != 0" << endl;
+      cout << "Override cancelled" << endl;
+    }
+    else{
+      Eigen::MatrixXd constraints(2, req.velocity_constraints.size());
+      for (int i=0; i<req.velocity_constraints.size(); i++){
+        constraints(0,i) = req.velocity_constraints[i];
+        constraints(1,i) = req.acceleration_constraints[i]; 
+      }
+      // Set new constraints
+      shared_ptr<TrajectoryInterface> trajectory_interface = 
+        global_planner_->getTrajectoryInterface();
+      trajectory_interface->setDynamicConstraints(constraints);
+    }
+  }
+
+
   Eigen::MatrixXd waypoints = this->jointTrajectoryToEigenWaypoints(req.waypoints);
   visualization_.setWaypoints(waypoints);
     
@@ -307,6 +329,18 @@ bool GlobalPlannerRosInterface::multiDofTrajectoryCallback(
   }
 
   res.success = success;
+
+  // Return default configuration if dynamic constraints were overridden
+  if (req.override_dynamic_constraints == true){
+    // Simply reconfigure trajectory from file.
+    YAML::Node config = YAML::LoadFile(global_planner_config_file_);
+    shared_ptr<TrajectoryInterface> trajectory_interface = 
+        global_planner_->getTrajectoryInterface();
+    string username = "/home/";
+    username = username + getenv("USER") + "/";
+    trajectory_interface->configureFromFile(username +
+      config["global_planner"]["trajectory_config_file"].as<string>());
+  }
   return true;
 }
 

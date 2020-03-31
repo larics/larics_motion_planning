@@ -3,6 +3,9 @@ bool                              publish_path
 bool                              publish_trajectory
 bool                              plan_path
 bool                              plan_trajectory
+bool                              override_dynamic_constraints
+float64[]                         velocity_constraints
+float64[]                         acceleration_constraints
 ---
 trajectory_msgs/JointTrajectory   trajectory
 trajectory_msgs/JointTrajectory   path

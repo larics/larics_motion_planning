@@ -410,3 +410,28 @@ publish_path: false
 publish_trajectory: true
 plan_path: false
 plan_trajectory: true"
+
+rosservice call /uav/multi_dof_trajectory "waypoints:
+  header:
+    seq: 0
+    stamp: {secs: 0, nsecs: 0}
+    frame_id: ''
+  joint_names: ['']
+  points:
+  - positions: [0.0, 0.0, 1.0, 0.0]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [10.0, 0.0, 1.0, 0.0]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+publish_path: false
+publish_trajectory: true
+plan_path: false
+plan_trajectory: true
+override_dynamic_constraints: true
+velocity_constraints: [0]
+acceleration_constraints: [0]"

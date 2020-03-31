@@ -64,6 +64,11 @@ class ToppraTrajectory : public TrajectoryInterface
     /// \return Sampled trajectory.
     Trajectory getTrajectory();
 
+    /// \brief Set dynamic constraints.
+    /// \param dynamic_constraints New velocity and acceleration constraints.
+    /// \return True if dimensions are proper and constraints are set.
+    bool setDynamicConstraints(Eigen::MatrixXd dynamic_constraints);
+
   private:
     ros::NodeHandle nh_;
     ros::ServiceClient generate_trajectory_client_;

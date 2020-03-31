@@ -201,6 +201,11 @@ shared_ptr<MapInterface> GlobalPlanner::getMapInterface()
   return map_interface_;
 }
 
+shared_ptr<TrajectoryInterface> GlobalPlanner::getTrajectoryInterface()
+{
+  return trajectory_interface_;
+}
+
 bool GlobalPlanner::planPathThroughTwoWaypoints(Eigen::MatrixXd waypoints)
 {
   if (waypoints.rows()<2){

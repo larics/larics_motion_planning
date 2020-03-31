@@ -93,6 +93,10 @@ class GlobalPlanner
     /// \return Shared pointer to map interface.
     shared_ptr<MapInterface> getMapInterface();
 
+    /// \brief Returns trajectory interface used in planner.
+    /// \return Shared pointer to trajectory interface.
+    shared_ptr<TrajectoryInterface> getTrajectoryInterface();
+
   protected:
     shared_ptr<MapInterface> map_interface_;
     shared_ptr<TrajectoryInterface> trajectory_interface_;
