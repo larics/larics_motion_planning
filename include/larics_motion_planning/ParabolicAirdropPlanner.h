@@ -42,8 +42,12 @@ class ParabolicAirdropPlanner : public GlobalPlanner
     ///
     Trajectory getAirdropTrajectory() {return airdrop_trajectory_;}
 
+    ///
+    Eigen::VectorXd getInfoVector() {return info_vector_;}
+
   private:
     Eigen::MatrixXd parabola_set_points_;
+    Eigen::VectorXd info_vector_;
     shared_ptr<StateValidityCheckerInterface> point_checker_;
     SplineInterpolator spline_interpolator_;
     Trajectory airdrop_trajectory_;

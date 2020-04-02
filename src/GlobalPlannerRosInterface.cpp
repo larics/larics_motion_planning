@@ -25,6 +25,9 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
   // Joint trajectory publisher
   joint_trajectory_pub_ = nh_.advertise<trajectory_msgs::JointTrajectory>(
     "joint_trajectory", 1);
+  // Parabolic airdrop info vector
+  parabolic_airdrop_info_pub_ = nh_.advertise<std_msgs::Float64MultiArray>(
+    "parabolic_airdrop/info_vector", 1);
 
   // TODO: Delete this service. Just testing service for now.
   empty_service_server_ = nh_.advertiseService("empty_service_test",
@@ -391,6 +394,12 @@ bool GlobalPlannerRosInterface::parabolicAirdropTrajectoryCallback(
   if (req.publish_trajectory){
     joint_trajectory_pub_.publish(trajectoryToJointTrajectory(
       global_planner_->getAirdropTrajectory()));
+    Eigen::VectorXd info = global_planner_->getInfoVector();
+    std_msgs::Float64MultiArray info_array;
+    for (int i=0; i<info.size(); i++){
+      info_array.data.push_back(info[i]);
+    }
+    parabolic_airdrop_info_pub_.publish(info_array);
   }
   if (req.publish_path){
 

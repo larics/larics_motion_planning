@@ -24,6 +24,7 @@
 // Messages
 #include <std_msgs/Empty.h>
 #include <std_msgs/Header.h>
+#include <std_msgs/Float64MultiArray.h>
 #include <nav_msgs/Path.h>
 #include <trajectory_msgs/MultiDOFJointTrajectory.h>
 #include <trajectory_msgs/MultiDOFJointTrajectoryPoint.h>
@@ -76,7 +77,7 @@ class GlobalPlannerRosInterface
 
     // Publishers
     ros::Publisher multi_dof_trajectory_pub_, cartesian_path_pub_, 
-      joint_trajectory_pub_;
+      joint_trajectory_pub_, parabolic_airdrop_info_pub_;
 
     // Empty service
     ros::ServiceServer empty_service_server_;
