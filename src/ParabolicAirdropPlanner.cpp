@@ -312,6 +312,23 @@ Trajectory ParabolicAirdropPlanner::planDropoffSpline(
   double vx = v*cos(alpha)*cos(parabola_yaw);
   double vy = v*cos(alpha)*sin(parabola_yaw);
   double vz = v*sin(alpha);
+  // Play around with dropoff constraints
+  /*Eigen::MatrixXd dropoff_constraints(4,2);
+  dropoff_constraints << dropoff_trajectory_constraints_;
+  
+  //cout << dropoff_trajectory_constraints_ << endl;
+  
+  double factor = 1.33;
+  dropoff_constraints(0,0) = min(fabs(vx)*factor, dropoff_trajectory_constraints_(0,0));
+  dropoff_constraints(1,0) = min(fabs(vy)*factor, dropoff_trajectory_constraints_(1,0));
+  dropoff_constraints(2,0) = min(fabs(vz)*factor, dropoff_trajectory_constraints_(2,0));
+  //cout << dropoff_constraints << endl;
+  dropoff_constraints(0,0) = max(0.5, dropoff_constraints(0,0));
+  dropoff_constraints(1,0) = max(0.5, dropoff_constraints(1,0));
+  dropoff_constraints(2,0) = max(0.5, dropoff_constraints(2,0));
+  //cout << dropoff_constraints << endl;
+  //exit(0);*/
+
 
   // Go backwards through the trajectory and find appropriate start point for
   // the dropoff spline.
