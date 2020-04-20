@@ -63,6 +63,8 @@ class JointTrajectoryToMultiDofTrajectoryPoint:
                     self.current_trajectory_point)
                 if self.airdrop_flag == True:
                     airdrop_delta = Pose()
+                    # Airdrop delta is distance of the UAV's current position
+                    # to the planned airdrop pose
                     airdrop_delta.position.x = abs(self.airdrop_pose.position.x - 
                         self.uav_current_pose.position.x)
                     airdrop_delta.position.y = abs(self.airdrop_pose.position.y - 
@@ -75,6 +77,7 @@ class JointTrajectoryToMultiDofTrajectoryPoint:
                     self.delta_previous = self.delta
                     self.delta = airdrop_delta.orientation.w
 
+                    # Velocity delta is similar to position
                     airdrop_delta_velocity = Twist()
                     airdrop_delta_velocity.linear.x = abs(self.airdrop_velocity.linear.x - 
                         self.uav_current_velocity.linear.x)
@@ -86,11 +89,16 @@ class JointTrajectoryToMultiDofTrajectoryPoint:
                         airdrop_delta_velocity.linear.y**2 + airdrop_delta_velocity.linear.z**2)
                     airdrop_delta_velocity.angular.x = bool(self.airdrop_counter)
 
+                    # positions[4] is the magnet on/off field which is supposed
+                    # to be 0 or 1
                     if abs(self.joint_trajectory.points[0].positions[4]) < 0.1:
                         self.magnet_gain = 1.0
                     elif abs(self.joint_trajectory.points[0].positions[4] - 1.0) < 0.1:
+                        # count how many instances has magnet been off
                         self.airdrop_counter = self.airdrop_counter + 1
-                    if self.airdrop_counter >= 1 and (self.delta < 0.1 or 
+                    # If we are at some range from the dropoff point or the 
+                    # delta has started increasing, drop the ball
+                    if self.airdrop_counter >= 1 and (self.delta < 22.01 or 
                         self.delta > self.delta_previous):
                         self.magnet_gain = 0.0
                         if ball_released_flag == False:
