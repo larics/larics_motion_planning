@@ -163,10 +163,10 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
 
             // Plan collision free trajectory to dropoff point
             // Set up waypoints
-            Eigen::MatrixXd waypoints(3, 4);
+            Eigen::MatrixXd waypoints(2, 4);
             // Fill waypoints
             waypoints << uav_pose(0), uav_pose(1), uav_pose(2), yaw, 
-              uav_pose(0), uav_pose(1), transformed_parabola(0, 2)+payload_z_offset_, yaw, 
+              //uav_pose(0), uav_pose(1), transformed_parabola(0, 2)+payload_z_offset_, yaw, 
               transformed_parabola(0, 0), transformed_parabola(0, 1), 
               transformed_parabola(0, 2)+payload_z_offset_, yaw;
             // Plan trajectory
