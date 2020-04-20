@@ -213,8 +213,9 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
             cout << "  z = " << dz << endl << "  t = " << t << endl;
 
             // Fill out information vector
-            info_vector_.conservativeResize(15);
+            info_vector_.conservativeResize(16);
             info_vector_ << dx, dz, v, alpha, parabola_yaw, t,
+              double(airdrop_trajectory_.position.rows())*spline_sampling_time_,
               double(dropoff_trajectory.position.rows())*spline_sampling_time_,
               double(stopping_trajectory.position.rows())*spline_sampling_time_,
               target_pose(0), target_pose(1), target_pose(2),
