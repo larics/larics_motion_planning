@@ -36,6 +36,18 @@ class ParabolicAirdropPlanner : public GlobalPlanner
     bool generateParabolicAirdropTrajectory(Eigen::VectorXd uav_pose, 
       Eigen::VectorXd target_pose, bool plan_path);
 
+    /// \brief Generates collision free parabolic airdrop trajectory with user
+    ///         Specified parameters.
+    /// \param uav_pose Current uav pose from which we plan the trajectory.
+    /// \param target_position Position where we have to drop the package.
+    /// \param plan_path True if a path in cluttered environment is planned.
+    /// \param parabola_params Vector of parabola parameters. Contains
+    ///         [v0, dz, alpha, dx, psi]
+    /// \return True if trajectory was successfully generated, false otherwise.
+    bool generateParabolicAirdropTrajectory(Eigen::VectorXd uav_pose, 
+      Eigen::VectorXd target_pose, bool plan_path, 
+      Eigen::VectorXd parabola_params);
+
     /// 
     Eigen::MatrixXd getParabola() {return parabola_set_points_;}
 

@@ -4,6 +4,8 @@ bool                              publish_path
 bool                              publish_trajectory
 bool                              plan_path
 bool                              plan_trajectory
+bool                              use_custom_parabola_params
+float64[]                         custom_parabola_params
 ---
 trajectory_msgs/JointTrajectory   trajectory
 trajectory_msgs/JointTrajectory   path

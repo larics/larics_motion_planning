@@ -372,7 +372,7 @@ bool GlobalPlannerRosInterface::parabolicAirdropTrajectoryCallback(
     cout << "Plan trajectory must be set to true for parabolic trajectory" << endl;
     return true;
   }
-  else {
+  else if (req.use_custom_parabola_params == false){
     res.success = global_planner_->generateParabolicAirdropTrajectory(
       uav_pose, target_pose, req.plan_path);
 
@@ -390,16 +390,49 @@ bool GlobalPlannerRosInterface::parabolicAirdropTrajectoryCallback(
       res.path = this->eigenPathToJointTrajectory(global_planner_->getPath());
     }
   }
+  else if (req.use_custom_parabola_params == true){
+    // User specifies parabola params, we have to call different function.
+    if (req.custom_parabola_params.size() < 5){
+      cout << "At least 5 params must be provided [v0, dz, alpha, dx, psi]" << endl;
+      res.success = false;
+      return true;
+    }
 
+    Eigen::VectorXd parabola_params(5);
+    parabola_params << req.custom_parabola_params[0], req.custom_parabola_params[1], 
+      req.custom_parabola_params[2], req.custom_parabola_params[3], 
+      req.custom_parabola_params[4];
+
+    res.success = global_planner_->generateParabolicAirdropTrajectory(
+      uav_pose, target_pose, req.plan_path, parabola_params);
+
+    // Set up visualization
+    visualization_.setStatePoints(global_planner_->getParabola());
+    visualization_.publishStatePoints();
+    visualization_.setTrajectory(global_planner_->getAirdropTrajectory());
+    visualization_changed_ = true;
+    //cout << global_planner_->getAirdropTrajectory().position << endl;
+
+    // Set up response
+    res.trajectory = this->trajectoryToJointTrajectory(
+      global_planner_->getAirdropTrajectory());
+    if (req.plan_path == true){
+      res.path = this->eigenPathToJointTrajectory(global_planner_->getPath());
+    }
+  }
+
+  // Publish parabola info vector
+  Eigen::VectorXd info = global_planner_->getInfoVector();
+  std_msgs::Float64MultiArray info_array;
+  for (int i=0; i<info.size(); i++){
+    info_array.data.push_back(info[i]);
+  }
+  parabolic_airdrop_info_pub_.publish(info_array);
+
+  // Publish trajectory
   if (req.publish_trajectory){
     joint_trajectory_pub_.publish(trajectoryToJointTrajectory(
       global_planner_->getAirdropTrajectory()));
-    Eigen::VectorXd info = global_planner_->getInfoVector();
-    std_msgs::Float64MultiArray info_array;
-    for (int i=0; i<info.size(); i++){
-      info_array.data.push_back(info[i]);
-    }
-    parabolic_airdrop_info_pub_.publish(info_array);
   }
   if (req.publish_path){
 

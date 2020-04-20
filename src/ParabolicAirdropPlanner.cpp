@@ -248,6 +248,119 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
   return false;
 }
 
+bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
+  Eigen::VectorXd uav_pose, Eigen::VectorXd target_pose, bool plan_path, 
+  Eigen::VectorXd parabola_params)
+{
+  parabola_set_points_ = Eigen::MatrixXd(0,3);
+  double g=9.81;
+  
+  // Parabola params are [v0, dz, alpha, dx, psi]
+  double v = parabola_params(0);
+  double dz = parabola_params(1);
+  double alpha = parabola_params(2);
+  double dx = parabola_params(3);
+  double parabola_yaw = parabola_params(4);
+  // Time can be calculated
+  double t = dx/(v*cos(alpha));
+
+  // Construct parabola in x-z plane
+  Eigen::MatrixXd parabola;
+  parabola = constructParabola(dx, dz, alpha, v, t, g);
+  // Transform parabola to xyz
+  Eigen::MatrixXd transformed_parabola;
+  transformed_parabola = transformParabola(parabola, target_pose,
+    parabola_yaw, dx);
+
+  // Yaw won't change in stopping trajectory but it still needs to 
+  // be planned
+  double q0 = uav_pose(6);
+  double q3 = uav_pose(5);
+  double yaw = atan2(2*q0*q3, 1-2*(q3*q3));
+  // Plan stopping trajectory
+  // Add payload_offset_z_ to account for payload displacement.
+  Eigen::MatrixXd conditions(4, 6);
+  conditions << transformed_parabola(0,0), transformed_parabola(0,0), 
+    v*cos(alpha)*cos(parabola_yaw), 0, intermediate_acceleration_(0), 0,
+    transformed_parabola(0,1), transformed_parabola(0,1), 
+    v*cos(alpha)*sin(parabola_yaw), 0, intermediate_acceleration_(1), 0,
+    transformed_parabola(0,2)+payload_z_offset_, transformed_parabola(0,2)+payload_z_offset_, 
+    v*sin(alpha), 0, intermediate_acceleration_(2), 0,
+    yaw, yaw, 0, 0, intermediate_acceleration_(3), 0;
+  spline_interpolator_.generateTrajectory(conditions, 
+    stopping_trajectory_constraints_, spline_sampling_time_);
+  Trajectory stopping_trajectory = spline_interpolator_.getTrajectory();
+  //cout << stopping_trajectory.acceleration << endl;
+
+  bool valid_flag = true;
+  // Check parabola candidate for collision
+  valid_flag &= checkParabolaForCollision(transformed_parabola);
+  // Check stopping trajectory for collision
+  valid_flag &= checkTrajectoryForCollision(stopping_trajectory);
+
+  // Plan collision free trajectory to dropoff point
+  // Set up waypoints
+  Eigen::MatrixXd waypoints(2, 4);
+  // Fill waypoints
+  waypoints << uav_pose(0), uav_pose(1), uav_pose(2), yaw, 
+    //uav_pose(0), uav_pose(1), transformed_parabola(0, 2)+payload_z_offset_, yaw, 
+    transformed_parabola(0, 0), transformed_parabola(0, 1), 
+    transformed_parabola(0, 2)+payload_z_offset_, yaw;
+  // Plan trajectory
+  if (plan_path == true) {
+    this->planPathAndTrajectory(waypoints);
+  }
+  else {
+    this->planTrajectory(waypoints);
+  }
+  Trajectory trajectory = trajectory_interface_->getTrajectory();
+
+  // Plan dropoff spline
+  Trajectory dropoff_trajectory;
+  int dropoff_index = 0;
+  dropoff_trajectory = planDropoffSpline(trajectory, v, 
+    alpha, parabola_yaw, dropoff_index);
+  cout << "Dropoff index: " << dropoff_index << endl;
+
+
+  // Now that we have all three trajectories we have to concatenate
+  // them
+  Trajectory all = concatenateTrajectories(trajectory,
+    dropoff_trajectory, dropoff_index);
+  cout << "intermediate: " << all.position.rows() << endl;
+  //cout << all.position.rows() << endl;
+  airdrop_trajectory_ = concatenateTrajectories(all, 
+    stopping_trajectory);
+  // Add drop point column to the trajectory. It is at the start of 
+  // stopping trajectory.
+  airdrop_trajectory_ = addDropPointColumn(airdrop_trajectory_, 
+    airdrop_trajectory_.position.rows() - 
+    stopping_trajectory.position.rows());
+  cout << "Best trajectory length: " << dropoff_trajectory.position.rows() << endl;
+  cout << "Stop trajectory length: " << stopping_trajectory.position.rows() << endl;
+  cout << "Trajectory length: " << trajectory.position.rows() << endl;
+  cout << "Airdrop trajectory length: " << airdrop_trajectory_.position.rows() << endl;
+  //cout << airdrop_trajectory_.velocity << endl;
+  //cout << all.time << endl;
+
+  cout << "Final parabola params: " << endl;
+  cout << "  d = " << dx << endl << "  v0 = " << v << endl;
+  cout << "  theta = " << alpha << endl << "  psi = " << parabola_yaw << endl;
+  cout << "  z = " << dz << endl << "  t = " << t << endl;
+
+  // Fill out information vector
+  info_vector_.conservativeResize(16);
+  info_vector_ << dx, dz, v, alpha, parabola_yaw, t,
+    double(airdrop_trajectory_.position.rows())*spline_sampling_time_,
+    double(dropoff_trajectory.position.rows())*spline_sampling_time_,
+    double(stopping_trajectory.position.rows())*spline_sampling_time_,
+    target_pose(0), target_pose(1), target_pose(2),
+    transformed_parabola(0, 0), transformed_parabola(0, 1), 
+    transformed_parabola(0, 2)+payload_z_offset_, yaw;
+
+  return true;
+}
+
 Eigen::MatrixXd ParabolicAirdropPlanner::constructParabola(double dx,
   double dz, double alpha, double v, double duration, double g)
 {
