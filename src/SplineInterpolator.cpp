@@ -118,6 +118,76 @@ bool SplineInterpolator::generateTrajectory(Eigen::MatrixXd conditions,
   return true;
 }
 
+bool SplineInterpolator::generateTrajectoryNoSync(Eigen::MatrixXd conditions,
+  Eigen::MatrixXd constraints, double sample_time)
+{
+  // There will be n trajectories depending on the rows of conditions
+  // TODO: check number of conditions and decide the spline order.
+
+  double max_time = 0.0;
+  Eigen::VectorXd spline_durations(conditions.rows());
+  for (int i=0; i<conditions.rows(); i++){
+    generateSplineOrder5((conditions.row(i)).transpose(),
+      (constraints.row(i)).transpose(), sample_time);
+    //cout << "Spline duration " << spline_duration_ << endl;
+    spline_durations(i) = spline_duration_;
+    if (max_time < spline_duration_){
+      max_time = spline_duration_;
+    }
+  }
+  cout << "-----------------------------------------------" << endl;
+  cout << spline_durations << endl;
+
+  // Sample all splines with max time. They will all last for the same amount
+  // of time, however some will "end" earlier and the data from that point
+  // onward will be copied with last point.
+  int n = int(round(max_time/sample_time)) + 1;
+  trajectory_.position.resize(n, conditions.rows());
+  trajectory_.velocity.resize(n, conditions.rows());
+  trajectory_.acceleration.resize(n, conditions.rows());
+  trajectory_.jerk.resize(n, conditions.rows());
+  trajectory_.split.resize(n, conditions.rows());
+  trajectory_.time.resize(n);
+  cout << "n " << n << endl;
+
+  for (int i=0; i<conditions.rows(); i++){
+    generateSplineOrder5FixedTime((conditions.row(i)).transpose(),
+      spline_durations(i), sample_time);
+    int spline_n = int(round(spline_durations(i)/sample_time)) + 1;
+    cout << "i, spline_n " << i << " " << spline_n << endl;
+    trajectory_.position.block(0, i, spline_n, 1) = spline_.position;
+    trajectory_.velocity.block(0, i, spline_n, 1) = spline_.velocity;
+    trajectory_.acceleration.block(0, i, spline_n, 1) = spline_.acceleration;
+    trajectory_.jerk.block(0, i, spline_n, 1) = spline_.jerk;
+    trajectory_.split.block(0, i, spline_n, 1) = spline_.split;
+
+    // Fill each spline with its last point from its end to max_time.
+    if (spline_n == 1){
+      // If this happens the same start and end point are sent to spline
+      trajectory_.position(0,i) = conditions(i,0);
+      trajectory_.velocity(0,i) = 0;
+      trajectory_.acceleration(0,i) = 0;
+      trajectory_.jerk(0,i) = 0;
+      trajectory_.split(0,i) = 0;
+    }
+    for (int j=spline_n; j<n; j++){
+      trajectory_.position(j,i) = trajectory_.position(spline_n-1,i);
+      trajectory_.velocity(j,i) = trajectory_.velocity(spline_n-1,i);
+      trajectory_.acceleration(j,i) = trajectory_.acceleration(spline_n-1,i);
+      trajectory_.jerk(j,i) = trajectory_.jerk(spline_n-1,i);
+      trajectory_.split(j,i) = trajectory_.split(spline_n-1,i);
+    }
+
+    if (spline_n == n){
+      trajectory_.time = spline_.time;
+    }
+  }
+
+  cout << "-----------------------------------------------" << endl;
+
+  return true;
+}
+
 inline Eigen::VectorXd SplineInterpolator::getSplineOrder5Coefficients(
   Eigen::VectorXd conditions, Eigen::VectorXd t)
 {

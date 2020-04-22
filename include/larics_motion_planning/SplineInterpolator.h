@@ -50,6 +50,18 @@ class SplineInterpolator
     bool generateTrajectory(Eigen::MatrixXd conditions, 
       Eigen::MatrixXd constraints, double sample_time);
 
+    /// \brief Generates a trajectory of n axes. Each axis respects it's own
+    ///     constraints, finally all axes are the same length(derivatives are
+    ///     set to 0 after spline's duration and position is repeated for 
+    ///     the remainder of spline). Use this only when generating trajectory
+    ///     that stops at the end point.
+    /// \param conditions Initial and final position, velocity and acceleration.
+    /// \param constraints Maximum allowed velocity, acceleration etc.
+    /// \param sample_time Sampling time of the trajectory.
+    /// \return True if trajectory was successfully generated.
+    bool generateTrajectoryNoSync(Eigen::MatrixXd conditions, 
+      Eigen::MatrixXd constraints, double sample_time);
+
     /// \brief Returns planned trajectory.
     /// \return Generated trajectory.
     Trajectory getTrajectory() {return trajectory_;}
