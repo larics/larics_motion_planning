@@ -5,7 +5,7 @@ __author__ = 'aivanovic'
 import rospy, math, time, copy
 import numpy as np
 from math import sin, cos
-from geometry_msgs.msg import Pose
+from geometry_msgs.msg import Pose, PoseStamped
 from std_msgs.msg import Float64MultiArray, Bool
 from std_srvs.srv import Empty, EmptyRequest
 from larics_motion_planning.srv import ParabolicAirdropTrajectory, \
@@ -19,10 +19,11 @@ class ExecuteMultipleParabolicAirdrops:
       "spawn_ball", Empty)
     self.go_to_pub = rospy.Publisher('go_to/reference', 
       Pose, queue_size=1)
-    self.go_to_pose = Pose()
-    self.go_to_pose.position.x = -9
-    self.go_to_pose.position.z = 4.5
-    self.go_to_pose.orientation.w = 1.0
+    self.start_pose = Pose()
+    self.start_pose.position.x = 35
+    self.start_pose.position.y = 20
+    self.start_pose.position.z = 1.0
+    self.start_pose.orientation.w = 1.0
 
     # Publisher for trajectory
     self.joint_trajectory_pub = rospy.Publisher('joint_trajectory', 
@@ -32,25 +33,27 @@ class ExecuteMultipleParabolicAirdrops:
     self.airdrop_service = rospy.ServiceProxy(
       'parabolic_airdrop_trajectory', ParabolicAirdropTrajectory)
     self.airdrop_request = ParabolicAirdropTrajectoryRequest()
-    self.airdrop_request.uav_pose = copy.deepcopy(self.go_to_pose)
-    self.airdrop_request.target_pose.position.z = 0.1
+    self.airdrop_request.uav_pose = copy.deepcopy(self.start_pose)
+    self.airdrop_request.plan_path = True
     self.airdrop_request.plan_trajectory = True
     self.airdrop_request.publish_trajectory = False # We will publish!
-    self.airdrop_request.use_custom_parabola_params = True
-    self.airdrop_request.custom_parabola_params.append(0)
-    self.airdrop_request.custom_parabola_params.append(0)
-    self.airdrop_request.custom_parabola_params.append(0)
-    self.airdrop_request.custom_parabola_params.append(0)
-    self.airdrop_request.custom_parabola_params.append(0)
+    self.airdrop_request.use_custom_parabola_params = False
+    self.airdrop_request.use_custom_psi_params = True
+    self.airdrop_request.custom_psi_params.append(0)
+    self.airdrop_request.custom_psi_params.append(1.0)
+    self.airdrop_request.custom_psi_params.append(0)
 
-    self.drops_per_config = rospy.get_param('~drops_per_config', int(5))
+
+    self.drops_per_config = rospy.get_param('~drops_per_config', int(1))
     self.filename = rospy.get_param('~configs_file', 
-      str('/home/antun/catkin_ws/src/larics_motion_planning/config/airdrop_configs_for_paper.csv'))
-    self.airdrop_configs = np.loadtxt(open(self.filename, "rb"), delimiter=",")
+      str('/home/antun/catkin_ws/src/larics_motion_planning/config/office_multiple_targets.csv'))
+    self.targets = np.loadtxt(open(self.filename, "rb"), delimiter=",")
 
     self.start_flag = False
     rospy.Subscriber('execute_multiple_aridrops/start', Bool, self.startCallback, 
       queue_size=1)
+    self.uav_current_pose = Pose()
+    rospy.Subscriber('pose', PoseStamped, self.uavPoseCallback, queue_size=1)
     print "Constructor done."
 
   def run(self):
@@ -64,22 +67,36 @@ class ExecuteMultipleParabolicAirdrops:
         print "Starting to execute the procedure."
         # Go through every config
 
-        for i in range(len(self.airdrop_configs)):
-          v0 = self.airdrop_configs[i][0]
-          dz = self.airdrop_configs[i][1]
-          alpha = math.radians(self.airdrop_configs[i][2])
-          dx = self.airdrop_configs[i][3]
-          psi = self.airdrop_configs[i][4]
+        for i in range(len(self.targets)):
+          x = self.targets[i][0]
+          y = self.targets[i][1]
+          z = self.targets[i][2]
+          psi_min = self.targets[i][3]
+          psi_inc = self.targets[i][4]
+          psi_max = self.targets[i][5]
           current_drop_count = copy.deepcopy(i)
 
           # And execute as many times as user prompted
           should_publish = True
           for j in range(self.drops_per_config):
+            rate.sleep()
             if should_publish == True:
               print " "
-              print "Executing ", (current_drop_count+1), "/", len(self.airdrop_configs), " for ", j+1, "/", self.drops_per_config, " time"
-              print "Go to position"
-              self.go_to_pub.publish(self.go_to_pose)
+              print "Executing ", (current_drop_count+1), "/", len(self.targets), " for ", j+1, "/", self.drops_per_config, " time"
+              print "Go above current position"
+              pose = copy.deepcopy(self.uav_current_pose)
+              pose.position.z = 6.0
+              self.go_to_pub.publish(pose)
+              time.sleep(5)
+
+              print "Go above starting position"
+              pose = copy.deepcopy(self.start_pose)
+              pose.position.z = 6.0
+              self.go_to_pub.publish(pose)
+              time.sleep(20)
+
+              print "Go to starting position"
+              self.go_to_pub.publish(self.start_pose)
               time.sleep(10)
 
               # Spawn ball twice to eliminate weird shaking
@@ -93,11 +110,12 @@ class ExecuteMultipleParabolicAirdrops:
             # Call airdrop service
             #self.airdrop_request.custom_parabola_params.clear()
             print "Plan and execute trajectory"
-            self.airdrop_request.custom_parabola_params[0] = v0
-            self.airdrop_request.custom_parabola_params[1] = dz
-            self.airdrop_request.custom_parabola_params[2] = alpha
-            self.airdrop_request.custom_parabola_params[3] = dx
-            self.airdrop_request.custom_parabola_params[4] = psi
+            self.airdrop_request.target_pose.position.x = x
+            self.airdrop_request.target_pose.position.y = y
+            self.airdrop_request.target_pose.position.z = z
+            self.airdrop_request.custom_psi_params[0] = psi_min
+            self.airdrop_request.custom_psi_params[1] = psi_inc
+            self.airdrop_request.custom_psi_params[2] = psi_max
             res = self.airdrop_service(self.airdrop_request)
             duration = len(res.trajectory.points)/100.0
 
@@ -110,7 +128,7 @@ class ExecuteMultipleParabolicAirdrops:
 
             if should_publish == True:
               self.joint_trajectory_pub.publish(res.trajectory)
-              time.sleep(duration + 5)
+              time.sleep(duration + 10)
             else:
               print "Ripmax, z<0.3 at some point."
               print "Config v0 dz alpha dx psi"
@@ -121,6 +139,9 @@ class ExecuteMultipleParabolicAirdrops:
   def startCallback(self, msg):
     if self.start_flag == False:
       self.start_flag = True
+
+  def uavPoseCallback(self, msg):
+    self.uav_current_pose = msg.pose
 
 if __name__ == '__main__':
 
