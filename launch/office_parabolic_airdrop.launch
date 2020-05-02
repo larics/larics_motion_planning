@@ -1,0 +1,28 @@
+<launch>
+  <arg name="rate" default="10" />
+  <arg name="namespace" default="uav" />
+
+  <group ns="$(arg namespace)">
+    <node name="generate_toppra_trajectory" pkg="topp_ros" type="generate_toppra_trajectory.py" output="screen" />
+
+    <node name="global_planner" pkg="larics_motion_planning" type="global_planner_node" output="screen">
+      <param name="rate" value="$(arg rate)" />
+      <param name="global_planner_config_file" value="$(find larics_motion_planning)/config/office_parabolic_airdrop.yaml" />
+
+      <param name="state_scale" value="0.05" />
+      <param name="waypoints_scale" value="0.5" />
+    </node>
+
+    <node name="joint_trajectory_to_multi_dof_trajectory_point" pkg="larics_motion_planning" type="joint_trajectory_to_multi_dof_trajectory_point.py" output="screen">
+      <param name="airdrop" value="true"/>
+    </node>
+
+    <node name="uav_trajectory_go_to" pkg="larics_motion_planning" type="uav_trajectory_go_to.py" output="screen"/>
+
+    <node name="spawn_ball_at_uav" pkg="larics_motion_planning" type="spawn_ball_at_uav.py" />
+  </group>
+
+  <node name="octomap_server_node" pkg="octomap_server" type="octomap_server_node" args="$(find larics_gazebo_worlds)/models/office/office.binvox.bt" output="screen">
+    <param name="frame_id" value="world" />
+  </node>
+</launch>
