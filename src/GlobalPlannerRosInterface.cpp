@@ -373,8 +373,21 @@ bool GlobalPlannerRosInterface::parabolicAirdropTrajectoryCallback(
     return true;
   }
   else if (req.use_custom_parabola_params == false){
-    res.success = global_planner_->generateParabolicAirdropTrajectory(
-      uav_pose, target_pose, req.plan_path);
+    if (req.use_custom_psi_params == false){
+      res.success = global_planner_->generateParabolicAirdropTrajectory(
+        uav_pose, target_pose, req.plan_path);
+    }
+    else if (req.use_custom_psi_params == true && 
+      req.custom_psi_params.size() >= 3){
+      cout << "Using custom psi params." << endl;
+      // Use those custom params if user provided 3 or more.
+      res.success = global_planner_->generateParabolicAirdropTrajectory(
+        uav_pose, target_pose, req.plan_path, req.custom_psi_params[0], 
+        req.custom_psi_params[1], req.custom_psi_params[2]);
+    }
+    else{
+      cout << "Custom psi params must contain at least 3 elements." << endl;
+    }
 
     // Set up visualization
     visualization_.setStatePoints(global_planner_->getParabola());

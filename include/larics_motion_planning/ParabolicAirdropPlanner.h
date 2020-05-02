@@ -36,6 +36,17 @@ class ParabolicAirdropPlanner : public GlobalPlanner
     bool generateParabolicAirdropTrajectory(Eigen::VectorXd uav_pose, 
       Eigen::VectorXd target_pose, bool plan_path);
 
+    /// \brief Generates collision free parabolic airdrop trajectory.
+    /// \param uav_pose Current uav pose from which we plan the trajectory.
+    /// \param target_position Position where we have to drop the package.
+    /// \param psi_min Minimum parabola yaw override.
+    /// \param psi_increment Parabola yaw increment override.
+    /// \param psi_max Parabola yaw max override.
+    /// \return True if trajectory was successfully generated, false otherwise.
+    bool generateParabolicAirdropTrajectory(Eigen::VectorXd uav_pose, 
+      Eigen::VectorXd target_pose, bool plan_path, double psi_min,
+      double psi_increment, double psi_max);
+
     /// \brief Generates collision free parabolic airdrop trajectory with user
     ///         Specified parameters.
     /// \param uav_pose Current uav pose from which we plan the trajectory.
@@ -64,12 +75,13 @@ class ParabolicAirdropPlanner : public GlobalPlanner
     SplineInterpolator spline_interpolator_;
     Trajectory airdrop_trajectory_;
     std::vector<double> dx_, v_, alpha_;
-    double yaw_increment_;
+    double psi_increment_;
     double max_dz_, payload_z_offset_;
     Eigen::MatrixXd stopping_trajectory_constraints_, 
       dropoff_trajectory_constraints_;
     Eigen::VectorXd intermediate_acceleration_;
     double spline_sampling_time_;
+    double psi_min_, psi_max_;
 
     Eigen::MatrixXd constructParabola(double dx, double dz, double alpha,
       double v, double t, double g);

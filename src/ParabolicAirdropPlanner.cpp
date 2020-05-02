@@ -54,10 +54,15 @@ bool ParabolicAirdropPlanner::configureParabolicAirdropFromFile(
     intermediate_acceleration_(i) = intermediate_acc[i];
   }
 
-  yaw_increment_ = config["global_planner"]["parabolic_airdrop"]["yaw_increment"].as<double>();
+  psi_increment_ = config["global_planner"]["parabolic_airdrop"]["yaw_increment"].as<double>();
   max_dz_ = config["global_planner"]["parabolic_airdrop"]["max_dz"].as<double>();
   payload_z_offset_ = config["global_planner"]["parabolic_airdrop"]["payload_z_offset"].as<double>();
   spline_sampling_time_ = config["global_planner"]["parabolic_airdrop"]["spline_sampling_time"].as<double>();
+
+  // Configure min and max psi. Will always be 0-360deg but user can override
+  // it by calling proper function
+  psi_min_ = 0.0;
+  psi_max_ = 360.0;
 
   return true;
 }
@@ -127,12 +132,12 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
 
           // Translate and rotate parabola to find suitable one. We do this in
           // a for loop by changing yaw angle.
-          for (double parabola_yaw=0.0; parabola_yaw<=deg2rad(360.0);
-            parabola_yaw+=deg2rad(yaw_increment_)){
+          for (double psi=deg2rad(psi_min_); psi<=deg2rad(psi_max_);
+            psi+=deg2rad(psi_increment_)){
 
             Eigen::MatrixXd transformed_parabola;
             transformed_parabola = transformParabola(parabola, target_pose,
-              parabola_yaw, dx); 
+              psi, dx); 
 
             // Yaw won't change in stopping trajectory but it still needs to 
             // be planned
@@ -143,13 +148,13 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
             // Add payload_offset_z_ to account for payload displacement.
             Eigen::MatrixXd conditions(4, 6);
             conditions << transformed_parabola(0,0), transformed_parabola(0,0), 
-              v*cos(alpha)*cos(parabola_yaw), 0, intermediate_acceleration_(0), 0,
+              v*cos(alpha)*cos(psi), 0, intermediate_acceleration_(0), 0,
               transformed_parabola(0,1), transformed_parabola(0,1), 
-              v*cos(alpha)*sin(parabola_yaw), 0, intermediate_acceleration_(1), 0,
+              v*cos(alpha)*sin(psi), 0, intermediate_acceleration_(1), 0,
               transformed_parabola(0,2)+payload_z_offset_, transformed_parabola(0,2)+payload_z_offset_, 
               v*sin(alpha), 0, intermediate_acceleration_(2), 0,
               yaw, yaw, 0, 0, intermediate_acceleration_(3), 0;
-            spline_interpolator_.generateTrajectory(conditions, 
+            spline_interpolator_.generateTrajectoryNoSync(conditions, 
               stopping_trajectory_constraints_, spline_sampling_time_);
             Trajectory stopping_trajectory = spline_interpolator_.getTrajectory();
             //cout << stopping_trajectory.acceleration << endl;
@@ -182,7 +187,7 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
             Trajectory dropoff_trajectory;
             int dropoff_index = 0;
             dropoff_trajectory = planDropoffSpline(trajectory, v, 
-              alpha, parabola_yaw, dropoff_index);
+              alpha, psi, dropoff_index);
             if (dropoff_trajectory.time.size() == 0) continue;
             cout << "Dropoff index: " << dropoff_index << endl;
 
@@ -209,12 +214,12 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
 
             cout << "Final parabola params: " << endl;
             cout << "  d = " << dx << endl << "  v0 = " << v << endl;
-            cout << "  theta = " << alpha << endl << "  psi = " << parabola_yaw << endl;
+            cout << "  theta = " << alpha << endl << "  psi = " << psi << endl;
             cout << "  z = " << dz << endl << "  t = " << t << endl;
 
             // Fill out information vector
             info_vector_.conservativeResize(16);
-            info_vector_ << dx, dz, v, alpha, parabola_yaw, t,
+            info_vector_ << dx, dz, v, alpha, psi, t,
               double(airdrop_trajectory_.position.rows())*spline_sampling_time_,
               double(dropoff_trajectory.position.rows())*spline_sampling_time_,
               double(stopping_trajectory.position.rows())*spline_sampling_time_,
@@ -249,6 +254,29 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
 }
 
 bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
+  Eigen::VectorXd uav_pose, Eigen::VectorXd target_pose, bool plan_path,
+  double psi_min, double psi_increment, double psi_max)
+{ 
+  // Save the old value of increment
+  double psi_increment_old = psi_increment_;
+  // Override min, max and increment
+  psi_min_ = psi_min;
+  psi_max_ = psi_max;
+  psi_increment_ = psi_increment;
+
+  // Call trajectory planning function
+  bool success = this->generateParabolicAirdropTrajectory(uav_pose,
+    target_pose, plan_path);
+
+  // Restore overriden values.
+  psi_min_ = 0.0;
+  psi_max_ = 360.0;
+  psi_increment_ = psi_increment_old;
+
+  return success;
+}
+
+bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
   Eigen::VectorXd uav_pose, Eigen::VectorXd target_pose, bool plan_path, 
   Eigen::VectorXd parabola_params)
 {
@@ -260,7 +288,7 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
   double dz = parabola_params(1);
   double alpha = parabola_params(2);
   double dx = parabola_params(3);
-  double parabola_yaw = parabola_params(4);
+  double psi = parabola_params(4);
   // Time can be calculated
   double t = dx/(v*cos(alpha));
 
@@ -270,7 +298,7 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
   // Transform parabola to xyz
   Eigen::MatrixXd transformed_parabola;
   transformed_parabola = transformParabola(parabola, target_pose,
-    parabola_yaw, dx);
+    psi, dx);
 
   // Yaw won't change in stopping trajectory but it still needs to 
   // be planned
@@ -281,13 +309,13 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
   // Add payload_offset_z_ to account for payload displacement.
   Eigen::MatrixXd conditions(4, 6);
   conditions << transformed_parabola(0,0), transformed_parabola(0,0), 
-    v*cos(alpha)*cos(parabola_yaw), 0, intermediate_acceleration_(0), 0,
+    v*cos(alpha)*cos(psi), 0, intermediate_acceleration_(0), 0,
     transformed_parabola(0,1), transformed_parabola(0,1), 
-    v*cos(alpha)*sin(parabola_yaw), 0, intermediate_acceleration_(1), 0,
+    v*cos(alpha)*sin(psi), 0, intermediate_acceleration_(1), 0,
     transformed_parabola(0,2)+payload_z_offset_, transformed_parabola(0,2)+payload_z_offset_, 
     v*sin(alpha), 0, intermediate_acceleration_(2), 0,
     yaw, yaw, 0, 0, intermediate_acceleration_(3), 0;
-  spline_interpolator_.generateTrajectory(conditions, 
+  spline_interpolator_.generateTrajectoryNoSync(conditions, 
     stopping_trajectory_constraints_, spline_sampling_time_);
   Trajectory stopping_trajectory = spline_interpolator_.getTrajectory();
   //cout << stopping_trajectory.acceleration << endl;
@@ -319,7 +347,7 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
   Trajectory dropoff_trajectory;
   int dropoff_index = 0;
   dropoff_trajectory = planDropoffSpline(trajectory, v, 
-    alpha, parabola_yaw, dropoff_index);
+    alpha, psi, dropoff_index);
   cout << "Dropoff index: " << dropoff_index << endl;
 
 
@@ -345,12 +373,12 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
 
   cout << "Final parabola params: " << endl;
   cout << "  d = " << dx << endl << "  v0 = " << v << endl;
-  cout << "  theta = " << alpha << endl << "  psi = " << parabola_yaw << endl;
+  cout << "  theta = " << alpha << endl << "  psi = " << psi << endl;
   cout << "  z = " << dz << endl << "  t = " << t << endl;
 
   // Fill out information vector
   info_vector_.conservativeResize(16);
-  info_vector_ << dx, dz, v, alpha, parabola_yaw, t,
+  info_vector_ << dx, dz, v, alpha, psi, t,
     double(airdrop_trajectory_.position.rows())*spline_sampling_time_,
     double(dropoff_trajectory.position.rows())*spline_sampling_time_,
     double(stopping_trajectory.position.rows())*spline_sampling_time_,
@@ -417,13 +445,13 @@ bool ParabolicAirdropPlanner::checkTrajectoryForCollision(
 }
 
 Trajectory ParabolicAirdropPlanner::planDropoffSpline(
-  Trajectory trajectory, double v, double alpha, double parabola_yaw, 
+  Trajectory trajectory, double v, double alpha, double psi, 
   int &dropoff_index)
 {
   cout << "Planning dropoff spline" << endl;
   // Calculate endpoint velocity
-  double vx = v*cos(alpha)*cos(parabola_yaw);
-  double vy = v*cos(alpha)*sin(parabola_yaw);
+  double vx = v*cos(alpha)*cos(psi);
+  double vy = v*cos(alpha)*sin(psi);
   double vz = v*sin(alpha);
   // Play around with dropoff constraints
   /*Eigen::MatrixXd dropoff_constraints(4,2);
@@ -516,7 +544,7 @@ Trajectory ParabolicAirdropPlanner::planDropoffSpline(
   }
   else {
     dropoff_index = spline_index[best_trajectory_index];
-    cout << "Dropoff: " << dropoff_index << endl;
+    //cout << "Dropoff: " << dropoff_index << endl;
     return spline_list[best_trajectory_index];
   }
 
@@ -549,17 +577,17 @@ int ParabolicAirdropPlanner::chooseBestTrajectory(
       double trajectory_segment_line_integral = trajectoryLineIntegral(
         initial_trajectory, start_index, -1);
       double ratio = line_integral/trajectory_segment_line_integral;
-      cout << "Spline " << i << endl;
-      cout << "Start index " << start_index << endl;
-      cout << "Traj len " << initial_trajectory.position.rows() << endl;
-      cout << "Spline len " << spline_list[i].position.rows() << endl;
-      cout << "Line integral " << line_integral << endl;
-      cout << "Initial trajectory line integral " << trajectory_segment_line_integral << endl;
-      cout << "Ratio " << ratio << endl;
-      cout << "Duration " << duration << endl;
-      cout << "RMS position " << position_rms << endl;
-      cout << "RMS velocity " << velocity_rms << endl;
-      cout << "RMS acceleration " << acceleration_rms << endl;
+      //cout << "Spline " << i << endl;
+      //cout << "Start index " << start_index << endl;
+      //cout << "Traj len " << initial_trajectory.position.rows() << endl;
+      //cout << "Spline len " << spline_list[i].position.rows() << endl;
+      //cout << "Line integral " << line_integral << endl;
+      //cout << "Initial trajectory line integral " << trajectory_segment_line_integral << endl;
+      //cout << "Ratio " << ratio << endl;
+      //cout << "Duration " << duration << endl;
+      //cout << "RMS position " << position_rms << endl;
+      //cout << "RMS velocity " << velocity_rms << endl;
+      //cout << "RMS acceleration " << acceleration_rms << endl;
 
       double measure = ratio;
       //cout << "Line integral is " << i << " " << line_integral << endl;

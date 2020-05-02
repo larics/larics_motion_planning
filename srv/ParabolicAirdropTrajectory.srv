@@ -6,6 +6,8 @@ bool                              plan_path
 bool                              plan_trajectory
 bool                              use_custom_parabola_params
 float64[]                         custom_parabola_params
+bool                              use_custom_psi_params
+float64[]                         custom_psi_params
 ---
 trajectory_msgs/JointTrajectory   trajectory
 trajectory_msgs/JointTrajectory   path
