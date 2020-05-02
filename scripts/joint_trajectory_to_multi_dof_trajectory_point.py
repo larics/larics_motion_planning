@@ -91,11 +91,14 @@ class JointTrajectoryToMultiDofTrajectoryPoint:
 
                     # positions[4] is the magnet on/off field which is supposed
                     # to be 0 or 1
-                    if abs(self.joint_trajectory.points[0].positions[4]) < 0.1:
+                    if (len(self.joint_trajectory.points[0].positions) >= 5):
+                        if abs(self.joint_trajectory.points[0].positions[4]) < 0.1:
+                            self.magnet_gain = 1.0
+                        elif abs(self.joint_trajectory.points[0].positions[4] - 1.0) < 0.1:
+                            # count how many instances has magnet been off
+                            self.airdrop_counter = self.airdrop_counter + 1
+                    else:
                         self.magnet_gain = 1.0
-                    elif abs(self.joint_trajectory.points[0].positions[4] - 1.0) < 0.1:
-                        # count how many instances has magnet been off
-                        self.airdrop_counter = self.airdrop_counter + 1
                     # If we are at some range from the dropoff point or the 
                     # delta has started increasing, drop the ball
                     if self.airdrop_counter >= 1 and (self.delta < 22.01 or 
@@ -130,7 +133,7 @@ class JointTrajectoryToMultiDofTrajectoryPoint:
         if len(msg.points) > 0:
             self.joint_trajectory = copy.deepcopy(msg)
             self.executing_trajectory_flag = True
-            if self.airdrop_flag == True:
+            if self.airdrop_flag == True and len(msg.points[0].positions) >= 5:
                 for i in range(len(msg.points)):
                     if msg.points[i].positions[4] == 1:
                         self.airdrop_pose.position.x = msg.points[i].positions[0]
@@ -140,6 +143,8 @@ class JointTrajectoryToMultiDofTrajectoryPoint:
                         self.airdrop_velocity.linear.y = msg.points[i].velocities[1]
                         self.airdrop_velocity.linear.z = msg.points[i].velocities[2]
                         break
+            else:
+                print "Airdrop was not provided. Will execute trajectory without turning the magnet off."
         else:
             print "Currently executing a trajectory."
 
