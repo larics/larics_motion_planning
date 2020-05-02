@@ -144,13 +144,21 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
             double q0 = uav_pose(6);
             double q3 = uav_pose(5);
             double yaw = atan2(2*q0*q3, 1-2*(q3*q3));
+            
+            // For horizontal intermediate acceleration, only one number is
+            // provided. Based on the release direction, calculate intermediate
+            // acceleration for x and y axes that points opposite to release
+            // direction
+            double intermediate_acc_x = -intermediate_acceleration_(0)*cos(psi);
+            double intermediate_acc_y = -intermediate_acceleration_(0)*sin(psi);
+
             // Plan stopping trajectory
             // Add payload_offset_z_ to account for payload displacement.
             Eigen::MatrixXd conditions(4, 6);
             conditions << transformed_parabola(0,0), transformed_parabola(0,0), 
-              v*cos(alpha)*cos(psi), 0, intermediate_acceleration_(0), 0,
+              v*cos(alpha)*cos(psi), 0, intermediate_acc_x, 0,
               transformed_parabola(0,1), transformed_parabola(0,1), 
-              v*cos(alpha)*sin(psi), 0, intermediate_acceleration_(1), 0,
+              v*cos(alpha)*sin(psi), 0, intermediate_acc_y, 0,
               transformed_parabola(0,2)+payload_z_offset_, transformed_parabola(0,2)+payload_z_offset_, 
               v*sin(alpha), 0, intermediate_acceleration_(2), 0,
               yaw, yaw, 0, 0, intermediate_acceleration_(3), 0;
@@ -305,13 +313,21 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
   double q0 = uav_pose(6);
   double q3 = uav_pose(5);
   double yaw = atan2(2*q0*q3, 1-2*(q3*q3));
+
+  // For horizontal intermediate acceleration, only one number is
+  // provided. Based on the release direction, calculate intermediate
+  // acceleration for x and y axes that points opposite to release
+  // direction
+  double intermediate_acc_x = -intermediate_acceleration_(0)*cos(psi);
+  double intermediate_acc_y = -intermediate_acceleration_(0)*sin(psi);
+
   // Plan stopping trajectory
   // Add payload_offset_z_ to account for payload displacement.
   Eigen::MatrixXd conditions(4, 6);
   conditions << transformed_parabola(0,0), transformed_parabola(0,0), 
-    v*cos(alpha)*cos(psi), 0, intermediate_acceleration_(0), 0,
+    v*cos(alpha)*cos(psi), 0, intermediate_acc_x, 0,
     transformed_parabola(0,1), transformed_parabola(0,1), 
-    v*cos(alpha)*sin(psi), 0, intermediate_acceleration_(1), 0,
+    v*cos(alpha)*sin(psi), 0, intermediate_acc_y, 0,
     transformed_parabola(0,2)+payload_z_offset_, transformed_parabola(0,2)+payload_z_offset_, 
     v*sin(alpha), 0, intermediate_acceleration_(2), 0,
     yaw, yaw, 0, 0, intermediate_acceleration_(3), 0;
@@ -470,6 +486,10 @@ Trajectory ParabolicAirdropPlanner::planDropoffSpline(
   //cout << dropoff_constraints << endl;
   //exit(0);*/
 
+  // Account for horizontal intermediate acceleration
+  double intermediate_acc_x = -intermediate_acceleration_(0)*cos(psi);
+  double intermediate_acc_y = -intermediate_acceleration_(0)*sin(psi);
+
 
   // Go backwards through the trajectory and find appropriate start point for
   // the dropoff spline.
@@ -495,9 +515,9 @@ Trajectory ParabolicAirdropPlanner::planDropoffSpline(
       // Plan dropoff trajectory
       Eigen::MatrixXd conditions(4, 6);
       conditions << trajectory.position(i,0), trajectory.position(end,0), 
-        trajectory.velocity(i,0), vx, trajectory.acceleration(i,0), intermediate_acceleration_(0),
+        trajectory.velocity(i,0), vx, trajectory.acceleration(i,0), intermediate_acc_x,
         trajectory.position(i,1), trajectory.position(end,1), 
-        trajectory.velocity(i,1), vy, trajectory.acceleration(i,1), intermediate_acceleration_(1),
+        trajectory.velocity(i,1), vy, trajectory.acceleration(i,1), intermediate_acc_y,
         trajectory.position(i,2), trajectory.position(end,2), 
         trajectory.velocity(i,2), vz, trajectory.acceleration(i,2), intermediate_acceleration_(2),
         trajectory.position(i,3), trajectory.position(end,3), 
