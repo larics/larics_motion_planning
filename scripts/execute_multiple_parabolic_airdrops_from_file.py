@@ -45,7 +45,7 @@ class ExecuteMultipleParabolicAirdrops:
 
     self.drops_per_config = rospy.get_param('~drops_per_config', int(5))
     self.filename = rospy.get_param('~configs_file', 
-      str('/home/antun/catkin_ws/src/larics_motion_planning/config/airdrop_configs_for_paper.csv'))
+      str('/home/antun/catkin_ws/src/larics_motion_planning/config/airdrop_configs/airdrop_configs_for_paper.csv'))
     self.airdrop_configs = np.loadtxt(open(self.filename, "rb"), delimiter=",")
 
     self.start_flag = False

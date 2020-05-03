@@ -44,9 +44,9 @@ class ExecuteMultipleParabolicAirdrops:
     self.airdrop_request.custom_psi_params.append(0)
 
 
-    self.drops_per_config = rospy.get_param('~drops_per_config', int(1))
+    self.drops_per_config = rospy.get_param('~drops_per_config', int(5))
     self.filename = rospy.get_param('~configs_file', 
-      str('/home/antun/catkin_ws/src/larics_motion_planning/config/office_multiple_targets.csv'))
+      str('/home/antun/catkin_ws/src/larics_motion_planning/config/airdrop_configs/office_multiple_targets.csv'))
     self.targets = np.loadtxt(open(self.filename, "rb"), delimiter=",")
 
     self.start_flag = False
