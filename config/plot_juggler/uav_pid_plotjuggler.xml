@@ -1,0 +1,175 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root version="2.3.8">
+ <tabbed_widget parent="main_window" name="Main Window">
+  <plotmatrix columns="2" rows="2" tab_name="position">
+   <plot col="0" row="0">
+    <range bottom="-9.958390" left="2700.057316" top="-0.853776" right="2720.047371"/>
+    <limitY/>
+    <curve custom_transform="noTransform" name="/uav/pid_x/meas" R="31" G="119" B="180"/>
+    <curve custom_transform="noTransform" name="/uav/pid_x/ref" R="214" G="39" B="40"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot col="0" row="1">
+    <range bottom="4.850893" left="2700.057689" top="5.244090" right="2720.047927"/>
+    <limitY/>
+    <curve custom_transform="noTransform" name="/uav/pid_z/meas" R="23" G="190" B="207"/>
+    <curve custom_transform="noTransform" name="/uav/pid_z/ref" R="188" G="189" B="34"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot col="1" row="0">
+    <range bottom="-0.002792" left="2700.057535" top="0.000856" right="2720.047685"/>
+    <limitY/>
+    <curve custom_transform="noTransform" name="/uav/pid_y/meas" R="26" G="201" B="56"/>
+    <curve custom_transform="noTransform" name="/uav/pid_y/ref" R="255" G="127" B="14"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot col="1" row="1">
+    <range bottom="-0.000485" left="2700.059026" top="0.019727" right="2720.048635"/>
+    <limitY/>
+    <curve custom_transform="noTransform" name="/uav/pid_yaw/meas" R="241" G="76" B="193"/>
+    <curve custom_transform="noTransform" name="/uav/pid_yaw/ref" R="148" G="103" B="189"/>
+    <transform value="noTransform"/>
+   </plot>
+  </plotmatrix>
+  <plotmatrix columns="2" rows="2" tab_name="velocity">
+   <plot col="0" row="0">
+    <range bottom="-3.231974" left="0.007218" top="4.333824" right="19.997145"/>
+    <limitY/>
+    <curve custom_transform="noTransform" name="/uav/pid_vx/meas" R="31" G="119" B="180"/>
+    <curve custom_transform="noTransform" name="/uav/pid_vx/ref" R="214" G="39" B="40"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot col="0" row="1">
+    <range bottom="-2.084033" left="0.007812" top="1.923846" right="19.997464"/>
+    <limitY/>
+    <curve custom_transform="noTransform" name="/uav/pid_vz/meas" R="241" G="76" B="193"/>
+    <curve custom_transform="noTransform" name="/uav/pid_vz/ref" R="148" G="103" B="189"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot col="1" row="0">
+    <range bottom="-0.003332" left="0.007578" top="0.004663" right="19.997240"/>
+    <limitY/>
+    <curve custom_transform="noTransform" name="/uav/pid_vy/meas" R="26" G="201" B="56"/>
+    <curve custom_transform="noTransform" name="/uav/pid_vy/ref" R="255" G="127" B="14"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot col="1" row="1">
+    <range bottom="-0.054139" left="0.000051" top="0.036994" right="19.993662"/>
+    <limitY/>
+    <curve custom_transform="noTransform" name="/uav/pid_yaw_rate/meas" R="23" G="190" B="207"/>
+    <curve custom_transform="noTransform" name="/uav/pid_yaw_rate/ref" R="188" G="189" B="34"/>
+    <transform value="noTransform"/>
+   </plot>
+  </plotmatrix>
+  <plotmatrix columns="1" rows="2" tab_name="motor">
+   <plot col="0" row="0">
+    <range bottom="-1000.299835" left="11.958269" top="997.636878" right="11.984053"/>
+    <limitY/>
+    <curve custom_transform="noTransform" name="/uav/motor_speed/angular_velocities.0" R="31" G="119" B="180"/>
+    <curve custom_transform="noTransform" name="/uav/motor_speed/angular_velocities.1" R="214" G="39" B="40"/>
+    <curve custom_transform="noTransform" name="/uav/motor_speed/angular_velocities.2" R="26" G="201" B="56"/>
+    <curve custom_transform="noTransform" name="/uav/motor_speed/angular_velocities.3" R="255" G="127" B="14"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot col="0" row="1">
+    <range bottom="-0.008840" left="11.958269" top="0.014053" right="11.984053"/>
+    <limitY/>
+    <curve custom_transform="noTransform" name="/uav/magnet/gain/data" R="26" G="201" B="56"/>
+    <transform value="noTransform"/>
+   </plot>
+  </plotmatrix>
+  <plotmatrix columns="2" rows="2" tab_name="trajectory">
+   <plot col="0" row="0">
+    <range bottom="-5.285390" left="2690.878638" top="2.710774" right="2708.999985"/>
+    <limitY/>
+    <curve custom_transform="noTransform" name="/uav/trajectory_point_ref/accelerations.0/linear/x" R="188" G="189" B="34"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot col="0" row="1">
+    <range bottom="-0.148471" left="2690.878638" top="0.373083" right="2708.999985"/>
+    <limitY/>
+    <curve custom_transform="noTransform" name="/uav/trajectory_point_ref/accelerations.0/linear/z" R="214" G="39" B="40"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot col="1" row="0">
+    <range bottom="-0.100000" left="2690.878638" top="0.100000" right="2708.999985"/>
+    <limitY/>
+    <curve custom_transform="noTransform" name="/uav/trajectory_point_ref/accelerations.0/linear/y" R="31" G="119" B="180"/>
+    <transform value="noTransform"/>
+   </plot>
+   <plot col="1" row="1">
+    <range bottom="-0.985284" left="-8006.309027" top="1.581226" right="-7986.309542"/>
+    <limitY/>
+    <transform value="noTransform"/>
+   </plot>
+  </plotmatrix>
+  <currentPlotMatrix index="3"/>
+ </tabbed_widget>
+ <use_relative_time_offset enabled="1"/>
+ <!-- - - - - - - - - - - - - - - -->
+ <!-- - - - - - - - - - - - - - - -->
+ <Plugins>
+  <plugin ID="DataLoad CSV">
+   <default time_axis=""/>
+  </plugin>
+  <plugin ID="DataLoad ROS bags">
+   <use_header_stamp value="false"/>
+   <use_renaming_rules value="true"/>
+   <discard_large_arrays value="true"/>
+   <max_array_size value="100"/>
+  </plugin>
+  <plugin ID="DataLoad ULog"/>
+  <plugin ID="ROS Topic Subscriber">
+   <use_header_stamp value="false"/>
+   <use_renaming_rules value="true"/>
+   <discard_large_arrays value="true"/>
+   <max_array_size value="100"/>
+  </plugin>
+  <plugin ID="ROS /rosout Visualization" status="idle"/>
+  <plugin ID="ROS Topic Re-Publisher" status="idle"/>
+ </Plugins>
+ <!-- - - - - - - - - - - - - - - -->
+ <previouslyLoaded_Datafiles/>
+ <previouslyLoaded_Streamer name="ROS Topic Subscriber"/>
+ <!-- - - - - - - - - - - - - - - -->
+ <customMathEquations/>
+ <snippets>
+  <snippet language="JS" name="1st_derivative">
+   <global>var prevX = 0
+var prevY = 0</global>
+   <equation>dx = time - prevX
+dy = value - prevY
+prevX = time
+prevY = value
+
+return dy/dx</equation>
+  </snippet>
+  <snippet language="JS" name="1st_order_lowpass">
+   <global>var prevY = 0
+var alpha = 0.1</global>
+   <equation>prevY = alpha * value + (1.-alpha) * prevY
+
+return prevY</equation>
+  </snippet>
+  <snippet language="JS" name="sum_A_B">
+   <global></global>
+   <equation>return $$PLOT_A$$ + $$PLOT_B$$</equation>
+  </snippet>
+  <snippet language="JS" name="yaw_from_quaternion">
+   <global>// source: https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+
+function quaternionToYaw(x, y, z, w)
+{
+  // yaw (z-axis rotation)
+  t1 = 2.0 * (w * z + x * y);
+  t2 = 1.0 - 2.0 * (y * y + z * z);
+  yaw = Math.atan2(t1, t2);
+
+  return yaw
+}</global>
+   <equation>return quaternionToYaw(x, y, z, w);</equation>
+  </snippet>
+ </snippets>
+ <!-- - - - - - - - - - - - - - - -->
+</root>
+
