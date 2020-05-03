@@ -54,6 +54,17 @@ bool ParabolicAirdropPlanner::configureParabolicAirdropFromFile(
     intermediate_acceleration_(i) = intermediate_acc[i];
   }
 
+  // Horizontal acceleration option
+  use_horizontal_stopping_acceleration_ = config["global_planner"]["parabolic_airdrop"]["use_horizontal_stopping_acceleration"].as<bool>();
+  horizontal_stopping_acceleration_ = config["global_planner"]["parabolic_airdrop"]["horizontal_stopping_acceleration"].as<double>();
+  // Intermediate
+  use_horizontal_intermediate_acceleration_ = config["global_planner"]["parabolic_airdrop"]["use_horizontal_intermediate_acceleration"].as<bool>();
+  horizontal_intermediate_acceleration_ = config["global_planner"]["parabolic_airdrop"]["horizontal_intermediate_acceleration"].as<double>();
+  // Dropoff
+  use_horizontal_dropoff_acceleration_ = config["global_planner"]["parabolic_airdrop"]["use_horizontal_dropoff_acceleration"].as<bool>();
+  horizontal_dropoff_acceleration_ = config["global_planner"]["parabolic_airdrop"]["horizontal_dropoff_acceleration"].as<double>();
+  
+  // Parabola config elements.
   psi_increment_ = config["global_planner"]["parabolic_airdrop"]["yaw_increment"].as<double>();
   max_dz_ = config["global_planner"]["parabolic_airdrop"]["max_dz"].as<double>();
   payload_z_offset_ = config["global_planner"]["parabolic_airdrop"]["payload_z_offset"].as<double>();
@@ -149,8 +160,15 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
             // provided. Based on the release direction, calculate intermediate
             // acceleration for x and y axes that points opposite to release
             // direction
-            double intermediate_acc_x = -intermediate_acceleration_(0)*cos(psi);
-            double intermediate_acc_y = -intermediate_acceleration_(0)*sin(psi);
+            double intermediate_acc_x, intermediate_acc_y;
+            if (use_horizontal_intermediate_acceleration_ == true){
+              intermediate_acc_x = intermediate_acceleration_(0);
+              intermediate_acc_y = intermediate_acceleration_(1);
+            }
+            else{
+              intermediate_acc_x = -horizontal_intermediate_acceleration_*cos(psi);
+              intermediate_acc_y = -horizontal_intermediate_acceleration_*sin(psi);
+            }
 
             // Plan stopping trajectory
             // Add payload_offset_z_ to account for payload displacement.
@@ -162,6 +180,12 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
               transformed_parabola(0,2)+payload_z_offset_, transformed_parabola(0,2)+payload_z_offset_, 
               v*sin(alpha), 0, intermediate_acceleration_(2), 0,
               yaw, yaw, 0, 0, intermediate_acceleration_(3), 0;
+            // Change stopping trajectory constraints if user configured
+            // horizontal acceleration
+            if (use_horizontal_stopping_acceleration_ == true){
+              stopping_trajectory_constraints_(0,1) = horizontal_stopping_acceleration_*cos(psi);
+              stopping_trajectory_constraints_(1,1) = horizontal_stopping_acceleration_*sin(psi);
+            }
             spline_interpolator_.generateTrajectoryNoSync(conditions, 
               stopping_trajectory_constraints_, spline_sampling_time_);
             Trajectory stopping_trajectory = spline_interpolator_.getTrajectory();
@@ -318,8 +342,15 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
   // provided. Based on the release direction, calculate intermediate
   // acceleration for x and y axes that points opposite to release
   // direction
-  double intermediate_acc_x = -intermediate_acceleration_(0)*cos(psi);
-  double intermediate_acc_y = -intermediate_acceleration_(0)*sin(psi);
+  double intermediate_acc_x, intermediate_acc_y;
+  if (use_horizontal_intermediate_acceleration_ == true){
+    intermediate_acc_x = intermediate_acceleration_(0);
+    intermediate_acc_y = intermediate_acceleration_(1);
+  }
+  else{
+    intermediate_acc_x = -horizontal_intermediate_acceleration_*cos(psi);
+    intermediate_acc_y = -horizontal_intermediate_acceleration_*sin(psi);
+  }
 
   // Plan stopping trajectory
   // Add payload_offset_z_ to account for payload displacement.
@@ -331,6 +362,10 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
     transformed_parabola(0,2)+payload_z_offset_, transformed_parabola(0,2)+payload_z_offset_, 
     v*sin(alpha), 0, intermediate_acceleration_(2), 0,
     yaw, yaw, 0, 0, intermediate_acceleration_(3), 0;
+  if (use_horizontal_stopping_acceleration_ == true){
+    stopping_trajectory_constraints_(0,1) = horizontal_stopping_acceleration_*cos(psi);
+    stopping_trajectory_constraints_(1,1) = horizontal_stopping_acceleration_*sin(psi);
+  }
   spline_interpolator_.generateTrajectoryNoSync(conditions, 
     stopping_trajectory_constraints_, spline_sampling_time_);
   Trajectory stopping_trajectory = spline_interpolator_.getTrajectory();
@@ -487,8 +522,21 @@ Trajectory ParabolicAirdropPlanner::planDropoffSpline(
   //exit(0);*/
 
   // Account for horizontal intermediate acceleration
-  double intermediate_acc_x = -intermediate_acceleration_(0)*cos(psi);
-  double intermediate_acc_y = -intermediate_acceleration_(0)*sin(psi);
+  double intermediate_acc_x, intermediate_acc_y;
+  if (use_horizontal_intermediate_acceleration_ == true){
+    intermediate_acc_x = intermediate_acceleration_(0);
+    intermediate_acc_y = intermediate_acceleration_(1);
+  }
+  else{
+    intermediate_acc_x = -horizontal_intermediate_acceleration_*cos(psi);
+    intermediate_acc_y = -horizontal_intermediate_acceleration_*sin(psi);
+  }
+
+  // If horizontal dropoff acceleration constraint is being used account for it
+  if (use_horizontal_dropoff_acceleration_ == true){
+    dropoff_trajectory_constraints_(0,1) = horizontal_dropoff_acceleration_*cos(psi);
+    dropoff_trajectory_constraints_(1,1) = horizontal_dropoff_acceleration_*sin(psi);
+  }
 
 
   // Go backwards through the trajectory and find appropriate start point for

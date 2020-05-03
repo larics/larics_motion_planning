@@ -82,6 +82,10 @@ class ParabolicAirdropPlanner : public GlobalPlanner
     Eigen::VectorXd intermediate_acceleration_;
     double spline_sampling_time_;
     double psi_min_, psi_max_;
+    double horizontal_stopping_acceleration_, horizontal_dropoff_acceleration_,
+      horizontal_intermediate_acceleration_;
+    bool use_horizontal_stopping_acceleration_,
+      use_horizontal_intermediate_acceleration_, use_horizontal_dropoff_acceleration_;
 
     Eigen::MatrixXd constructParabola(double dx, double dz, double alpha,
       double v, double t, double g);
