@@ -28,9 +28,9 @@ global_planner:
   parabolic_airdrop:
     # Parabola family parameters.
     # d is dropoff distance projected onto xy plane
-    d: [6.5, 3.0, 2.0, 3.5, 1.5, 4.0, 1.0, 4.5, 5.0, 5.5, 6.0]
+    d: [3.0, 3.0, 2.0, 3.5, 1.5, 4.0, 1.0, 4.5, 5.0, 5.5, 6.0]
     # v is linear speed of the projectile in airdrop direction
-    v: [4.5, 3.0, 2.0, 3.5, 1.5, 4.0, 1.0, 4.5, 5.0, 5.5, 6.0]
+    v: [3.0, 3.0, 2.0, 3.5, 1.5, 4.0, 1.0, 4.5, 5.0, 5.5, 6.0]
     # alpha is angle at which the projectile is launched
     alpha: [0.0, 25.0, 15.0, 30.0, 10.0, 5.0, 0.0, 35.0, 40.0, 45.0]
     # We search for all 360 degrees for the direction of parabola. This 
@@ -46,14 +46,20 @@ global_planner:
 
     # Stopping trajectory parameters [x, y, z, yaw]
     stopping_velocity: [8, 8, 3, 2]
-    stopping_acceleration: [5.0, 5.0, 1.5, 2.0]
+    stopping_acceleration: [2, 2, 1, 2.0]
+    use_horizontal_stopping_acceleration: false
+    horizontal_stopping_acceleration: 4.0
     # Dropoff trajectory parameters [x, y, z, yaw]
-    dropoff_velocity: [8, 8, 3, 2]
-    dropoff_acceleration: [3, 3, 1.5, 2.0]
+    dropoff_velocity: [4, 4, 3, 2]
+    dropoff_acceleration: [1.5, 1.5, 1, 1.0]
+    use_horizontal_dropoff_acceleration: false
+    horizontal_dropoff_acceleration: 2.0
     # Common for both trajectories is acceleration between dropoff and stopping
     # trajectories. The idea is to have a positive z-direction acceleration so
     # the uav does not interact with dropped object. [x, y, z, yaw]
-    intermediate_acceleration: [0, -1, 0, 0]
+    intermediate_acceleration: [0, 0, 0, 0]
+    use_horizontal_intermediate_acceleration: false
+    horizontal_intermediate_acceleration: 1.0
 
     spline_sampling_time: 0.01
 
@@ -76,7 +82,8 @@ path_planner:
     # Types of spaces that are used
     types: ["RealVector"]
     # Bounds are defined by 
-    bounds: [[[-20, 20], [-10, 20], [0.0, 20.0], [-3.15, 3.15]]]
+    #bounds: [[[-20, 20], [-10, 20], [0.0, 20.0], [-3.15, 3.15]]]
+    bounds: [[[-1, 11], [-11, 11], [0.0, 3.0], [-3.15, 3.15]]]
 
   # RRT* parameter set
 
@@ -171,9 +178,9 @@ path_planner:
 
 toppra_trajectory:
   # Maximum velocities for [x, y, z, yaw]
-  velocities: [0.8, 0.8, 0.5, 0.3]
+  velocities: [2, 2, 1.2, 1]
   # Maximum accelerations for [x, y, z, yaw]
-  accelerations: [0.8, 0.8, 0.4, 0.3]
+  accelerations: [1.2, 1.2, 0.5, 0.8]
   # If using SO states angular must be set to 1
   is_angular: [0, 0, 0, 0]
   # Trajectory sampling frequency

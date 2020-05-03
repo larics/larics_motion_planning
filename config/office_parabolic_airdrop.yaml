@@ -83,7 +83,7 @@ path_planner:
     types: ["RealVector"]
     # Bounds are defined by 
     #bounds: [[[-20, 20], [-10, 20], [0.0, 20.0], [-3.15, 3.15]]]
-    bounds: [[[0, 40], [0, 30], [0.0, 4.8], [-3.15, 3.15]]]
+    bounds: [[[0, 40], [0, 25], [0.0, 4.5], [-3.15, 3.15]]]
 
   # RRT* parameter set
 
@@ -180,7 +180,7 @@ toppra_trajectory:
   # Maximum velocities for [x, y, z, yaw]
   velocities: [2, 2, 1.2, 1]
   # Maximum accelerations for [x, y, z, yaw]
-  accelerations: [1.2, 1.2, 0.5, 0.8]
+  accelerations: [0.8, 0.8, 0.5, 0.8]
   # If using SO states angular must be set to 1
   is_angular: [0, 0, 0, 0]
   # Trajectory sampling frequency
@@ -222,5 +222,5 @@ state_validity_checker:
   prism:
     x_dimension: 0.8
     y_dimension: 0.8
-    z_dimension: 0.4
+    z_dimension: 0.5
     resolution: 0.05
