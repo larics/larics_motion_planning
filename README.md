@@ -17,7 +17,7 @@ rosrun aerial_manipulators_control wp_manipulator_control __ns:=uav
 
 And for parabolic airdrop
 ```
-roslaunch mmuav_gazebo uav_attitude_position.launch mount_magnet:=true
+roslaunch mmuav_gazebo uav_attitude_position.launch mount_magnet:=true z:=1
 
 rosrun joy joy_node _autorepeat_rate:=30 __ns:=uav
 
@@ -435,3 +435,135 @@ plan_trajectory: true
 override_dynamic_constraints: true
 velocity_constraints: [0]
 acceleration_constraints: [0]"
+
+rosservice call /uav/multi_dof_trajectory "waypoints:
+  header:
+    seq: 0
+    stamp: {secs: 0, nsecs: 0}
+    frame_id: ''
+  joint_names: ['']
+  points:
+  - positions: [-30.0, -100.0, 2.0, 0.0]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [5.0, 20.0, 10.0, 0.0]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+publish_path: true
+publish_trajectory: true
+plan_path: true
+plan_trajectory: true
+override_dynamic_constraints: false
+velocity_constraints: [0]
+acceleration_constraints: [0]"
+
+rosservice call /uav/parabolic_airdrop_trajectory "uav_pose:
+  position: {x: -30.0, y: -100.0, z: 2.0}
+  orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}
+target_pose:
+  position: {x: 2.946, y: 10.0, z: 6.9}
+  orientation: {x: 0.0, y: 0.0, z: 0.0, w: 0.0}
+publish_path: true
+publish_trajectory: true
+plan_path: true
+plan_trajectory: true" 
+
+
+rosservice call /uav/parabolic_airdrop_trajectory "uav_pose:
+  position: {x: 8, y: 8, z: 1.0}
+  orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}
+target_pose:
+  position: {x: 0.06, y: -3.71, z: 1.75}
+  orientation: {x: 0.0, y: 0.0, z: 0.0, w: 0.0}
+publish_path: true
+publish_trajectory: true
+plan_path: true
+plan_trajectory: true
+use_custom_parabola_params: true
+custom_parabola_params: [2.5,0.5,0.5585,1.0213,3.14]" 
+
+rosservice call /uav/parabolic_airdrop_trajectory "uav_pose:
+  position: {x: 4.85, y: 9, z: 1.0}
+  orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}
+target_pose:
+  position: {x: 3.47, y: -3.055, z: 0.0}
+  orientation: {x: 0.0, y: 0.0, z: 0.0, w: 0.0}
+publish_path: true
+publish_trajectory: true
+plan_path: true
+plan_trajectory: true
+use_custom_parabola_params: true
+custom_parabola_params: [1,2,0.1745,0.64652,-2.3561]" 
+
+rosservice call /uav/parabolic_airdrop_trajectory "uav_pose:
+  position: {x: 5, y: -8, z: 1.0}
+  orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}
+target_pose:
+  position: {x: 3.47, y: 8.923, z: 0.0}
+  orientation: {x: 0.0, y: 0.0, z: 0.0, w: 0.0}
+publish_path: true
+publish_trajectory: true
+plan_path: true
+plan_trajectory: true
+use_custom_parabola_params: true
+custom_parabola_params: [1,2,0.1745,0.64652, 2.3561]" 
+
+Kanta u officeu
+rosservice call /uav/parabolic_airdrop_trajectory "uav_pose:
+  position: {x: 5, y: -8, z: 1.0}
+  orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}
+target_pose:
+  position: {x: 0.75, y: -1.75, z: 0.33}
+  orientation: {x: 0.0, y: 0.0, z: 0.0, w: 0.0}
+publish_path: true
+publish_trajectory: true
+plan_path: true
+plan_trajectory: true
+use_custom_parabola_params: true
+custom_parabola_params: [1.75,1.75,0.1745,1.0842,2.3561]" 
+
+rosservice call /uav/multi_dof_trajectory "waypoints:
+  header:
+    seq: 0
+    stamp: {secs: 0, nsecs: 0}
+    frame_id: ''
+  joint_names: ['']
+  points:
+  - positions: [35, 20, 1, 0]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [3.25, 1.5, 2, 0]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+publish_path: true
+publish_trajectory: true
+plan_path: true
+plan_trajectory: true
+override_dynamic_constraints: false
+velocity_constraints: [0]
+acceleration_constraints: [0] 
+use_custom_psi_params: true
+custom_psi_params: [0]"
+
+rosservice call /uav/parabolic_airdrop_trajectory "uav_pose:
+  position: {x: 35.0, y: 20.0, z: 1.0}
+  orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}
+target_pose:
+  position: {x: 6.12, y: 3.94, z: 1.0}
+  orientation: {x: 0.0, y: 0.0, z: 0.0, w: 0.0}
+publish_path: true
+publish_trajectory: true
+plan_path: true
+plan_trajectory: true
+use_custom_parabola_params: false
+custom_parabola_params: [0]
+use_custom_psi_params: true
+custom_psi_params: [180, 1, 180]" 
