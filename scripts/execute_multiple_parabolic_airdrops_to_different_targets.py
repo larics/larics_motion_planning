@@ -20,9 +20,9 @@ class ExecuteMultipleParabolicAirdrops:
     self.go_to_pub = rospy.Publisher('go_to/reference', 
       Pose, queue_size=1)
     self.start_pose = Pose()
-    self.start_pose.position.x = 35
-    self.start_pose.position.y = 20
-    self.start_pose.position.z = 1.0
+    self.start_pose.position.x = -30#35
+    self.start_pose.position.y = -100#20
+    self.start_pose.position.z = 2#1.0
     self.start_pose.orientation.w = 1.0
 
     # Publisher for trajectory
@@ -46,7 +46,7 @@ class ExecuteMultipleParabolicAirdrops:
 
     self.drops_per_config = rospy.get_param('~drops_per_config', int(5))
     self.filename = rospy.get_param('~configs_file', 
-      str('/home/antun/catkin_ws/src/larics_motion_planning/config/airdrop_configs/office_multiple_targets.csv'))
+      str('/home/antun/catkin_ws/src/larics_motion_planning/config/airdrop_configs/camellia_city_building.csv'))
     self.targets = np.loadtxt(open(self.filename, "rb"), delimiter=",")
 
     self.start_flag = False
@@ -85,19 +85,20 @@ class ExecuteMultipleParabolicAirdrops:
               print "Executing ", (current_drop_count+1), "/", len(self.targets), " for ", j+1, "/", self.drops_per_config, " time"
               print "Go above current position"
               pose = copy.deepcopy(self.uav_current_pose)
-              pose.position.z = 6.0
+              pose.position.z = 7
+              pose.position.x = pose.position.x - 10.0
               self.go_to_pub.publish(pose)
-              time.sleep(5)
+              time.sleep(15)
 
-              print "Go above starting position"
-              pose = copy.deepcopy(self.start_pose)
-              pose.position.z = 6.0
-              self.go_to_pub.publish(pose)
-              time.sleep(20)
+              #print "Go above starting position"
+              #pose = copy.deepcopy(self.start_pose)
+              #pose.position.z = 25.0
+              #self.go_to_pub.publish(pose)
+              #time.sleep(60)
 
               print "Go to starting position"
               self.go_to_pub.publish(self.start_pose)
-              time.sleep(10)
+              time.sleep(60)
 
               # Spawn ball twice to eliminate weird shaking
               print "Spawn ball first time"

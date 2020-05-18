@@ -567,3 +567,15 @@ use_custom_parabola_params: false
 custom_parabola_params: [0]
 use_custom_psi_params: true
 custom_psi_params: [180, 1, 180]" 
+
+
+rosservice call /uav/parabolic_airdrop_trajectory "uav_pose:
+  position: {x: 10.0, y: 20.0, z: 10.0}
+  orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}
+target_pose:
+  position: {x: 2.946, y: 10.0, z: 7.4}
+  orientation: {x: 0.0, y: 0.0, z: 0.0, w: 0.0}
+publish_path: true
+publish_trajectory: true
+plan_path: true
+plan_trajectory: true" 
