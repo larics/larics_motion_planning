@@ -1,9 +1,9 @@
 global_planner:
-  map_config_file: "catkin_ws/src/larics_motion_planning/config/uav_and_husky.yaml"
-  trajectory_config_file: "catkin_ws/src/larics_motion_planning/config/uav_and_husky.yaml"
-  path_planner_config_file: "catkin_ws/src/larics_motion_planning/config/uav_and_husky.yaml"
-  state_validity_checker_config_file: "catkin_ws/src/larics_motion_planning/config/uav_and_husky.yaml"
-  kinematics_config_file: "catkin_ws/src/larics_motion_planning/config/uav_and_husky.yaml"
+  map_config_file: "catkin_ws/src/larics_motion_planning/config/uav_wp_manipulator_5r_husky_schunk.yaml"
+  trajectory_config_file: "catkin_ws/src/larics_motion_planning/config/uav_wp_manipulator_5r_husky_schunk.yaml"
+  path_planner_config_file: "catkin_ws/src/larics_motion_planning/config/uav_wp_manipulator_5r_husky_schunk.yaml"
+  state_validity_checker_config_file: "catkin_ws/src/larics_motion_planning/config/uav_wp_manipulator_5r_husky_schunk.yaml"
+  kinematics_config_file: "catkin_ws/src/larics_motion_planning/config/uav_wp_manipulator_5r_husky_schunk.yaml"
 
   trajectory:
     restarts: 5
@@ -61,15 +61,16 @@ octomap:
 
 path_planner:
   spaces:
-    number: 2
-    # UAV has 6 dof: x, y, z, roll, pitch, yaw. We don't use roll and pitch in
-    # planning, however we use them in visualization and later in compensation
-    # so we need all 6DOF.
-    # Manipulator has 3DOF in this case
-    dimensions: [6, 2]
-    weights: [1.0, 1.0]
-    types: ["RealVector", "RealVector"]
-    bounds: [[[-10, 10.0], [-10.0, 10.0], [0.0, 10.0], [0.0, 0.0], [0.0, 0.0], [-3.15, 3.15]], [[-10.0, 10.0], [-10.0, 10.0]]]
+    number: 6 # 6 spaceva ćemo imati
+    # UAV has 4 degrees of freedom, manipulator on the uav has 5. 
+    # Husky has x, y, yaw as degrees of freedom, schunk has 6 dof.
+    # In total it is 18 DOF
+    dimensions: [3, 1, 5, 2, 1, 6]
+    weights: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0] # Ovo dovršiti nekako
+    #        UAV x,y,z     yaw  wp manipulator   UGV x,y      yaw     schunk
+    types: ["RealVector", "SO2", "RealVector", "RealVector", "SO2", RealVector]
+    #            x_uav         y_uav         z_uav      yaw_uav   wp     q1             q2             q3             q4             q5        UGV   x          y         yaw   schunk  q1             q2             q3             q4             q5             q6 
+    bounds: [[[-10, 10.0], [-10.0, 10.0], [0.0, 10.0]], [[0, 0]], [[-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57]], [[-10, 10], [-10, 10]], [[0, 0]], [[-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57]]]
     #bounds: [[[0, 10.0], [-20.0, 0.0], [0.95, 1.05]], [[-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57]]]
   #bounds: [[0, 10.0], [-20.0, 0.0], [0.95, 1.05]]
   longest_valid_segment:
@@ -116,9 +117,9 @@ path_planner:
       max_steps: 5
 
 toppra_trajectory:
-  velocities: [0.8, 0.8, 0.5, 100, 100, 0.3, 0.3, 0.3] #4.8
-  accelerations: [0.8, 0.8, 0.4, 100, 100, 0.3, 0.15, 0.15] #10
-  is_angular: [0, 0, 0, 0, 0, 0, 0, 0]
+  velocities: [   2.0, 2.0, 1.2, 1.0,    1.0, 1.0, 1.0, 1.0, 1.0,    0.3, 0.3, 0.3,    1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+  accelerations: [1.2, 1.2, 0.5, 1.0,    1.2, 1.2, 1.2, 1.2, 1.2,    0.3, 0.3, 0.3,    1.2, 1.2, 1.2, 1.2, 1.2, 1.2]
+  is_angular: [    0, 0, 0, 1,                0, 0, 0, 0, 0,            0, 0, 1,            0, 0, 0, 0, 0, 0]
   sampling_frequency: 100.0
 
 state_validity_checker:
