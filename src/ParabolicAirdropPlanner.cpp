@@ -161,7 +161,8 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
             // acceleration for x and y axes that points opposite to release
             // direction
             double intermediate_acc_x, intermediate_acc_y;
-            if (use_horizontal_intermediate_acceleration_ == true){
+            // TODO: Provjeriti ovu promjenu u false, ali mislim da je to bio bug
+            if (use_horizontal_intermediate_acceleration_ == false){
               intermediate_acc_x = intermediate_acceleration_(0);
               intermediate_acc_y = intermediate_acceleration_(1);
             }
@@ -183,17 +184,24 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
             // Change stopping trajectory constraints if user configured
             // horizontal acceleration
             if (use_horizontal_stopping_acceleration_ == true){
-              stopping_trajectory_constraints_(0,1) = horizontal_stopping_acceleration_*cos(psi);
-              stopping_trajectory_constraints_(1,1) = horizontal_stopping_acceleration_*sin(psi);
+              stopping_trajectory_constraints_(0,1) = fabs(horizontal_stopping_acceleration_*cos(psi));
+              if (stopping_trajectory_constraints_(0,1) < 0.1){
+                stopping_trajectory_constraints_(0,1) = 0.1;
+              }
+              // Tu je problem NE MOŽE SINUS ZA CONSTRAINTOVE
+              stopping_trajectory_constraints_(1,1) = fabs(horizontal_stopping_acceleration_*sin(psi));
+              if (stopping_trajectory_constraints_(1,1) < 0.1){
+                stopping_trajectory_constraints_(1,1) = 0.1;
+              }
             }
             spline_interpolator_.generateTrajectoryNoSync(conditions, 
               stopping_trajectory_constraints_, spline_sampling_time_);
             Trajectory stopping_trajectory = spline_interpolator_.getTrajectory();
             //cout << stopping_trajectory.acceleration << endl;
-
             bool valid_flag = true;
             // Check parabola candidate for collision
             valid_flag &= checkParabolaForCollision(transformed_parabola);
+            cout << valid_flag << endl;
             // Check stopping trajectory for collision
             valid_flag &= checkTrajectoryForCollision(stopping_trajectory);
             if (valid_flag == false) continue;
@@ -222,6 +230,10 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
               alpha, psi, dropoff_index);
             if (dropoff_trajectory.time.size() == 0) continue;
             cout << "Dropoff index: " << dropoff_index << endl;
+            
+            valid_flag &= checkTrajectoryForCollision(dropoff_trajectory);
+            if (valid_flag == false) continue;
+
 
 
             // Now that we have all three trajectories we have to concatenate
@@ -490,9 +502,15 @@ bool ParabolicAirdropPlanner::checkParabolaForCollision(
 bool ParabolicAirdropPlanner::checkTrajectoryForCollision(
   Trajectory trajectory)
 {
-  // TODO: implement this function, we don't need it know because we will not
-  // work in cluttered environments.
-  return true;
+  bool is_valid = true;
+  
+  for (int i=0; i<trajectory.position.rows(); i++){
+    //if (parabola(i, 2) > 100) cout << "Parabola row: " << endl << parabola.row(i) << endl;
+    is_valid &= state_validity_checker_interface_->isStateValid(
+      (trajectory.position.row(i)).transpose());
+  }
+
+  return is_valid;
 }
 
 Trajectory ParabolicAirdropPlanner::planDropoffSpline(
@@ -523,7 +541,7 @@ Trajectory ParabolicAirdropPlanner::planDropoffSpline(
 
   // Account for horizontal intermediate acceleration
   double intermediate_acc_x, intermediate_acc_y;
-  if (use_horizontal_intermediate_acceleration_ == true){
+  if (use_horizontal_intermediate_acceleration_ == false){
     intermediate_acc_x = intermediate_acceleration_(0);
     intermediate_acc_y = intermediate_acceleration_(1);
   }
