@@ -631,3 +631,48 @@ plan_trajectory: true
 override_dynamic_constraints: false
 velocity_constraints: [0]
 acceleration_constraints: [0]"
+
+rosservice call /euroc3/parabolic_airdrop_trajectory "uav_pose:
+  position: {x: 0.0, y: 1.25, z: 1.7}
+  orientation: {x: 0.0, y: 0.0, z: -0.707, w: 0.707}
+target_pose:
+  position: {x: 0, y: -3.25, z: 0.1}
+  orientation: {x: 0.0, y: 0.0, z: 0.0, w: 0.0}
+publish_path: false
+publish_trajectory: true
+plan_path: false
+plan_trajectory: true
+use_custom_parabola_params: false
+custom_parabola_params: [0.0]
+use_custom_psi_params: true
+custom_psi_params: [-90, 1, -90]" 
+
+rosservice call /euroc3/parabolic_airdrop_trajectory "uav_pose:
+  position: {x: 0.075, y: 1.25, z: 1.7}
+  orientation: {x: 0.0, y: 0.0, z: -0.707, w: 0.707}
+target_pose:
+  position: {x: 0.075, y: -3.25, z: 0.1}
+  orientation: {x: 0.0, y: 0.0, z: 0.0, w: 0.0}
+publish_path: false
+publish_trajectory: true
+plan_path: false
+plan_trajectory: true
+use_custom_parabola_params: false
+custom_parabola_params: [0.0]
+use_custom_psi_params: true
+custom_psi_params: [-90, 1, -90]" 
+
+rosservice call /euroc3/parabolic_airdrop_trajectory "uav_pose:
+  position: {x: 0.075, y: 1.25, z: 1.7}
+  orientation: {x: 0.0, y: 0.0, z: -0.707, w: 0.707}
+target_pose:
+  position: {x: 0.075, y: -3.25, z: 0.1}
+  orientation: {x: 0.0, y: 0.0, z: 0.0, w: 0.0}
+publish_path: true
+publish_trajectory: true
+plan_path: true
+plan_trajectory: true
+use_custom_parabola_params: false
+custom_parabola_params: [0.0]
+use_custom_psi_params: true
+custom_psi_params: [-112, 2, -80]" 
