@@ -52,6 +52,9 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
   parabolic_airdrop_trajectory_server_ = nh_.advertiseService(
     "parabolic_airdrop_trajectory",
     &GlobalPlannerRosInterface::parabolicAirdropTrajectoryCallback, this);
+  // Service for saving octomap to file.
+  save_octomap_server_ = nh_.advertiseService(
+    "save_octomap", &GlobalPlannerRosInterface::saveOctomapCallback, this);
 }
 
 void GlobalPlannerRosInterface::run()
@@ -458,6 +461,28 @@ bool GlobalPlannerRosInterface::parabolicAirdropTrajectoryCallback(
   cout << "Parabolic trajectory service callback finished." << endl << endl;
 
   
+  return true;
+}
+
+bool GlobalPlannerRosInterface::saveOctomapCallback(
+  larics_motion_planning::SaveOctomap::Request &req, 
+  larics_motion_planning::SaveOctomap::Response &res)
+{
+  // Here we save the octomap
+  string filename = req.filename;
+  string file_path = req.file_path;
+  if (req.filename.length() == 0) {
+    filename = "octomap.binvox.bt";
+  }
+  // If path was not provided save to home folder
+  if (req.file_path.length() == 0){
+    file_path = "/home/" + string(getenv("USER")) + "/";
+  }
+  
+  cout << "Saving octomap to file: " << file_path+filename << endl;
+
+  res.success = octomapmap_.get()->saveOctomap(file_path+filename);
+
   return true;
 }
 

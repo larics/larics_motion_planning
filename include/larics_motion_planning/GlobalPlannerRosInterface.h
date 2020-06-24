@@ -39,6 +39,7 @@
 #include <larics_motion_planning/MultiDofTrajectory.h>
 #include <larics_motion_planning/VisualizeState.h>
 #include <larics_motion_planning/ParabolicAirdropTrajectory.h>
+#include <larics_motion_planning/SaveOctomap.h>
 
 #include <iostream>
 using namespace std;
@@ -108,6 +109,12 @@ class GlobalPlannerRosInterface
     bool parabolicAirdropTrajectoryCallback(
       larics_motion_planning::ParabolicAirdropTrajectory::Request &req, 
       larics_motion_planning::ParabolicAirdropTrajectory::Response &res);
+
+    // Service to save octomap
+    ros::ServiceServer save_octomap_server_;
+    bool saveOctomapCallback(
+      larics_motion_planning::SaveOctomap::Request &req, 
+      larics_motion_planning::SaveOctomap::Response &res);
 
 
     // Conversions between GlobalPlanner and ROS messages.

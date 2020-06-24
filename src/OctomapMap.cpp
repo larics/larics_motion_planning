@@ -80,3 +80,14 @@ void OctomapMap::setOctomapFromRosMessage(const
   cout << "  Map bounds: x=" << x << " y=" << y << " z=" << z << endl;
   cout << "  Map resolution: " << map_->getResolution() << endl;
 }
+
+bool OctomapMap::saveOctomap(string path)
+{
+  if (map_ == nullptr){
+    return false;
+  }
+
+  map_->writeBinary(path);
+
+  return true;
+}

@@ -71,6 +71,11 @@ class OctomapMap : public MapInterface
     /// \param ros_octomap octomap_msgs::Octomap message.
     void setOctomapFromRosMessage(const octomap_msgs::Octomap::ConstPtr& ros_octomap);
 
+    /// \brief Saves octomap binary to file.
+    /// \param path Path to file.
+    /// \return True if save was successful, false if nullptr.
+    bool saveOctomap(string path);
+
   private:
     unique_ptr<octomap::OcTree> map_;
     int search_depth_;
