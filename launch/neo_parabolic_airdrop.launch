@@ -1,0 +1,41 @@
+<launch>
+  <arg name="rate" default="10" />
+  <arg name="namespace" default="euroc3" />
+
+  <group ns="$(arg namespace)">
+    <node name="generate_toppra_trajectory" pkg="topp_ros" type="generate_toppra_trajectory.py" output="screen" />
+
+    <node name="global_planner" pkg="larics_motion_planning" type="global_planner_node" output="screen">
+      <param name="rate" value="$(arg rate)" />
+      <param name="global_planner_config_file" value="$(find larics_motion_planning)/config/neo_parabolic_airdrop.yaml" />
+
+      <param name="state_scale" value="0.05" />
+      <param name="waypoints_scale" value="0.5" />
+
+      <param name="latch_trajectory" value="true" />
+      <param name="latch_info_vector" value="true" />
+    </node>
+
+    <node name="uav_trajectory_go_to" pkg="larics_motion_planning" type="uav_trajectory_go_to.py" output="screen"/>
+
+    <!--node name="joint_trajectory_with_airdrop_to_neo" pkg="larics_motion_planning" type="joint_trajectory_with_airdrop_to_neo.py" output="screen">
+      <param name="airdrop" value="true"/>
+    </node-->
+
+    <!--node name="tent_rviz_setting" pkg="larics_motion_planning" type="tent_rviz_setting.py">
+      <param name="rate" value="1"/>
+    </node>
+
+    <node name="parabola_info_vector_to_path" pkg="larics_motion_planning" type="parabola_info_vector_to_path.py" output="screen"/>
+
+    <node name="octomap_server_node" pkg="octomap_server" type="octomap_server_node" args="$(find larics_gazebo_worlds)/models/borongaj_tent/borongaj_tent_beam.binvox.bt" output="screen">
+      <param name="frame_id" value="world" />
+    </node>
+
+    <node name="joint_trajectory_to_marker_array" pkg="larics_motion_planning" type="visualize_joint_trajectory_as_marker_array.py" output="screen" /-->
+
+    <!--node name="uav_trajectory_go_to" pkg="larics_motion_planning" type="uav_trajectory_go_to.py" output="screen"/-->
+
+  </group>
+
+</launch>
