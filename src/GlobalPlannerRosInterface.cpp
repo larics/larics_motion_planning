@@ -12,7 +12,7 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
   //global_planner_ = make_shared<GlobalPlanner>(global_planner_config_file_);
   global_planner_ = make_shared<ParabolicAirdropPlanner>(global_planner_config_file_);
   octomapmap_ = dynamic_pointer_cast<OctomapMap>(global_planner_->getMapInterface());
-  octomap_sub_ = nh_.subscribe("/octomap_binary", 1, &OctomapMap::setOctomapFromRosMessage, 
+  octomap_sub_ = nh_.subscribe("octomap_binary", 1, &OctomapMap::setOctomapFromRosMessage,
     octomapmap_.get());
   visualization_changed_ = false;
 
@@ -23,11 +23,15 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
   // Path publisher
   cartesian_path_pub_ = nh_.advertise<nav_msgs::Path>("cartesian_path", 1);
   // Joint trajectory publisher
+  bool latch_trajectory;
+  nh_private.param("latch_trajectory", latch_trajectory, bool(false));
   joint_trajectory_pub_ = nh_.advertise<trajectory_msgs::JointTrajectory>(
-    "joint_trajectory", 1);
+    "joint_trajectory", 1, latch_trajectory);
   // Parabolic airdrop info vector
+  bool latch_info_vector;
+  nh_private.param("latch_info_vector", latch_info_vector, bool(false));
   parabolic_airdrop_info_pub_ = nh_.advertise<std_msgs::Float64MultiArray>(
-    "parabolic_airdrop/info_vector", 1);
+    "parabolic_airdrop/info_vector", 1, latch_info_vector);
 
   // TODO: Delete this service. Just testing service for now.
   empty_service_server_ = nh_.advertiseService("empty_service_test",
