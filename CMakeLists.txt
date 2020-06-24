@@ -34,6 +34,7 @@ add_service_files(
   MultiDofTrajectory.srv
   VisualizeState.srv
   ParabolicAirdropTrajectory.srv
+  SaveOctomap.srv
 )
 
 ## Generate added messages and services with any dependencies listed here
