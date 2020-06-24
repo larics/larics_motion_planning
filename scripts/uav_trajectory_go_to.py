@@ -24,10 +24,14 @@ class UavGoTo:
         self.first_pose_received = False
         self.uav_current_pose = Pose()
         self.uav_reference_pose = Pose()
-        rospy.Subscriber('pose', PoseStamped, self.uavPoseCallback, 
-            queue_size=1)
+        #rospy.Subscriber('pose', PoseStamped, self.uavPoseCallback, 
+        #    queue_size=1)
         #rospy.Subscriber('msf_core/pose', PoseWithCovarianceStamped, 
         #    self.msfCorePoseCallback, queue_size=1)
+        # Subscriber for NEO reference
+        rospy.Subscriber('command/current_reference', 
+            MultiDOFJointTrajectory, self.currentReferenceCallback, 
+            queue_size=1)
         rospy.Subscriber('go_to/reference', Pose, 
             self.uavReferenceCallback, queue_size=1)
 
@@ -41,6 +45,18 @@ class UavGoTo:
     def msfCorePoseCallback(self, msg):
         self.uav_current_pose = msg.pose.pose
         self.first_pose_received = True
+
+    def currentReferenceCallback(self, msg):
+        self.uav_current_pose.position.x = msg.points[0].transforms[0].translation.x
+        self.uav_current_pose.position.y = msg.points[0].transforms[0].translation.y
+        self.uav_current_pose.position.z = msg.points[0].transforms[0].translation.z
+        self.uav_current_pose.orientation.x = msg.points[0].transforms[0].rotation.x
+        self.uav_current_pose.orientation.y = msg.points[0].transforms[0].rotation.y
+        self.uav_current_pose.orientation.z = msg.points[0].transforms[0].rotation.z
+        self.uav_current_pose.orientation.w = msg.points[0].transforms[0].rotation.w
+
+        #print self.uav_current_pose
+
 
     def uavReferenceCallback(self, msg):
         # Get current yaw of the uav
@@ -68,8 +84,8 @@ class UavGoTo:
         waypoint.positions = [self.uav_current_pose.position.x, \
             self.uav_current_pose.position.y, \
             self.uav_current_pose.position.z, current_yaw, 0]
-        waypoint.velocities = [2, 2, 1.5, 1, 100]
-        waypoint.accelerations = [1, 1, 1, 1, 100]
+        waypoint.velocities = [1, 1, 0.5, 1, 100]
+        waypoint.accelerations = [0.5, 0.5, 0.5, 0.5, 100]
         request.waypoints.points.append(copy.deepcopy(waypoint))
         # Add second waypoint as current uav pose
         waypoint.positions = [msg.position.x, \
