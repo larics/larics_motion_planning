@@ -154,7 +154,8 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
             // be planned
             double q0 = uav_pose(6);
             double q3 = uav_pose(5);
-            double yaw = atan2(2*q0*q3, 1-2*(q3*q3));
+            // Always align with dropoff direction
+            double yaw = psi;//atan2(2*q0*q3, 1-2*(q3*q3));
             
             // For horizontal intermediate acceleration, only one number is
             // provided. Based on the release direction, calculate intermediate
