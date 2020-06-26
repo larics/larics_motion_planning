@@ -1,13 +1,13 @@
 <launch>
   <arg name="namespace" default="red" />
 
-    <node name="octomap_server" pkg="octomap_server" type="octomap_server_node">
-      <param name="frame_id" type="string" value="red/map"/>      
+    <node name="octomap_server" pkg="octomap_server" type="octomap_server_node" ns="$(arg namespace)">
+      <param name="frame_id" type="string" value="/$(arg namespace)/map"/>      
 	  <param name="resolution" type="double" value="0.1" />
       <param name="pointclud_min_z" type="double" value="-2.0" />
       <param name="pointclud_max_z" type="double" value="20.0" />
-      <param name="base_frame_id" type="string" value="$(arg namespace)/base_link" />
-      <remap from="cloud_in" to="$(arg namespace)/submap_cloud" />
+      <param name="base_frame_id" type="string" value="/$(arg namespace)/base_link" />
+      <remap from="cloud_in" to="submap_cloud" />
     </node>
 
 </launch>
