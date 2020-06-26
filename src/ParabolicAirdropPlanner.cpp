@@ -154,8 +154,7 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
             // be planned
             double q0 = uav_pose(6);
             double q3 = uav_pose(5);
-            // Always align with dropoff direction
-            double yaw = psi;//atan2(2*q0*q3, 1-2*(q3*q3));
+            double yaw = atan2(2*q0*q3, 1-2*(q3*q3));
             
             // For horizontal intermediate acceleration, only one number is
             // provided. Based on the release direction, calculate intermediate
@@ -181,7 +180,7 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
               v*cos(alpha)*sin(psi), 0, intermediate_acc_y, 0,
               transformed_parabola(0,2)+payload_z_offset_, transformed_parabola(0,2)+payload_z_offset_, 
               v*sin(alpha), 0, intermediate_acceleration_(2), 0,
-              yaw, yaw, 0, 0, intermediate_acceleration_(3), 0;
+              psi, psi, 0, 0, intermediate_acceleration_(3), 0;
             // Change stopping trajectory constraints if user configured
             // horizontal acceleration
             if (use_horizontal_stopping_acceleration_ == true){
@@ -214,7 +213,7 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
             waypoints << uav_pose(0), uav_pose(1), uav_pose(2), yaw, 
               //uav_pose(0), uav_pose(1), transformed_parabola(0, 2)+payload_z_offset_, yaw, 
               transformed_parabola(0, 0), transformed_parabola(0, 1), 
-              transformed_parabola(0, 2)+payload_z_offset_, yaw;
+              transformed_parabola(0, 2)+payload_z_offset_, psi;
             // Plan trajectory
             if (plan_path == true) {
               if (this->planPathAndTrajectory(waypoints) == false) continue;

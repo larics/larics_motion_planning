@@ -676,3 +676,18 @@ use_custom_parabola_params: false
 custom_parabola_params: [0.0]
 use_custom_psi_params: true
 custom_psi_params: [-112, 2, -80]" 
+
+rosservice call /red/parabolic_airdrop_trajectory "uav_pose:
+  position: {x: -3.0, y: 48.75, z: 4.0}
+  orientation: {x: 0.0, y: 0.0, z: -0.707, w: 0.707}
+target_pose:
+  position: {x: -3.0, y: 10.0, z: 6.0}
+  orientation: {x: 0.0, y: 0.0, z: 0.0, w: 0.0}
+publish_path: true
+publish_trajectory: true
+plan_path: true
+plan_trajectory: true
+use_custom_parabola_params: false
+custom_parabola_params: [0.0]
+use_custom_psi_params: true
+custom_psi_params: [0, 2, 0]" 
