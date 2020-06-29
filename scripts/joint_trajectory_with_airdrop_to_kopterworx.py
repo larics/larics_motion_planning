@@ -22,7 +22,7 @@ class JointTrajectoryToKopterworx:
         self.executing_trajectory_pub = rospy.Publisher('executing_trajectory', 
             Int32, queue_size=1)
         self.start_executing_trajectory_service = rospy.Service(
-            'start_trajectory', std_srvs.srv.Empty, self.startTrajectoryCallback)
+            'start_executing_trajectory', std_srvs.srv.Empty, self.startTrajectoryCallback)
 
         self.rate = rospy.get_param('~rate', 100)
         self.ros_rate = rospy.Rate(self.rate) 

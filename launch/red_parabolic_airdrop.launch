@@ -22,7 +22,7 @@
       <param name="airdrop" value="true"/>
     </node>
 
-    <!--node pkg="rosserial_python" name="serial_node" type="serial_node.py" args="/dev/ttyUSB1"/-->
+    <node pkg="rosserial_python" name="serial_node" type="serial_node.py" args="/dev/ttyUSB1"/>
 
     <!--node name="parabola_info_vector_to_path" pkg="larics_motion_planning" type="parabola_info_vector_to_path.py" output="screen"/-->
 
