@@ -9,30 +9,30 @@ global_planner:
   # times if previous attempts fail. In case all attempts fail, empty trajectory
   # is returned
   trajectory:
-    restarts: 5
+    restarts: 1
 
   # If planning for both path and trajectory, the global planner tries to plan
   # several times to ensure obstacle free trajectory.
   path_and_trajectory:
-    restarts: 5
+    restarts: 1
 
   path:
     # Sometimes RRT* path planning fails and succeeds on next attempt. This
     # will restart it several times in case of failure.
-    restarts: 5
+    restarts: 1
     # The path should be collision free, but in case it is not the planner restarts.
     # This behavior can be switched off by setting false to collision_check flag.
-    collision_check_restarts: 5
+    collision_check_restarts: 1
     collision_check: true
 
   parabolic_airdrop:
     # Parabola family parameters.
     # d is dropoff distance projected onto xy plane
-    d: [1.5, 1.5, 1.25, 1.75, 2.0, 2.5, 1.0, 3.0]
+    d: [1.5, 1.25, 1.75, 2.0]
     # v is linear speed of the projectile in airdrop direction
-    v: [2.25, 2.25, 1.75, 2.25, 2.5, 3.0, 1.5, 1.25]
+    v: [2.25, 1.75, 2.5, 3.0, 1.5, 1.25]
     # alpha is angle at which the projectile is launched
-    alpha: [10, 10, 20, 25, 30, 35, 15, 10, 5, 0]
+    alpha: [10, 20, 25, 15, 10, 5, 0]
     # We search for all 360 degrees for the direction of parabola. This 
     # parameter defines increment in degrees
     yaw_increment: 90 #22.5
@@ -42,7 +42,7 @@ global_planner:
     # Parabola is planned for payload which is typically below the vehicle.
     # That's why we have offset in z-axis while planning the trajectory for
     # the uav.
-    payload_z_offset: 0.145
+    payload_z_offset: 0.44
 
     # Stopping trajectory constraints [x, y, z, yaw]
     stopping_velocity: [8, 8, 3, 2]
@@ -83,7 +83,7 @@ path_planner:
     # Types of spaces that are used
     types: ["RealVector"]
     # Bounds are defined by 
-    bounds: [[[-20, 21], [-5, 50], [0.0, 9.0], [-3.15, 3.15]]]
+    bounds: [[[-20, 25], [-5, 60], [0.0, 10.0], [-3.15, 3.15]]]
 
   # RRT* parameter set
 
@@ -220,7 +220,7 @@ state_validity_checker:
 
   # Prism will be a set of rectangles
   prism:
-    x_dimension: 1.5
-    y_dimension: 1.5
-    z_dimension: 0.75
-    resolution: 0.1
+    x_dimension: 2.0
+    y_dimension: 2.0
+    z_dimension: 1.0
+    resolution: 0.2
