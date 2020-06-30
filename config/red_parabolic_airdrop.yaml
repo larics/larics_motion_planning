@@ -48,11 +48,11 @@ global_planner:
     stopping_velocity: [8, 8, 3, 2]
     stopping_acceleration: [4, 4, 1, 2.0]
     use_horizontal_stopping_acceleration: true
-    horizontal_stopping_acceleration: 2.0
+    horizontal_stopping_acceleration: 1.5
     # Dropoff trajectory constraints [x, y, z, yaw]
     # Sometimes dropoff spline gets stuck, look into that.
     dropoff_velocity: [4, 4, 3, 2]
-    dropoff_acceleration: [1, 1, 1, 1.0]
+    dropoff_acceleration: [0.8, 0.8, 0.8, 1.0]
     use_horizontal_dropoff_acceleration: false
     horizontal_dropoff_acceleration: 2.0
     # Common for both trajectories is acceleration between dropoff and stopping
@@ -178,7 +178,7 @@ path_planner:
 
 toppra_trajectory:
   # Maximum velocities for [x, y, z, yaw]
-  velocities: [2, 2, 1, 1]
+  velocities: [1.5, 1.5, 0.75, 1]
   # Maximum accelerations for [x, y, z, yaw]
   accelerations: [0.8, 0.8, 0.5, 0.8]
   # If using SO states angular must be set to 1
@@ -220,7 +220,7 @@ state_validity_checker:
 
   # Prism will be a set of rectangles
   prism:
-    x_dimension: 2.0
-    y_dimension: 2.0
+    x_dimension: 1.75
+    y_dimension: 1.75
     z_dimension: 1.0
     resolution: 0.2
