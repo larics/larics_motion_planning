@@ -201,7 +201,9 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
             bool valid_flag = true;
             // Check parabola candidate for collision
             valid_flag &= checkParabolaForCollision(transformed_parabola);
-            cout << valid_flag << endl;
+            cout << "Parabola validity: " << valid_flag << endl;
+            // TODO: remove this later. Override for outdoor kopterworx case.
+            valid_flag = true;
             // Check stopping trajectory for collision
             valid_flag &= checkTrajectoryForCollision(stopping_trajectory);
             if (valid_flag == false) continue;
