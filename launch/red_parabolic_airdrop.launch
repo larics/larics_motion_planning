@@ -22,6 +22,8 @@
       <param name="airdrop" value="true"/>
     </node>
 
+    <node name="red_plan_airdrop_from_current_reference" pkg="larics_motion_planning" type="red_plan_airdrop_from_current_reference.py" output="screen" />
+
     <node pkg="rosserial_python" name="serial_node" type="serial_node.py" args="/dev/ttyUSB1"/>
 
     <!--node name="parabola_info_vector_to_path" pkg="larics_motion_planning" type="parabola_info_vector_to_path.py" output="screen"/-->
