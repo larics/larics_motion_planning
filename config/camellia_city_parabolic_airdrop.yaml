@@ -50,6 +50,7 @@ global_planner:
     use_horizontal_stopping_acceleration: false
     horizontal_stopping_acceleration: 4.0
     # Dropoff trajectory parameters [x, y, z, yaw]
+    max_line_integral: 5.0
     dropoff_velocity: [4, 4, 3, 2.0]
     dropoff_acceleration: [1.5, 1.5, 1.0, 1.0]
     use_horizontal_dropoff_acceleration: false

@@ -80,6 +80,7 @@ class ParabolicAirdropPlanner : public GlobalPlanner
     Eigen::MatrixXd stopping_trajectory_constraints_, 
       dropoff_trajectory_constraints_;
     Eigen::VectorXd intermediate_acceleration_;
+    double dropoff_max_line_integral_;
     double spline_sampling_time_;
     double psi_min_, psi_max_;
     double horizontal_stopping_acceleration_, horizontal_dropoff_acceleration_,

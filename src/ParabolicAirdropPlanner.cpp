@@ -54,6 +54,10 @@ bool ParabolicAirdropPlanner::configureParabolicAirdropFromFile(
     intermediate_acceleration_(i) = intermediate_acc[i];
   }
 
+  // Max line integral is used in dropoff spline calculation.
+  dropoff_max_line_integral_ = config["global_planner"]["parabolic_airdrop"]["max_line_integral"].as<double>();
+
+
   // Horizontal acceleration option
   use_horizontal_stopping_acceleration_ = config["global_planner"]["parabolic_airdrop"]["use_horizontal_stopping_acceleration"].as<bool>();
   horizontal_stopping_acceleration_ = config["global_planner"]["parabolic_airdrop"]["horizontal_stopping_acceleration"].as<double>();
@@ -558,11 +562,10 @@ Trajectory ParabolicAirdropPlanner::planDropoffSpline(
     dropoff_trajectory_constraints_(1,1) = horizontal_dropoff_acceleration_*sin(psi);
   }
 
-
   // Go backwards through the trajectory and find appropriate start point for
   // the dropoff spline.
   double line_integral = 0.0;
-  double max_line_integral = 5.0;
+  double max_line_integral = dropoff_max_line_integral_;
   double line_integral_increment = 0.5;
   double current_cutoff = 0.0;
   int end = trajectory.position.rows()-1;
