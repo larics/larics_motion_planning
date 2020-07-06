@@ -122,6 +122,7 @@ class JointTrajectoryToKopterworx:
                 
                 if len(self.joint_trajectory.points) == 0:
                     self.executing_trajectory_flag = False
+                    print "Trajectory executed."
                     if self.airdrop_flag == True:
                         self.magnet_gain = 1.0
                         self.airdrop_counter = 0

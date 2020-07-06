@@ -29,8 +29,11 @@ class UavGoTo:
         #rospy.Subscriber('msf_core/pose', PoseWithCovarianceStamped, 
         #    self.msfCorePoseCallback, queue_size=1)
         # Subscriber for NEO reference
-        rospy.Subscriber('command/current_reference', 
-            MultiDOFJointTrajectory, self.currentReferenceCallback, 
+        #rospy.Subscriber('command/current_reference', 
+        #    MultiDOFJointTrajectory, self.currentReferenceCallback, 
+        #    queue_size=1)
+        rospy.Subscriber('carrot/trajectory', 
+            MultiDOFJointTrajectoryPoint, self.carrotReferenceCallback, 
             queue_size=1)
         rospy.Subscriber('go_to/reference', Pose, 
             self.uavReferenceCallback, queue_size=1)
@@ -56,6 +59,15 @@ class UavGoTo:
         self.uav_current_pose.orientation.w = msg.points[0].transforms[0].rotation.w
 
         #print self.uav_current_pose
+
+    def carrotReferenceCallback(self, msg):
+        self.uav_current_pose.position.x = msg.transforms[0].translation.x
+        self.uav_current_pose.position.y = msg.transforms[0].translation.y
+        self.uav_current_pose.position.z = msg.transforms[0].translation.z
+        self.uav_current_pose.orientation.x = msg.transforms[0].rotation.x
+        self.uav_current_pose.orientation.y = msg.transforms[0].rotation.y
+        self.uav_current_pose.orientation.z = msg.transforms[0].rotation.z
+        self.uav_current_pose.orientation.w = msg.transforms[0].rotation.w
 
 
     def uavReferenceCallback(self, msg):
