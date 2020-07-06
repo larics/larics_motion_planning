@@ -576,7 +576,7 @@ Trajectory ParabolicAirdropPlanner::planDropoffSpline(
 
   // Go backwards through the trajectory and find appropriate start point for
   // the dropoff spline.
-  double line_integral = 0.0;
+  double line_integral = 0.5;
   double max_line_integral = dropoff_max_line_integral_;
   double line_integral_increment = 0.5;
   double current_cutoff = 0.0;
