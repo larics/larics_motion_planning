@@ -106,7 +106,7 @@ class JointTrajectoryToKopterworx:
                         self.magnet_gain = 1.0
                     # If we are at some range from the dropoff point or the 
                     # delta has started increasing, drop the ball
-                    if self.airdrop_counter >= 1 and (self.delta < 55.1 or 
+                    if self.airdrop_counter >= 1 and (self.delta < 0.25 or 
                         self.delta > self.delta_previous):
                         self.magnet_gain = 0.0
                         if ball_released_flag == False:
