@@ -67,7 +67,8 @@ global_planner:
 
 
 octomap:
-  path_to_file: "catkin_ws/src/larics_gazebo_worlds/models/borongaj/borongaj.binvox.bt"
+  #path_to_file: "catkin_ws/src/larics_gazebo_worlds/models/borongaj/borongaj.binvox.bt"
+  path_to_file: "catkin_ws/src/larics_motion_planning/config/empty_map.binvox.bt"
   # Search depth of octomap tree. 16 is best resolution, slowest search(although
   # experience shows that there is no significant increase in search time by 
   # setting this parameter to < 16)
