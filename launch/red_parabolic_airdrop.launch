@@ -1,7 +1,7 @@
 <launch>
   <arg name="rate" default="10" />
   <arg name="namespace" default="red" />
-  <arg name="map" type="bool" default="false" />
+  <arg name="map" default="false" />
 
   <group ns="$(arg namespace)">
     <node name="generate_toppra_trajectory" pkg="topp_ros" type="generate_toppra_trajectory.py" output="screen" />
@@ -25,7 +25,7 @@
 
     <node name="red_plan_airdrop_from_current_reference" pkg="larics_motion_planning" type="red_plan_airdrop_from_current_reference.py" output="screen" />
 
-    <node pkg="rosserial_python" name="serial_node" type="serial_node.py" args="/dev/ttyUSB1"/>
+    <node pkg="rosserial_python" name="serial_node" type="serial_node.py" args="/dev/ttyUSB_arduino"/>
 
     <!--node name="parabola_info_vector_to_path" pkg="larics_motion_planning" type="parabola_info_vector_to_path.py" output="screen"/-->
 
