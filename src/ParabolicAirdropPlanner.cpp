@@ -361,7 +361,7 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
   // acceleration for x and y axes that points opposite to release
   // direction
   double intermediate_acc_x, intermediate_acc_y;
-  if (use_horizontal_intermediate_acceleration_ == true){
+  if (use_horizontal_intermediate_acceleration_ == false){
     intermediate_acc_x = intermediate_acceleration_(0);
     intermediate_acc_y = intermediate_acceleration_(1);
   }
@@ -379,10 +379,17 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
     v*cos(alpha)*sin(psi), 0, intermediate_acc_y, 0,
     transformed_parabola(0,2)+payload_z_offset_, transformed_parabola(0,2)+payload_z_offset_, 
     v*sin(alpha), 0, intermediate_acceleration_(2), 0,
-    yaw, yaw, 0, 0, intermediate_acceleration_(3), 0;
+    psi, psi, 0, 0, intermediate_acceleration_(3), 0;
   if (use_horizontal_stopping_acceleration_ == true){
-    stopping_trajectory_constraints_(0,1) = horizontal_stopping_acceleration_*cos(psi);
-    stopping_trajectory_constraints_(1,1) = horizontal_stopping_acceleration_*sin(psi);
+    stopping_trajectory_constraints_(0,1) = fabs(horizontal_stopping_acceleration_*cos(psi));
+    if (stopping_trajectory_constraints_(0,1) < 0.1){
+      stopping_trajectory_constraints_(0,1) = 0.1;
+    }
+    // Tu je problem NE MOŽE SINUS ZA CONSTRAINTOVE
+    stopping_trajectory_constraints_(1,1) = fabs(horizontal_stopping_acceleration_*sin(psi));
+    if (stopping_trajectory_constraints_(1,1) < 0.1){
+      stopping_trajectory_constraints_(1,1) = 0.1;
+    }
   }
   spline_interpolator_.generateTrajectoryNoSync(conditions, 
     stopping_trajectory_constraints_, spline_sampling_time_);
@@ -402,7 +409,7 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
   waypoints << uav_pose(0), uav_pose(1), uav_pose(2), yaw, 
     //uav_pose(0), uav_pose(1), transformed_parabola(0, 2)+payload_z_offset_, yaw, 
     transformed_parabola(0, 0), transformed_parabola(0, 1), 
-    transformed_parabola(0, 2)+payload_z_offset_, yaw;
+    transformed_parabola(0, 2)+payload_z_offset_, psi;
   // Plan trajectory
   if (plan_path == true) {
     this->planPathAndTrajectory(waypoints);
@@ -411,7 +418,6 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
     this->planTrajectory(waypoints);
   }
   Trajectory trajectory = trajectory_interface_->getTrajectory();
-
   // Plan dropoff spline
   Trajectory dropoff_trajectory;
   int dropoff_index = 0;
@@ -558,8 +564,14 @@ Trajectory ParabolicAirdropPlanner::planDropoffSpline(
 
   // If horizontal dropoff acceleration constraint is being used account for it
   if (use_horizontal_dropoff_acceleration_ == true){
-    dropoff_trajectory_constraints_(0,1) = horizontal_dropoff_acceleration_*cos(psi);
-    dropoff_trajectory_constraints_(1,1) = horizontal_dropoff_acceleration_*sin(psi);
+    dropoff_trajectory_constraints_(0,1) = fabs(horizontal_dropoff_acceleration_*cos(psi));
+    if (dropoff_trajectory_constraints_(0,1) < 0.1){
+      dropoff_trajectory_constraints_(0,1) = 0.1;
+    }
+    dropoff_trajectory_constraints_(1,1) = fabs(horizontal_dropoff_acceleration_*sin(psi));
+    if (dropoff_trajectory_constraints_(1,1) < 0.1){
+      dropoff_trajectory_constraints_(1,1) = 0.1;
+    }
   }
 
   // Go backwards through the trajectory and find appropriate start point for

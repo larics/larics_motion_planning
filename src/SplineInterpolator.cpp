@@ -39,16 +39,20 @@ bool SplineInterpolator::generateSplineOrder5(Eigen::VectorXd conditions,
     sample_time);
 
   while (fabs(s-1.0) > 0.01){
-    if (s>1.0) s = 1.01;
-    else s = 0.99;
+    coefficients = getSplineOrder5Coefficients(conditions, t);
+    s = calculateTimeScalingFactor(coefficients, constraints, duration, 
+    sample_time);
+    if (fabs(s-1.0) < 0.01){
+      break;
+    }
+    
+    if (s>1.0) s = 1.001;
+    else s = 0.999;
     duration *= s;
     t(0) = 1.0;
     for (int i=1; i<6; i++){ 
       t(i) = t(i-1)*duration;
     }
-    coefficients = getSplineOrder5Coefficients(conditions, t);
-    s = calculateTimeScalingFactor(coefficients, constraints, duration, 
-    sample_time);
   }
   spline_ = sampleTrajectory(coefficients, duration, sample_time);
   spline_duration_ = spline_.time(spline_.time.size()-1);
