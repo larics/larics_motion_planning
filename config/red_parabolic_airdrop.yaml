@@ -45,17 +45,17 @@ global_planner:
     payload_z_offset: 0.44
 
     # Stopping trajectory constraints [x, y, z, yaw]
-    stopping_velocity: [8, 8, 3, 2]
-    stopping_acceleration: [4, 4, 1, 2.0]
+    stopping_velocity: [4, 4, 4, 2]
+    stopping_acceleration: [0.8, 0.8, 0.8, 1.0]
     use_horizontal_stopping_acceleration: true
-    horizontal_stopping_acceleration: 1.5
+    horizontal_stopping_acceleration: 1.0
     # Dropoff trajectory constraints [x, y, z, yaw]
     # Sometimes dropoff spline gets stuck, look into that.
-    max_line_integral: 10.0
+    max_line_integral: 7.5
     dropoff_velocity: [4, 4, 3, 2]
-    dropoff_acceleration: [0.8, 0.8, 0.8, 1.0]
+    dropoff_acceleration: [0.8, 0.8, 0.6, 1.0]
     use_horizontal_dropoff_acceleration: false
-    horizontal_dropoff_acceleration: 2.0
+    horizontal_dropoff_acceleration: 1.0
     # Common for both trajectories is acceleration between dropoff and stopping
     # trajectories. The idea is to have a positive z-direction acceleration so
     # the uav does not interact with dropped object. [x, y, z, yaw]
@@ -183,7 +183,7 @@ toppra_trajectory:
   # Maximum velocities for [x, y, z, yaw]
   velocities: [1.5, 1.5, 0.75, 1]
   # Maximum accelerations for [x, y, z, yaw]
-  accelerations: [0.8, 0.8, 0.5, 0.8]
+  accelerations: [0.5, 0.5, 0.5, 0.8]
   # If using SO states angular must be set to 1
   is_angular: [0, 0, 0, 0]
   # Trajectory sampling frequency
