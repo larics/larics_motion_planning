@@ -21,6 +21,9 @@ bool SplineInterpolator::generateSplineOrder5(Eigen::VectorXd conditions,
     return false;
   }
 
+  //cout << "Conditions: " << endl << conditions << endl;
+  //cout << "Constraints: " << endl << constraints << endl; 
+
   // Assume the time and round it to nearest multiple of sample time.
   double duration = fabs(conditions(1)-conditions(0))/constraints(0) + 
     fabs(conditions(3)-conditions(2)/constraints(1));
@@ -41,14 +44,16 @@ bool SplineInterpolator::generateSplineOrder5(Eigen::VectorXd conditions,
   while (fabs(s-1.0) > 0.01){
     coefficients = getSplineOrder5Coefficients(conditions, t);
     s = calculateTimeScalingFactor(coefficients, constraints, duration, 
-    sample_time);
+      sample_time);
+    //cout << "s: " << s << endl;
     if (fabs(s-1.0) < 0.01){
       break;
     }
     
-    if (s>1.0) s = 1.001;
-    else s = 0.999;
-    duration *= s;
+    double scaler = s;
+    if (scaler>1.0) scaler = 1.001;
+    else scaler = 0.999;
+    duration *= scaler;
     t(0) = 1.0;
     for (int i=1; i<6; i++){ 
       t(i) = t(i-1)*duration;
@@ -88,11 +93,16 @@ bool SplineInterpolator::generateTrajectory(Eigen::MatrixXd conditions,
 {
   // There will be n trajectories depending on the rows of conditions
   // TODO: check number of conditions and decide the spline order.
+  //cout << "====================================================" << endl;
 
   double max_time = 0.0;
+  //cout << "---" << endl;
   for (int i=0; i<conditions.rows(); i++){
     generateSplineOrder5((conditions.row(i)).transpose(),
       (constraints.row(i)).transpose(), sample_time);
+    //cout << "i: " << i << endl;
+    //cout << spline_.velocity.maxCoeff() << " " << spline_.velocity.minCoeff() << endl;
+    //cout << spline_.acceleration.maxCoeff() << " " << spline_.acceleration.minCoeff() << endl;
     //cout << "Spline duration " << spline_duration_ << endl;
     if (max_time < spline_duration_){
       max_time = spline_duration_;
@@ -116,8 +126,12 @@ bool SplineInterpolator::generateTrajectory(Eigen::MatrixXd conditions,
     trajectory_.acceleration.block(0, i, n, 1) = spline_.acceleration;
     trajectory_.jerk.block(0, i, n, 1) = spline_.jerk;
     trajectory_.split.block(0, i, n, 1) = spline_.split;
+    //cout << "i: " << i << endl;
+    //cout << spline_.velocity.maxCoeff() << " " << spline_.velocity.minCoeff() << endl;
+    //cout << spline_.acceleration.maxCoeff() << " " << spline_.acceleration.minCoeff() << endl;
   }
   trajectory_.time = spline_.time;
+  //cout << "====================================================" << endl;
 
   return true;
 }
@@ -293,7 +307,6 @@ double SplineInterpolator::calculateTimeScalingFactor(
     trajectory_.velocity.minCoeff()));
   max_dynamic(1) = max(fabs(trajectory_.acceleration.maxCoeff()), fabs(
     trajectory_.acceleration.minCoeff()));
-  //cout << max_dynamic << endl;
 
   s = max(max_dynamic(0)/constraints(0), sqrt(max_dynamic(1)/constraints(1)));
 

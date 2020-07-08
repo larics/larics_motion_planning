@@ -618,6 +618,7 @@ Trajectory ParabolicAirdropPlanner::planDropoffSpline(
       dropoff_index = i;
       spline_list.push_back(dropoff_spline);
       spline_index.push_back(dropoff_index);
+      //if (line_integral > 6.75) exit(0);
     }
   }
 
@@ -692,8 +693,8 @@ int ParabolicAirdropPlanner::chooseBestTrajectory(
       //cout << "RMS velocity " << velocity_rms << endl;
       //cout << "RMS acceleration " << acceleration_rms << endl;
 
-      double measure = ratio;
-      //cout << "Line integral is " << i << " " << line_integral << endl;
+      double measure = ratio;//*line_integral;
+      //cout << "Line integral is " << i << " " << line_integral << " " << measure << endl;
       //cout << "Trajectory length " << spline_list[i].position.rows() << endl;
       // If this indeed is a better trajectory then set it as such
       if (measure < min_measure){
