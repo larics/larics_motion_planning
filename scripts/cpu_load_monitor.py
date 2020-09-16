@@ -11,6 +11,8 @@ class MonitorCpu:
   def __init__(self):
     self.cpu_memory_pub = rospy.Publisher('cpu_memory', Float64MultiArray, 
       queue_size=1)
+    self.cpu_freq_pub = rospy.Publisher('cpu_freq', Float64MultiArray,
+      queue_size=1)
     self.rate = rospy.get_param('~rate', 50)
 
   def run(self):
@@ -35,6 +37,15 @@ class MonitorCpu:
       multi_array.data.append(swap_load.percent)
 
       self.cpu_memory_pub.publish(multi_array)
+
+
+      # Get cpu frequency
+      cpu_freq = psutil.cpu_freq(percpu=True)
+      freq_multi_array = Float64MultiArray()
+      for i in range(len(cpu_freq)):
+        freq_multi_array.data.append(cpu_freq[i][0])
+
+      self.cpu_freq_pub.publish(freq_multi_array)
 
 
 if __name__ == '__main__':
