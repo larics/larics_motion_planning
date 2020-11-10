@@ -694,14 +694,14 @@ custom_psi_params: [-14, 2, -14]"
 
 rostopic pub -r 10 /red/carrot/trajectory trajectory_msgs/MultiDOFJointTrajectoryPoint "transforms:
 - translation:
-    x: -3.0
-    y: 48.75
-    z: 5.0
+    x: -4.13
+    y: 45.85
+    z: 5.7
   rotation:
     x: 0.0
     y: 0.0
-    z: -0.707
-    w: 0.707
+    z: 0.0
+    w: 1.0
 velocities:
 - linear:
     x: 0.0
