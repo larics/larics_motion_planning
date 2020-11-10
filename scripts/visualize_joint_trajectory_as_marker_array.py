@@ -23,6 +23,12 @@ class JointTrajectoryToMarkerArray:
         self.marker_array = MarkerArray()
         self.id = 1
 
+        # For multiple trajectories use array of predefined colors
+        self.color_hex_array = ["#00876c", "#40996f", "#67aa72", "#8bbb77", 
+            "#b0cb7e", "#d5da88", "#fbe895", "#f8ce7c", "#f5b468", "#f0985a", 
+            "#ea7b52", "#e15e4f", "#d43d51"]
+        self.current_color_id = 0
+
         self.marker_array_pub = rospy.Publisher(
             'visualization/multiple_trajectories', MarkerArray, queue_size=1)
 
@@ -34,6 +40,7 @@ class JointTrajectoryToMarkerArray:
         rate = rospy.Rate(self.rate)
         while not rospy.is_shutdown():
             rate.sleep()
+            self.marker_array_pub.publish(self.marker_array)
 
     def jointTrajectoryCallback(self, msg):
         print "Received a trajectory."
@@ -49,6 +56,7 @@ class JointTrajectoryToMarkerArray:
         marker.type = Marker.LINE_LIST
         marker.action = Marker.ADD
         marker.id = idd
+        marker.ns = str(idd)
 
         marker.header.stamp = rospy.Time.now()
         marker.header.frame_id = "world"
@@ -58,13 +66,18 @@ class JointTrajectoryToMarkerArray:
         marker.pose.position.z = 0.0
         marker.pose.orientation.w = 1.0
 
-        marker.scale.x = 0.04
+        marker.scale.x = 0.04*5.0
         #marker.scale.y = 0.1
         #marker.scale.z = 0.1
 
-        marker.color.r = 0.0
-        marker.color.g = 1.0
-        marker.color.b = 1.0
+        # Choose color
+        color_id = self.current_color_id % len(self.color_hex_array)
+        self.current_color_id = self.current_color_id + 1
+        rgb = hex_to_rgb(self.color_hex_array[color_id])
+
+        marker.color.r = rgb[0]/255.0
+        marker.color.g = rgb[1]/255.0
+        marker.color.b = rgb[2]/255.0
         marker.color.a = 1.0
 
         marker.lifetime = rospy.Duration()
@@ -83,6 +96,10 @@ class JointTrajectoryToMarkerArray:
         return marker
 
 
+def hex_to_rgb(value):
+    value = value.lstrip('#')
+    lv = len(value)
+    return tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
 
 if __name__ == '__main__':
 
