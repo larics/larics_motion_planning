@@ -1,0 +1,43 @@
+<launch>
+  <arg name="rate" default="10" />
+  <arg name="namespace" default="red" />
+
+  <group ns="$(arg namespace)">
+    <node name="generate_toppra_trajectory" pkg="topp_ros" type="generate_toppra_trajectory.py" output="screen" />
+
+    <node name="global_planner" pkg="larics_motion_planning" type="global_planner_node" output="screen">
+      <param name="rate" value="$(arg rate)" />
+      <param name="global_planner_config_file" value="$(find larics_motion_planning)/config/red_parabolic_airdrop.yaml" />
+
+      <param name="state_scale" value="0.1" />
+      <param name="waypoints_scale" value="0.5" />
+
+      <param name="latch_trajectory" value="false" />
+      <param name="latch_info_vector" value="false" />
+    </node>
+
+    <node name="uav_trajectory_go_to" pkg="larics_motion_planning" type="uav_trajectory_go_to.py" output="screen"/>
+
+    <node name="joint_trajectory_with_airdrop_to_kopterworx" pkg="larics_motion_planning" type="joint_trajectory_with_airdrop_to_kopterworx.py" output="screen">
+      <param name="airdrop" value="true"/>
+    </node>
+
+    <node name="red_plan_airdrop_from_current_reference" pkg="larics_motion_planning" type="red_plan_airdrop_from_current_reference.py" output="screen" />
+
+    <!--node pkg="rosserial_python" name="serial_node" type="serial_node.py" args="/dev/ttyUSB1"/-->
+
+    <!--node name="parabola_info_vector_to_path" pkg="larics_motion_planning" type="parabola_info_vector_to_path.py" output="screen"/-->
+
+    <node name="visualize_pose" pkg="larics_motion_planning" type="multi_dof_joint_trajectory_point_to_pose.py" output="screen"/>
+
+    <node name="octomap_server_node" pkg="octomap_server" type="octomap_server_node" args="$(find larics_gazebo_worlds)/models/borongaj/borongaj.binvox.bt" output="screen">
+      <param name="frame_id" value="red/map" />
+    </node>
+
+    <node name="world_to_red_map" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 world red/map 10" />
+
+    <!--node name="joint_trajectory_to_marker_array" pkg="larics_motion_planning" type="visualize_joint_trajectory_as_marker_array.py" output="screen" /-->
+
+  </group>
+
+</launch>
