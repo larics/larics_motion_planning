@@ -171,12 +171,12 @@ class TentRviz:
     marker.pose.position.z = 0.0
     marker.pose.orientation.w = 1.0
 
-    marker.scale.x = 0.1
-    marker.scale.y = 0.1
-    marker.scale.z = 0.1
+    marker.scale.x = 0.15
+    marker.scale.y = 0.15
+    marker.scale.z = 0.15
 
     marker.color.r = 1.0
-    marker.color.g = 1.0
+    marker.color.g = 145.0/255.0
     marker.color.b = 0.0
     marker.color.a = 0.8
 
@@ -226,11 +226,11 @@ class TentRviz:
 
     marker.pose.position.x = 0.0
     marker.pose.position.y = -3.25
-    marker.pose.position.z = 0.0
+    marker.pose.position.z = 0.17
     marker.pose.orientation.w = 1.0
 
-    marker.scale.x = 0.25
-    marker.scale.y = 0.25
+    marker.scale.x = 0.4
+    marker.scale.y = 0.4
     marker.scale.z = 0.001
 
     marker.color.r = 1.0
@@ -254,11 +254,11 @@ class TentRviz:
 
     marker.pose.position.x = 0.0
     marker.pose.position.y = -3.25
-    marker.pose.position.z = 0.01
+    marker.pose.position.z = 0.18
     marker.pose.orientation.w = 1.0
 
-    marker.scale.x = 0.1
-    marker.scale.y = 0.1
+    marker.scale.x = 0.15
+    marker.scale.y = 0.15
     marker.scale.z = 0.001
 
     marker.color.r = 0.93
