@@ -7,7 +7,7 @@
 
     <node name="global_planner" pkg="larics_motion_planning" type="global_planner_node" output="screen">
       <param name="rate" value="$(arg rate)" />
-      <param name="global_planner_config_file" value="$(find larics_motion_planning)/config/camellia_city_parabolic_airdrop.yaml" />
+      <param name="global_planner_config_file" value="$(find larics_motion_planning)/config/uav_only_config_example.yaml" />
 
       <param name="state_scale" value="0.05" />
       <param name="waypoints_scale" value="0.5" />
@@ -17,12 +17,14 @@
       <param name="airdrop" value="true"/>
     </node>
 
-    <node name="uav_trajectory_go_to" pkg="larics_motion_planning" type="uav_trajectory_go_to.py" output="screen"/>
+    <node name="uav_trajectory_go_to" pkg="larics_motion_planning" type="uav_trajectory_go_to.py" output="screen">
+      <param name="uav_type" value="arducopter_sim" />
+    </node>
 
     <node name="spawn_ball_at_uav" pkg="larics_motion_planning" type="spawn_ball_at_uav.py" />
   </group>
 
-  <node name="octomap_server_node" pkg="octomap_server" type="octomap_server_node" args="$(find larics_gazebo_worlds)/models/camellia_city/camellia_city_building.binvox.bt" output="screen">
+  <!--node name="octomap_server_node" pkg="octomap_server" type="octomap_server_node" args="$(find larics_gazebo_worlds)/models/mbzirc_tower/mbzirc_tower.binvox.bt" output="screen">
     <param name="frame_id" value="world" />
-  </node>
+  </node-->
 </launch>

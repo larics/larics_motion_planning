@@ -461,6 +461,7 @@ override_dynamic_constraints: false
 velocity_constraints: [0]
 acceleration_constraints: [0]"
 
+City
 rosservice call /uav/parabolic_airdrop_trajectory "uav_pose:
   position: {x: -30.0, y: -100.0, z: 2.0}
   orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}

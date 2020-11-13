@@ -54,6 +54,9 @@ global_planner:
     dropoff_acceleration: [1.5, 1.5, 1, 1.0]
     use_horizontal_dropoff_acceleration: false
     horizontal_dropoff_acceleration: 2.0
+    # Max line integral for dropoff trajectory is the max length of toppra
+    # trajectory that is going to be replaced with the dropoff spline
+    max_line_integral: 5.0
     # Common for both trajectories is acceleration between dropoff and stopping
     # trajectories. The idea is to have a positive z-direction acceleration so
     # the uav does not interact with dropped object. [x, y, z, yaw]
@@ -65,7 +68,7 @@ global_planner:
 
 
 octomap:
-  path_to_file: "catkin_ws/src/larics_gazebo_worlds/models/greenhouse/greenhouse4096.binvox.bt"
+  path_to_file: "catkin_ws/src/larics_motion_planning/config/empty_map.binvox.bt"
   # Search depth of octomap tree. 16 is best resolution, slowest search(although
   # experience shows that there is no significant increase in search time by 
   # setting this parameter to < 16)

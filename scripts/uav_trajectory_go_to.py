@@ -24,17 +24,30 @@ class UavGoTo:
         self.first_pose_received = False
         self.uav_current_pose = Pose()
         self.uav_reference_pose = Pose()
-        #rospy.Subscriber('pose', PoseStamped, self.uavPoseCallback, 
-        #    queue_size=1)
+
+        # UAV type defines feedback source.
+        self.uav_type = rospy.get_param('~uav_type', "kopterworx")
+
+        # Gazebo arducopter simulation
+        if self.uav_type == "arducopter_sim":
+            rospy.Subscriber('pose', PoseStamped, self.uavPoseCallback, 
+                queue_size=1)
         #rospy.Subscriber('msf_core/pose', PoseWithCovarianceStamped, 
         #    self.msfCorePoseCallback, queue_size=1)
         # Subscriber for NEO reference
-        #rospy.Subscriber('command/current_reference', 
-        #    MultiDOFJointTrajectory, self.currentReferenceCallback, 
-        #    queue_size=1)
-        rospy.Subscriber('carrot/trajectory', 
-            MultiDOFJointTrajectoryPoint, self.carrotReferenceCallback, 
-            queue_size=1)
+        elif self.uav_type == "neo":
+            rospy.Subscriber('command/current_reference', 
+                MultiDOFJointTrajectory, self.currentReferenceCallback, 
+                queue_size=1)
+        elif self.uav_type == "kopterworx":
+            rospy.Subscriber('carrot/trajectory', 
+                MultiDOFJointTrajectoryPoint, self.carrotReferenceCallback, 
+                queue_size=1)
+        else:
+            print("Unknown uav_type parameter. Exiting uav_trajectory_go_to.")
+            exit(0)
+
+        # New reference subscriber
         rospy.Subscriber('go_to/reference', Pose, 
             self.uavReferenceCallback, queue_size=1)
 
