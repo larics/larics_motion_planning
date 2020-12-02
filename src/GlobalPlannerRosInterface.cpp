@@ -374,6 +374,9 @@ bool GlobalPlannerRosInterface::parabolicAirdropTrajectoryCallback(
     req.target_pose.orientation.y, req.target_pose.orientation.z, 
     req.target_pose.orientation.w;
 
+  // Begin measuring trajectory planning time
+  ros::Time time_start = ros::Time::now();
+
   if (req.plan_trajectory == false){
     res.success = false;
     cout << "Plan trajectory must be set to true for parabolic trajectory" << endl;
@@ -441,6 +444,9 @@ bool GlobalPlannerRosInterface::parabolicAirdropTrajectoryCallback(
     }
   }
 
+  // End measuring trajectory planning time
+  ros::Time time_end = ros::Time::now();
+
   // Publish parabola info vector
   Eigen::VectorXd info = global_planner_->getInfoVector();
   std_msgs::Float64MultiArray info_array;
@@ -457,6 +463,20 @@ bool GlobalPlannerRosInterface::parabolicAirdropTrajectoryCallback(
   if (req.publish_path){
 
   }
+
+  // Calculate trajectory length
+  double d = 0.0;
+  for (int i=1; i<res.trajectory.points.size(); i++){
+    double dx = res.trajectory.points[i].positions[0] - res.trajectory.points[i-1].positions[0];
+    double dy = res.trajectory.points[i].positions[1] - res.trajectory.points[i-1].positions[1];
+    double dz = res.trajectory.points[i].positions[2] - res.trajectory.points[i-1].positions[2];
+
+    d += sqrt(dx*dx + dy*dy + dz*dz);
+  }
+
+  // Print relevant values
+  cout << "Planning time: " << (time_end - time_start).toSec() << endl;
+  cout << "Trajectory length: " << d << endl;
 
   cout << "Parabolic trajectory service callback finished." << endl << endl;
 
