@@ -4,7 +4,7 @@ __author__ = 'aivanovic'
 
 import rospy, math, time
 from math import sin, cos
-from geometry_msgs.msg import Twist, Transform
+from geometry_msgs.msg import Twist, Transform, PoseStamped
 from nav_msgs.msg import Odometry
 from std_msgs.msg import Float64, Empty, Int32
 from sensor_msgs.msg import Imu
@@ -44,10 +44,13 @@ class JointTrajectoryToUavAndWpManipulatorReference:
         self.uav_current_trajectory_point = MultiDOFJointTrajectoryPoint()
         self.roll = 0
         self.pitch = 0
+        self.uav_current_pose = PoseStamped()
+        self.uav_current_yaw = 0.0
 
         #rospy.Subscriber('joint_trajectory', JointTrajectory, 
         #    self.jointTrajectoryCallback, queue_size=1)
         rospy.Subscriber('imu', Imu, self.imuCallback, queue_size=1)
+        rospy.Subscriber('pose', PoseStamped, self.uavPoseCallback, queue_size=1)
 
         self.execute_trajectory_service = rospy.Service('execute_trajectory', 
             MultiDofTrajectory, self.executeTrajectoryCallback)
@@ -82,7 +85,7 @@ class JointTrajectoryToUavAndWpManipulatorReference:
             return response
 
         print "Starting to execute trajectory. Length: ", len(req.waypoints.points)
-        # Go through all points
+        # Go through all points and execute the trajectory point by point
         response = MultiDofTrajectoryResponse()
         rate = rospy.Rate(self.rate)
         for i in range(len(req.waypoints.points)):
@@ -91,6 +94,7 @@ class JointTrajectoryToUavAndWpManipulatorReference:
                 self.current_trajectory_point)
             self.publishAll()
 
+            # Record the roll and pitch data and place it in response
             point = copy.deepcopy(self.current_trajectory_point)
             lst = list(point.positions)
             lst[3] = self.roll
@@ -98,8 +102,23 @@ class JointTrajectoryToUavAndWpManipulatorReference:
             point.positions = tuple(lst)
             response.trajectory.points.append(point)
 
+            # Also record the executed positions and yaw
+            point_executed = copy.deepcopy(point)
+            lst = list(point_executed.positions)
+            lst[0] = self.uav_current_pose.pose.position.x
+            lst[1] = self.uav_current_pose.pose.position.y
+            lst[2] = self.uav_current_pose.pose.position.z
+            lst[3] = self.roll
+            lst[4] = self.pitch
+            lst[5] = self.uav_current_yaw
+            point_executed.positions = tuple(lst)
+            response.executed_trajectory.points.append(point_executed)
+
             rate.sleep()
 
+        # Since the UAV 'lags' when executing the trajectory we want to
+        # prolong the roll and pitch recording until the UAV gets to the steady
+        # state.
         tstart = time.time()
         while True: #(((abs(self.roll) > 0.001) or (abs(self.pitch) > 0.001)) or ((time.time() - tstart) < 0.5)):
             point = copy.deepcopy(self.current_trajectory_point)
@@ -109,6 +128,20 @@ class JointTrajectoryToUavAndWpManipulatorReference:
             point.positions = tuple(lst)
             response.trajectory.points.append(point)
 
+            # Also record the executed positions and yaw
+            point_executed = copy.deepcopy(point)
+            lst = list(point_executed.positions)
+            lst[0] = self.uav_current_pose.pose.position.x
+            lst[1] = self.uav_current_pose.pose.position.y
+            lst[2] = self.uav_current_pose.pose.position.z
+            lst[3] = self.roll
+            lst[4] = self.pitch
+            lst[5] = self.uav_current_yaw
+            point_executed.positions = tuple(lst)
+            response.executed_trajectory.points.append(point_executed)
+
+            # This can be checked through roll and pitch angles.
+            # Also minimum time is required.
             if abs(self.roll) < 0.001 and abs(self.pitch) < 0.001 and (time.time()-tstart) > 2.1:
                 break
 
@@ -137,6 +170,16 @@ class JointTrajectoryToUavAndWpManipulatorReference:
         self.pitch = math.asin(2*(q0*q2 - q3*q1))
         #print "{:10.6f}".format(self.roll), "{:10.6f}".format(self.pitch)
 
+    def uavPoseCallback(self, msg):
+        self.uav_current_pose = msg
+        q0 = msg.pose.orientation.w
+        q1 = msg.pose.orientation.x
+        q2 = msg.pose.orientation.y
+        q3 = msg.pose.orientation.z
+
+        self.uav_current_yaw = math.atan2(2.0*(q0*q3 + q1*q2), 
+            1.0-2.0*(q2*q2+q3*q3))
+
     def publishAll(self):
         self.manipulator_joint1_pub.publish(self.current_trajectory_point.positions[4+2])
         self.manipulator_joint2_pub.publish(self.current_trajectory_point.positions[5+2])
@@ -145,6 +188,7 @@ class JointTrajectoryToUavAndWpManipulatorReference:
         self.manipulator_joint5_pub.publish(self.current_trajectory_point.positions[8+2])
         self.uav_trajectory_point_pub.publish(self.uav_current_trajectory_point)
 
+
 def jointTrajectoryPointToMultiDofJointTrajectoryPoint(joint):
     multi = MultiDOFJointTrajectoryPoint()
 
@@ -152,6 +196,7 @@ def jointTrajectoryPointToMultiDofJointTrajectoryPoint(joint):
     transform.translation.x = joint.positions[0]
     transform.translation.y = joint.positions[1]
     transform.translation.z = joint.positions[2]
+    # Index 5 denotes yaw because we have roll and pitch as placeholders
     transform.rotation.z = math.sin(joint.positions[5]/2.0)
     transform.rotation.w = math.cos(joint.positions[5]/2.0)
 

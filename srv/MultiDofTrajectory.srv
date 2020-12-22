@@ -9,6 +9,7 @@ float64[]                         acceleration_constraints
 ---
 trajectory_msgs/JointTrajectory   trajectory
 trajectory_msgs/JointTrajectory   path
+trajectory_msgs/JointTrajectory   executed_trajectory
 bool                              success
 float64                           path_length
 float64[]                         roll
