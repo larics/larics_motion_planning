@@ -34,11 +34,12 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
     "parabolic_airdrop/info_vector", 1, latch_info_vector);
 
   // TODO: Delete this service. Just testing service for now.
-  empty_service_server_ = nh_.advertiseService("empty_service_test",
-    &GlobalPlannerRosInterface::emptyCallback, this);
+  model_correction_service_server_ = nh_.advertiseService(
+    "model_correction_trajectory",
+    &GlobalPlannerRosInterface::modelCorrectedTrajectoryCallback, this);
   execute_trajectory_client_ = 
     nh_.serviceClient<larics_motion_planning::MultiDofTrajectory>(
-    "/simulate_arducopter");
+    "execute_trajectory"); // /simulate_arducopter
   // Service for planning the cartesian trajectory.
   cartesian_trajectory_server_ = nh_.advertiseService("cartesian_trajectory",
     &GlobalPlannerRosInterface::cartesianTrajectoryCallback, this);
@@ -74,131 +75,227 @@ void GlobalPlannerRosInterface::run()
   }
 }
 
-bool GlobalPlannerRosInterface::emptyCallback(std_srvs::Empty::Request &req, 
-  std_srvs::Empty::Response &res)
+bool GlobalPlannerRosInterface::modelCorrectedTrajectoryCallback(
+  larics_motion_planning::MultiDofTrajectory::Request &req, 
+  larics_motion_planning::MultiDofTrajectory::Response &res)
 {
-  cout << "Empty service working" << endl;
-  Trajectory trajectory = global_planner_->getTrajectory();
+  cout << "Starting the model based trajectory generation." << endl;
 
-  cout << "Cols: " << trajectory.position.cols() << " Rows: " << trajectory.position.rows() << endl;
+  // First plan the initial trajectory by calling the multiDofTrajectoryCallback
+  // This is probably not the best way to do it, but it will work.
+  bool success = false;
+  // Also, don't publish the trajectory, just plan it.
+  bool publish_trajectory_temp = req.publish_trajectory;
+  req.publish_trajectory = false;
+  success = this->multiDofTrajectoryCallback(req, res);
+  req.publish_trajectory = publish_trajectory_temp;
 
-  for (int i=0; i<trajectory.position.rows(); i++){
-    trajectory.position(i, 3) = -0*trajectory.acceleration(i, 1)/9.81;
-    trajectory.position(i, 4) = 0*trajectory.acceleration(i, 0)/9.81;
-    visualization_.setStatePoints(
-      global_planner_->getRobotStatePoints((trajectory.position.row(i)).transpose()));
-    visualization_.publishStatePoints();
-    usleep(10000);
-  }
-  string tempstr;
-  cout << "Animated uncompensated trajectory with roll and pitch estimated from compensation." << endl;
-  //getline(cin, tempstr);
-  //joint_trajectory_pub_.publish(trajectoryToJointTrajectory(trajectory));
-  usleep(1000000);
+  Trajectory trajectory;
+  if (success == true){
 
-  // Send this trajectory to Gazebo simulation and collect information about
-  // roll and pitch
-  larics_motion_planning::MultiDofTrajectory service;
-  service.request.waypoints = trajectoryToJointTrajectory(trajectory);
-  bool success;
-  success = execute_trajectory_client_.call(service);
-  cout << "Service call was: " << success << endl;
-  //cout << service.response.pitch << endl;
-  //exit(0);
-  trajectory_msgs::JointTrajectory rp_trajectory = service.request.waypoints;
-  for (int i=0; i<service.response.pitch.size(); i++){
-    if (i >= service.request.waypoints.points.size()){
-      rp_trajectory.points.push_back(service.request.waypoints.points[
-        service.request.waypoints.points.size()-1]);
+    trajectory = global_planner_->getTrajectory();
+
+    cout << "Cols: " << trajectory.position.cols() << " Rows: " << trajectory.position.rows() << endl;
+
+    for (int i=0; i<trajectory.position.rows(); i++){
+      trajectory.position(i, 3) = -0*trajectory.acceleration(i, 1)/9.81;
+      trajectory.position(i, 4) = 0*trajectory.acceleration(i, 0)/9.81;
+      visualization_.setStatePoints(
+        global_planner_->getRobotStatePoints((trajectory.position.row(i)).transpose()));
+      visualization_.publishStatePoints();
+      usleep(10000);
     }
-    rp_trajectory.points[i].positions[3] = service.response.roll[i];
-    rp_trajectory.points[i].positions[4] = service.response.pitch[i];
-    //cout << service.response.pitch[i] << endl;
+    string tempstr;
+    cout << "Animated uncompensated trajectory with roll and pitch estimated from compensation." << endl;
+    //getline(cin, tempstr);
+    //joint_trajectory_pub_.publish(trajectoryToJointTrajectory(trajectory));
+    usleep(1000000);
+
+    // Send this trajectory to Gazebo simulation and collect information about
+    // roll and pitch
+    larics_motion_planning::MultiDofTrajectory service;
+    service.request.waypoints = trajectoryToJointTrajectory(trajectory);
+    bool execute_trajectory_success;
+    execute_trajectory_success = execute_trajectory_client_.call(service);
+    cout << "Service call was: " << execute_trajectory_success << endl;
+    //cout << service.response.pitch << endl;
+    //exit(0);
+    trajectory_msgs::JointTrajectory rp_trajectory = service.request.waypoints;
+    for (int i=0; i<service.response.pitch.size(); i++){
+      if (i >= service.request.waypoints.points.size()){
+        rp_trajectory.points.push_back(service.request.waypoints.points[
+          service.request.waypoints.points.size()-1]);
+      }
+      rp_trajectory.points[i].positions[3] = service.response.roll[i];
+      rp_trajectory.points[i].positions[4] = service.response.pitch[i];
+      //cout << service.response.pitch[i] << endl;
+    }
+    //trajectory = jointTrajectoryToTrajectory(rp_trajectory);
+    trajectory = jointTrajectoryToTrajectory(service.response.trajectory);
+    // Compensation part
+    // First get fixed transform between uav and manipulator
+    Eigen::Affine3d t_b_l0;
+    t_b_l0 = Eigen::Affine3d::Identity();
+    Eigen::Matrix3d rot_uav_manipulator;
+    // This is for arducopter in simulation
+    rot_uav_manipulator = Eigen::AngleAxisd(3.14159265359, Eigen::Vector3d::UnitZ())
+      * Eigen::AngleAxisd(0,  Eigen::Vector3d::UnitY())
+      * Eigen::AngleAxisd(1.57079632679, Eigen::Vector3d::UnitX());
+    // This is for NEO
+    /*rot_uav_manipulator = Eigen::AngleAxisd(-1.57079632679, Eigen::Vector3d::UnitZ())
+      * Eigen::AngleAxisd(1.57079632679,  Eigen::Vector3d::UnitY())
+      * Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX());*/
+    // 0.075 z displacement for arducopter simulation
+    // 0.125 z displacement for neo
+    t_b_l0.translate(Eigen::Vector3d(0, 0, 0.075));
+    t_b_l0.rotate(rot_uav_manipulator);
+    shared_ptr<KinematicsInterface> kinematics = global_planner_->getKinematicsInterface();
+    // Go through all trajectory points.
+    cout << "Applying model corrections to the end-effector." << endl;
+    for (int i=0; i<trajectory.position.rows(); i++){
+      // Get transform of uav in world frame
+      Eigen::Affine3d t_w_b = Eigen::Affine3d::Identity();
+      t_w_b.translate(Eigen::Vector3d(trajectory.position(i, 0), 
+        trajectory.position(i, 1), trajectory.position(i, 2)));
+      Eigen::Matrix3d r_w_b;
+      // At this point roll and pitch are 0 since we don't plan for them
+      r_w_b = Eigen::AngleAxisd(trajectory.position(i, 5), Eigen::Vector3d::UnitZ())
+        * Eigen::AngleAxisd(trajectory.position(i, 4)*0.0,  Eigen::Vector3d::UnitY())
+        * Eigen::AngleAxisd(trajectory.position(i, 3)*0.0,  Eigen::Vector3d::UnitX());
+      t_w_b.rotate(r_w_b);
+
+      // Transform from l0 to end effector.
+      // TODO: Provjeriti ovaj dio ako ne radi.
+      Eigen::Affine3d t_l0_ee = kinematics->getEndEffectorTransform(
+        (trajectory.position.block(i, 6, 1, 3)).transpose());
+      // Calculate end effector pose in global coordinate system.
+      Eigen::Affine3d t_w_ee = t_w_b*t_b_l0*t_l0_ee;
+      // Now we have pose of the end effector that we desire, and it was planned
+      // without any knowledge of roll and pitch. The idea is to include roll and
+      // pitch now.
+      t_w_b = Eigen::Affine3d::Identity();
+      t_w_b.translate(Eigen::Vector3d(trajectory.position(i, 0), 
+        trajectory.position(i, 1), trajectory.position(i, 2)));
+
+      // Override t_w_b with a point on the planned trajectory that is 
+      // closest to the executed point.
+      /*t_w_b = Eigen::Affine3d::Identity();
+      double x = 0.0;
+      double y = 0.0;
+      double z = 0.0;
+      double hausdorff = 100000.0;
+      Trajectory executed_trajectory = jointTrajectoryToTrajectory(
+        service.response.executed_trajectory);
+      // Search for the closest point
+      for (int j=i; j>=0; j--){
+        double dx = trajectory.position(j, 0) - executed_trajectory.position(i, 0);
+        double dy = trajectory.position(j, 1) - executed_trajectory.position(i, 1);
+        double dz = trajectory.position(j, 2) - executed_trajectory.position(i, 2);
+        double d = sqrt(dx*dx + dy*dy + dz*dz);
+
+        if (d < hausdorff){
+          hausdorff = d;
+          x = trajectory.position(j, 0);
+          y = trajectory.position(j, 1);
+          z = trajectory.position(j, 2);
+        }
+      }
+      cout << "hausdorff: " << hausdorff << endl;
+      t_w_b.translate(Eigen::Vector3d(x, y, z));*/
+
+      // At this point roll and pitch are 0 since we don't plan for them
+      //double roll = -trajectory.acceleration(i, 1)/9.81;
+      //double pitch = trajectory.acceleration(i, 0)/9.81;
+      double roll = trajectory.position(i, 3)*1.0;
+      double pitch = trajectory.position(i, 4);
+      double dy = t_w_ee.translation().y() - t_w_b.translation().y();
+      double dx = t_w_ee.translation().x() - t_w_b.translation().x();
+      double yaw = atan2(dy, dx);
+      r_w_b = Eigen::AngleAxisd(trajectory.position(i, 5) /*yaw*/, Eigen::Vector3d::UnitZ())
+        * Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY())
+        * Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX());
+      t_w_b.rotate(r_w_b);
+
+      // With new transform we can calculate true end effector position in
+      // manipulator base frame. Inverse kinematics works in l0(base manipulator
+      // frame).
+      t_l0_ee = t_b_l0.inverse()*t_w_b.inverse()*t_w_ee;
+
+      // Inverzna za svaku točku. Dodati funkciju inverzne da prima Affine3d
+      // i da vraća VectorXd.
+      bool found_ik;
+      Eigen::VectorXd ik_solution;
+      ik_solution = kinematics->calculateInverseKinematics(t_l0_ee, found_ik);
+      if (found_ik == false) cout << i << " " << yaw << endl;
+      else{
+        trajectory.position.block(i, 6, 1, 3) = ik_solution.transpose();
+      }
+    }
+    cout << "Model corrections applied." << endl;
+    for (int i=0; i<trajectory.position.rows(); i++){
+      //trajectory.position(i, 3) = -trajectory.acceleration(i, 1)/9.81;
+      //trajectory.position(i, 4) = trajectory.acceleration(i, 0)/9.81;
+      //cout << "171" << endl;
+      //cout << (trajectory.position.row(i)).transpose() << endl;
+      visualization_.setStatePoints(
+        global_planner_->getRobotStatePoints((trajectory.position.row(i)).transpose()));
+      //cout << "175" << endl;
+      visualization_.publishStatePoints();
+      usleep(10000);
+    }
+    //cout << "Press enter to publish compensated trajectory" << endl;
+    //getline(cin, tempstr);
+    //joint_trajectory_pub_.publish(trajectoryToJointTrajectory(trajectory));
   }
-  //trajectory = jointTrajectoryToTrajectory(rp_trajectory);
-  trajectory = jointTrajectoryToTrajectory(service.response.trajectory);
-  // Compensation part
-  // First get fixed transform between uav and manipulator
-  Eigen::Affine3d t_b_l0;
-  t_b_l0 = Eigen::Affine3d::Identity();
-  Eigen::Matrix3d rot_uav_manipulator;
-  /*rot_uav_manipulator = Eigen::AngleAxisd(3.14159265359, Eigen::Vector3d::UnitZ())
-    * Eigen::AngleAxisd(0,  Eigen::Vector3d::UnitY())
-    * Eigen::AngleAxisd(1.57079632679, Eigen::Vector3d::UnitX());*/
-  rot_uav_manipulator = Eigen::AngleAxisd(-1.57079632679, Eigen::Vector3d::UnitZ())
-    * Eigen::AngleAxisd(1.57079632679,  Eigen::Vector3d::UnitY())
-    * Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX());
-  t_b_l0.translate(Eigen::Vector3d(0, 0, 0.125));
-  t_b_l0.rotate(rot_uav_manipulator);
-  shared_ptr<KinematicsInterface> kinematics = global_planner_->getKinematicsInterface();
-  // Go through all trajectory points.
-  for (int i=0; i<trajectory.position.rows(); i++){
-    // Get transform of uav in world frame
-    Eigen::Affine3d t_w_b = Eigen::Affine3d::Identity();
-    t_w_b.translate(Eigen::Vector3d(trajectory.position(i, 0), 
-      trajectory.position(i, 1), trajectory.position(i, 2)));
-    Eigen::Matrix3d r_w_b;
-    // At this point roll and pitch are 0 since we don't plan for them
-    r_w_b = Eigen::AngleAxisd(trajectory.position(i, 5), Eigen::Vector3d::UnitZ())
-      * Eigen::AngleAxisd(trajectory.position(i, 4)*0.0,  Eigen::Vector3d::UnitY())
-      * Eigen::AngleAxisd(trajectory.position(i, 3)*0.0,  Eigen::Vector3d::UnitX());
-    t_w_b.rotate(r_w_b);
+  else {
+    cout << "Something went wrong, model corrections not applied!" << endl;
+  }
 
-    // Transform from l0 to end effector.
-    // TODO: Provjeriti ovaj dio ako ne radi.
-    Eigen::Affine3d t_l0_ee = kinematics->getEndEffectorTransform(
-      (trajectory.position.block(i, 6, 1, 3)).transpose());
-    // Calculate end effector pose in global coordinate system.
-    Eigen::Affine3d t_w_ee = t_w_b*t_b_l0*t_l0_ee;
-    // Now we have pose of the end effector that we desire, and it was planned
-    // without any knowledge of roll and pitch. The idea is to include roll and
-    // pitch now.
-    t_w_b = Eigen::Affine3d::Identity();
-    t_w_b.translate(Eigen::Vector3d(trajectory.position(i, 0), 
-      trajectory.position(i, 1), trajectory.position(i, 2)));
-    // At this point roll and pitch are 0 since we don't plan for them
-    //double roll = -trajectory.acceleration(i, 1)/9.81;
-    //double pitch = trajectory.acceleration(i, 0)/9.81;
-    double roll = trajectory.position(i, 3);
-    double pitch = trajectory.position(i, 4);
-    double dy = t_w_ee.translation().y() - t_w_b.translation().y();
-    double dx = t_w_ee.translation().x() - t_w_b.translation().x();
-    double yaw = atan2(dy, dx);
-    r_w_b = Eigen::AngleAxisd(trajectory.position(i, 5) /*yaw*/, Eigen::Vector3d::UnitZ())
-      * Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY())
-      * Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX());
-    t_w_b.rotate(r_w_b);
+  cout << "Model correction trajectory planned!" << endl;
+  // Service result. Override response trajectory before we plan a new
+  // trajectory.
+  res.success = success;
+  res.trajectory = trajectoryToJointTrajectory(trajectory);
 
-    // With new transform we can calculate true end effector position in
-    // manipulator base frame. Inverse kinematics works in l0(base manipulator
-    // frame).
-    t_l0_ee = t_b_l0.inverse()*t_w_b.inverse()*t_w_ee;
-
-    // Inverzna za svaku točku. Dodati funkciju inverzne da prima Affine3d
-    // i da vraća VectorXd.
-    bool found_ik;
-    Eigen::VectorXd ik_solution;
-    ik_solution = kinematics->calculateInverseKinematics(t_l0_ee, found_ik);
-    if (found_ik == false) cout << i << " " << yaw << endl;
-    else{
-      trajectory.position.block(i, 6, 1, 3) = ik_solution.transpose();
+  // Returning the UAV to the initial position. Add code to press a key to do so.
+  trajectory_msgs::JointTrajectory reverse_waypoints;
+  // To get reverse waypoints we should revers planned path or the waypoints
+  // in service request.
+  if (req.plan_path == false){
+    for (int i=req.waypoints.points.size()-1; i >= 0; i--){
+      reverse_waypoints.points.push_back(req.waypoints.points[i]);
     }
   }
-  //cout << "Proso petlju" << endl;
-  for (int i=0; i<trajectory.position.rows(); i++){
-    //trajectory.position(i, 3) = -trajectory.acceleration(i, 1)/9.81;
-    //trajectory.position(i, 4) = trajectory.acceleration(i, 0)/9.81;
-    //cout << "171" << endl;
-    //cout << (trajectory.position.row(i)).transpose() << endl;
-    visualization_.setStatePoints(
-      global_planner_->getRobotStatePoints((trajectory.position.row(i)).transpose()));
-    //cout << "175" << endl;
-    visualization_.publishStatePoints();
-    usleep(10000);
+  else {
+    // Do nothing for now. 
+    // Reverse the RRT* planned path. global_planner_->getPath();
   }
-  cout << "Press enter to publish compensated trajectory" << endl;
-  getline(cin, tempstr);
-  joint_trajectory_pub_.publish(trajectoryToJointTrajectory(trajectory));
+
+  // Plan the reverse trajectory
+  global_planner_->planTrajectory(
+    this->jointTrajectoryToEigenWaypoints(reverse_waypoints));
+  // And execute the trajectory through service.
+  larics_motion_planning::MultiDofTrajectory reverse_trajectory_service;
+  reverse_trajectory_service.request.waypoints = trajectoryToJointTrajectory(
+    global_planner_->getTrajectory());
+  cout << "Reverse trajectory service created" << endl;
+  bool reverse_trajectory_success;
+  reverse_trajectory_success = execute_trajectory_client_.call(
+    reverse_trajectory_service);
+  cout << "Reverse trajectory ervice call was: " << reverse_trajectory_success << endl;
+
+  // Publish path and trajectory if requested.
+  if (req.publish_trajectory){
+    cout << "Press enter to publish compensated trajectory" << endl;
+    string tempstr;
+    getline(cin, tempstr);
+    joint_trajectory_pub_.publish(trajectoryToJointTrajectory(trajectory));
+  }
+  if (req.publish_path){
+    // Don't publish path for now
+    //cartesian_path_pub_.publish(res.path);
+  }
+  
 
   return true;
 }
