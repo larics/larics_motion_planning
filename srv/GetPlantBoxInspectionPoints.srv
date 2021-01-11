@@ -1,0 +1,4 @@
+float64[]           box_config_vector
+---
+nav_msgs/Path       inspection_points
+bool                success
