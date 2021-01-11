@@ -8,7 +8,9 @@ import numpy as np
 from math import sin, cos, tan, atan2
 from std_msgs.msg import Float64MultiArray
 from visualization_msgs.msg import Marker, MarkerArray
-from geometry_msgs.msg import Point
+from geometry_msgs.msg import Point, Pose, PoseStamped
+from larics_motion_planning.srv import GetPlantBoxInspectionPoints, \
+  GetPlantBoxInspectionPointsRequest, GetPlantBoxInspectionPointsResponse
 
 class BoxInspectionPoints:
 
@@ -37,6 +39,11 @@ class BoxInspectionPoints:
     rospy.Subscriber(node_name + '/box_config', Float64MultiArray, 
       self.boxConfigCallback, queue_size=1)
 
+    # Service for plant box points
+    self.inspection_points_service = rospy.Service(node_name + 
+      'get_inspection_points', GetPlantBoxInspectionPoints, 
+      self.inspectionPointsCallback)
+
   def run(self):
     rate = rospy.Rate(self.rate)
     while not rospy.is_shutdown():
@@ -52,6 +59,28 @@ class BoxInspectionPoints:
         self.box_config_vector[i] = msg.data[i]
       self.T_points = self.getInspectionPoints(self.box_config_vector)
       self.createVisualizationMessage()
+
+  def inspectionPointsCallback(self, req):
+    res = GetPlantBoxInspectionPointsResponse()
+
+    if len(req.box_config_vector) < len(self.box_config_vector):
+      print("[PlantInspection]->inspectionPointsCallback: At least 4 points must be provided")
+      res.success = False
+    else:
+      for i in range(0,len(self.box_config_vector)):
+        self.box_config_vector[i] = req.box_config_vector[i]
+      self.T_points = self.getInspectionPoints(self.box_config_vector)
+      self.createVisualizationMessage()
+
+      # Apart from visualizing, return the pose array
+      for i in range(len(self.T_points)):
+        temp_pose = PoseStamped()
+        temp_pose.pose = numpyMatrixToPose(self.T_points[i])
+        res.inspection_points.poses.append(copy.deepcopy(temp_pose))
+
+      res.success = True
+
+    return res
 
   def createVisualizationMessage(self):
     self.marker_array.markers = []
@@ -210,8 +239,19 @@ def numpyMatrixToPoint(matrix):
   point.z = matrix[2,3]
   return point
 
+def numpyMatrixToPose(matrix):
+  pose = Pose()
+  pose.position.x = matrix[0,3]
+  pose.position.y = matrix[1,3]
+  pose.position.z = matrix[2,3]
+  yaw = atan2(matrix[1,0], matrix[0,0])
+
+  pose.orientation.w = cos(yaw/2.0)
+  pose.orientation.z = sin(yaw/2.0)
+  return pose
+
 if __name__ == '__main__':
-  node_name = 'plant_inspection'
+  node_name = 'plant_box_inspection_points'
   rospy.init_node(node_name)
   inspection_points = BoxInspectionPoints(node_name)
   inspection_points.run()
