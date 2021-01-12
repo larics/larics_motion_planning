@@ -87,6 +87,8 @@ class PlantInspectionStateMachine:
         self.handleStateInspectForward()
       elif self.state.data == "InspectBack":
         self.handleStateInspectBack()
+      elif self.state.data == "DequeuePoints":
+        self.handleStateDequeuePoints()
 
   def boxConfigCallback(self, msg):
     if self.state.data == "Idle":
@@ -264,7 +266,21 @@ class PlantInspectionStateMachine:
       dt = res.trajectory.points[len(res.trajectory.points)-1].time_from_start.to_sec()
       temp_rate = rospy.Rate(10)
       while (not rospy.is_shutdown()) and ((time.time()-t0) < (dt + 5.0)):
-        print "dt: ", dt, " waiting: ", time.time()-t0
+        pass
+        #print "dt: ", dt, " waiting: ", time.time()-t0
+
+  def handleStateDequeuePoints(self):
+    # Remove first two points from the list of points.
+    self.inspection_points.poses.pop(0)
+    self.inspection_points.poses.pop(0)
+
+    # Check if the list is empty or has only one point
+    if len(self.inspection_points.poses) < 2:
+      # If the inspection is done return to idle state
+      self.state.data = "Idle"
+    else:
+      # Otherwise go to first point without model corrections
+      self.state.data = "GoToFirstPoint"
 
 # Helper function for transforming quaternion to yaw
 def quat2yaw(quat):
