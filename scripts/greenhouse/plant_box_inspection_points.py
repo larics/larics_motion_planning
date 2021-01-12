@@ -41,7 +41,7 @@ class BoxInspectionPoints:
 
     # Service for plant box points
     self.inspection_points_service = rospy.Service(node_name + 
-      'get_inspection_points', GetPlantBoxInspectionPoints, 
+      '/get_inspection_points', GetPlantBoxInspectionPoints, 
       self.inspectionPointsCallback)
 
   def run(self):
