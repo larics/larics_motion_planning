@@ -50,6 +50,9 @@ class PlantInspectionStateMachine:
     # Request trajectory planning without model
     self.plan_trajectory_service = rospy.ServiceProxy(
       "multi_dof_trajectory", MultiDofTrajectory)
+    # Request trajectory planning with model corrections
+    self.plan_trajectory_with_model_service = rospy.ServiceProxy(
+      "model_correction_trajectory", MultiDofTrajectory)
 
     # Subscribers
     # Add subscribers for box config and box ID
@@ -80,11 +83,15 @@ class PlantInspectionStateMachine:
         self.handleStateGetInspectionPoints()
       elif self.state.data == "GoToFirstPoint":
         self.handleStateGoToFirstPoint()
+      elif self.state.data == "InspectForward":
+        self.handleStateInspectForward()
+      elif self.state.data == "InspectBack":
+        self.handleStateInspectBack()
 
   def boxConfigCallback(self, msg):
-    self.box_config = msg
     if self.state.data == "Idle":
       self.state.data = "SanityCheck"
+      self.box_config = msg
 
   def uavCurrentReferenceCallback(self, msg):
     self.uav_current_reference = msg
@@ -157,7 +164,7 @@ class PlantInspectionStateMachine:
 
     # Call the service
     res = self.plan_trajectory_service(req)
-    print res.trajectory.points[len(res.trajectory.points)-1].time_from_start.to_sec()
+    #print res.trajectory.points[len(res.trajectory.points)-1].time_from_start.to_sec()
     if res.success == False:
       # Return to idle if trajectory was not planned
       self.state.data = "Idle"
@@ -170,7 +177,94 @@ class PlantInspectionStateMachine:
       dt = res.trajectory.points[len(res.trajectory.points)-1].time_from_start.to_sec()
       temp_rate = rospy.Rate(10)
       while (not rospy.is_shutdown()) and ((time.time()-t0) < (dt + 5.0)):
-        print "waiting: ", time.time()-t0
+        pass
+        #print "waiting: ", time.time()-t0
+
+  def handleStateInspectForward(self):
+    # Update current reference just in case
+    self.updateCurrentReference()
+
+    # Set up waypoints for inspecting forward. We are going to the second point
+    # in the list of inspection points.
+    endpoint = copy.deepcopy(self.current_reference)
+    endpoint[0] = self.inspection_points.poses[1].pose.position.x
+    endpoint[1] = self.inspection_points.poses[1].pose.position.y
+    endpoint[2] = self.inspection_points.poses[1].pose.position.z
+    endpoint[self.dof_uav-1] = quat2yaw(
+      self.inspection_points.poses[1].pose.orientation)
+
+    # Create service request
+    req = MultiDofTrajectoryRequest()
+    temp_trajectory_point = JointTrajectoryPoint()
+    temp_trajectory_point.positions = self.current_reference
+    req.waypoints.points.append(copy.deepcopy(temp_trajectory_point))
+    temp_trajectory_point.positions = endpoint
+    req.waypoints.points.append(copy.deepcopy(temp_trajectory_point))
+    req.plan_path = False
+    req.publish_path = False
+    req.plan_trajectory = True
+    req.publish_trajectory = False
+
+    # Call the service for planning with the model
+    res = self.plan_trajectory_with_model_service(req)
+    #print res.trajectory.points[len(res.trajectory.points)-1].time_from_start.to_sec()
+    if res.success == False:
+      # Return to idle if trajectory was not planned
+      self.state.data = "Idle"
+    else:
+      self.state.data = "InspectBack"
+      self.joint_trajectory_pub.publish(res.trajectory)
+      # Wait until the UAV reaches the position. This is done in "open loop"
+      # by just waiting for trajectory length + some time
+      t0 = time.time()
+      dt = res.trajectory.points[len(res.trajectory.points)-1].time_from_start.to_sec()
+      temp_rate = rospy.Rate(10)
+      while (not rospy.is_shutdown()) and ((time.time()-t0) < (dt + 5.0)):
+        pass
+        #print "dt: ", dt, " waiting: ", time.time()-t0
+
+
+  def handleStateInspectBack(self):
+    # Update current reference just in case
+    self.updateCurrentReference()
+
+    # Set up waypoints for inspecting forward. We are going back to the first
+    # point so the end-effector is not between plants.
+    endpoint = copy.deepcopy(self.current_reference)
+    endpoint[0] = self.inspection_points.poses[0].pose.position.x
+    endpoint[1] = self.inspection_points.poses[0].pose.position.y
+    endpoint[2] = self.inspection_points.poses[0].pose.position.z
+    endpoint[self.dof_uav-1] = quat2yaw(
+      self.inspection_points.poses[0].pose.orientation)
+
+    # Create service request
+    req = MultiDofTrajectoryRequest()
+    temp_trajectory_point = JointTrajectoryPoint()
+    temp_trajectory_point.positions = self.current_reference
+    req.waypoints.points.append(copy.deepcopy(temp_trajectory_point))
+    temp_trajectory_point.positions = endpoint
+    req.waypoints.points.append(copy.deepcopy(temp_trajectory_point))
+    req.plan_path = False
+    req.publish_path = False
+    req.plan_trajectory = True
+    req.publish_trajectory = False
+
+    # Call the service for planning with the model
+    res = self.plan_trajectory_with_model_service(req)
+    #print res.trajectory.points[len(res.trajectory.points)-1].time_from_start.to_sec()
+    if res.success == False:
+      # Return to idle if trajectory was not planned
+      self.state.data = "Idle"
+    else:
+      self.state.data = "DequeuePoints"
+      self.joint_trajectory_pub.publish(res.trajectory)
+      # Wait until the UAV reaches the position. This is done in "open loop"
+      # by just waiting for trajectory length + some time
+      t0 = time.time()
+      dt = res.trajectory.points[len(res.trajectory.points)-1].time_from_start.to_sec()
+      temp_rate = rospy.Rate(10)
+      while (not rospy.is_shutdown()) and ((time.time()-t0) < (dt + 5.0)):
+        print "dt: ", dt, " waiting: ", time.time()-t0
 
 # Helper function for transforming quaternion to yaw
 def quat2yaw(quat):
