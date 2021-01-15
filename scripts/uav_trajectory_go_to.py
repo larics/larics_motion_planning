@@ -224,12 +224,21 @@ class UavGoTo:
         waypoint.positions = ref
         request.waypoints.points.append(copy.deepcopy(waypoint))
 
-        # Call trajectory planning service
-        request.sampling_frequency = 100.0
-        response = self.toppra_trajectory_service(request)
+        # Check if waypoints are too close
+        d = 0.0
+        for i in range(len(request.waypoints.points[0].positions)):
+            d = d + abs(request.waypoints.points[0].positions[i] - 
+                request.waypoints.points[1].positions[i])
 
-        # Publish planned trajectory
-        self.joint_trajectory_pub.publish(response.trajectory)
+        if d < 0.05:
+            print("Trajectory go to: points too close, not planning!", d)
+        else:
+            # Call trajectory planning service
+            request.sampling_frequency = 100.0
+            response = self.toppra_trajectory_service(request)
+
+            # Publish planned trajectory
+            self.joint_trajectory_pub.publish(response.trajectory)
 
 class JointPositionControllerSubscriber:
 
