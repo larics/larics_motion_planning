@@ -32,7 +32,7 @@ rosrun larics_motion_planning joint_trajectory_to_multi_dof_trajectory_point.py 
 ```
 roslaunch mmuav_gazebo uav_attitude_position.launch manipulator_type:="wp_manipulator" start_gazebo:=false z:=1.0
 
-roslaunch mmuav_gazebo uav_attitude_position.launch name:="model_uav" turn_off_all_collisions:="true" manipulator_type:="wp_manipulator" start_gazebo:=true z:=1.0 
+roslaunch mmuav_gazebo uav_attitude_position.launch name:="model_uav" turn_off_all_collisions:="true" manipulator_type:="wp_manipulator" start_gazebo:=true z:=1.0 paused:="true" 
 
 roslaunch wp_manipulator planning_context.launch
 
