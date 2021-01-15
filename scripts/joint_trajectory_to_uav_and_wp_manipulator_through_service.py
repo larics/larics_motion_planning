@@ -6,7 +6,7 @@ import rospy, math, time
 from math import sin, cos
 from geometry_msgs.msg import Twist, Transform, PoseStamped
 from nav_msgs.msg import Odometry
-from std_msgs.msg import Float64, Empty, Int32
+from std_msgs.msg import Float64, Empty, Int32, Float64MultiArray
 from sensor_msgs.msg import Imu
 from trajectory_msgs.msg import MultiDOFJointTrajectoryPoint, \
     MultiDOFJointTrajectory, JointTrajectory, JointTrajectoryPoint
@@ -20,8 +20,10 @@ class JointTrajectoryToUavAndWpManipulatorReference:
         # UAV publishers for trajectory
         self.uav_trajectory_point_pub = rospy.Publisher('trajectory_point_ref', 
             MultiDOFJointTrajectoryPoint, queue_size=1)
-        self.executing_trajectory_pub = rospy.Publisher('executing_trajectory', 
+        self.executing_trajectory_pub = rospy.Publisher('executing_trajectory_through_service', 
             Int32, queue_size=1)
+        self.trajectory_go_to_pub = rospy.Publisher('go_to/full_state_ref', 
+            Float64MultiArray, queue_size=1)
 
         # Manipulator publishers
         self.manipulator_joint1_pub = rospy.Publisher(
@@ -51,6 +53,14 @@ class JointTrajectoryToUavAndWpManipulatorReference:
         #    self.jointTrajectoryCallback, queue_size=1)
         rospy.Subscriber('imu', Imu, self.imuCallback, queue_size=1)
         rospy.Subscriber('pose', PoseStamped, self.uavPoseCallback, queue_size=1)
+        # In the service callback, we will request for the UAV to move to the
+        # initial position. We have to wait until it gets to the initial position
+        # and since it is handled through another node, we simply check its 
+        # flag if the trajectory finished executing.
+        self.executing_trajectory_in_other_node = 0
+        self.executing_trajectory_in_other_node_previous = 0
+        rospy.Subscriber('executing_trajectory', Int32, 
+            self.executingTrajectoryInOtherNodeCallback, queue_size=1)
 
         self.execute_trajectory_service = rospy.Service('execute_trajectory', 
             MultiDofTrajectory, self.executeTrajectoryCallback)
@@ -77,12 +87,57 @@ class JointTrajectoryToUavAndWpManipulatorReference:
             else:
                 self.executing_trajectory_pub.publish(0)
 
+    def executingTrajectoryInOtherNodeCallback(self, msg):
+        self.executing_trajectory_in_other_node_previous = \
+            self.executing_trajectory_in_other_node
+        self.executing_trajectory_in_other_node = msg.data
+
     def executeTrajectoryCallback(self, req):
         if len(req.waypoints.points) < 0:
             print "0 points in trajectory."
             response = MultiDofTrajectoryResponse()
             response.path_length = -1.0
             return response
+
+        # Send the model UAV to the initial point
+        initial_point = Float64MultiArray()
+        initial_point.data = req.waypoints.points[0].positions
+        self.trajectory_go_to_pub.publish(initial_point)
+        start_time = time.time()
+        initial_timer = 0.0
+        temp_rate = rospy.Rate(self.rate)
+        # First loop waits for 2s to see if trajectory started. If it has not
+        # started that means the model UAV is already at the right spot so we
+        # can move directly to executing the trajectory
+        trajectory_start_flag = True
+        while (not rospy.is_shutdown()) and (initial_timer < 2.0):
+            if (self.executing_trajectory_in_other_node_previous == 0) and \
+                (self.executing_trajectory_in_other_node == 1):
+                trajectory_start_flag = False
+            initial_timer = time.time() - start_time
+            temp_rate.sleep()
+
+        # If trajectory has not started, the model UAV is at the right spot.
+        # Otherwise wait for the model UAV to get to the right spot.
+        if (trajectory_start_flag  == False):
+            print "Model UAV not at required point. Moving model to first point."
+            # Second loop waits for 2s so we are sure trajectory started
+            start_time = time.time()
+            initial_timer = 0.0
+            trajectory_end_flag = False
+            while (not rospy.is_shutdown()) and ((initial_timer < 2.0) or \
+                (trajectory_end_flag == False)):
+                if (self.executing_trajectory_in_other_node_previous == 1) and \
+                    (self.executing_trajectory_in_other_node == 0):
+                    trajectory_end_flag = True
+                initial_timer = time.time() - start_time
+                temp_rate.sleep()
+            print "Model trajectory executed. Waiting for 5s to start with intended trajectory."
+            # At this point the trajectory should ended so just wait for 5s so
+            # that the model UAV can settle down.
+            start_time = time.time()
+            while (not rospy.is_shutdown()) and ((time.time() - start_time) < 5.0):
+                temp_rate.sleep()
 
         print "Starting to execute trajectory. Length: ", len(req.waypoints.points)
         # Go through all points and execute the trajectory point by point

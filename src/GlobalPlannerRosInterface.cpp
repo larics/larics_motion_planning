@@ -7,6 +7,11 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
   nh_private.param("global_planner_config_file", global_planner_config_file_, 
     string("catkin_ws/src/larics_motion_planning/config/uav_and_wp_manipulator_3r_config.yaml"));
   nh_private.param("rate", rate_, int(10));
+  // Model uav namespace is used for executing model trajectory service that
+  // is required before applying model corrections
+  string model_uav_namespace;
+  nh_private.param("model_uav_namespace", model_uav_namespace, 
+    string("/model_uav"));
 
   // Global planner config
   //global_planner_ = make_shared<GlobalPlanner>(global_planner_config_file_);
@@ -39,7 +44,7 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
     &GlobalPlannerRosInterface::modelCorrectedTrajectoryCallback, this);
   execute_trajectory_client_ = 
     nh_.serviceClient<larics_motion_planning::MultiDofTrajectory>(
-    "execute_trajectory"); // /simulate_arducopter
+    model_uav_namespace + "/execute_trajectory"); // /simulate_arducopter
   // Service for planning the cartesian trajectory.
   cartesian_trajectory_server_ = nh_.advertiseService("cartesian_trajectory",
     &GlobalPlannerRosInterface::cartesianTrajectoryCallback, this);
@@ -257,6 +262,7 @@ bool GlobalPlannerRosInterface::modelCorrectedTrajectoryCallback(
   res.success = success;
   res.trajectory = trajectoryToJointTrajectory(trajectory);
 
+  /* REVERSE TRAJECTORY - not planning it anymore
   // Returning the UAV to the initial position. Add code to press a key to do so.
   trajectory_msgs::JointTrajectory reverse_waypoints;
   // To get reverse waypoints we should revers planned path or the waypoints
@@ -270,7 +276,6 @@ bool GlobalPlannerRosInterface::modelCorrectedTrajectoryCallback(
     // Do nothing for now. 
     // Reverse the RRT* planned path. global_planner_->getPath();
   }
-
   // Plan the reverse trajectory
   global_planner_->planTrajectory(
     this->jointTrajectoryToEigenWaypoints(reverse_waypoints));
@@ -283,6 +288,7 @@ bool GlobalPlannerRosInterface::modelCorrectedTrajectoryCallback(
   reverse_trajectory_success = execute_trajectory_client_.call(
     reverse_trajectory_service);
   cout << "Reverse trajectory ervice call was: " << reverse_trajectory_success << endl;
+  */
 
   // Publish path and trajectory if requested.
   if (req.publish_trajectory){
