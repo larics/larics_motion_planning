@@ -24,6 +24,8 @@ class BoxInspectionPoints:
     # Get r1 and r2 distances from box during inspection
     self.r1 = rospy.get_param('~r1', 1.0)
     self.r2 = rospy.get_param('~r2', 0.5)
+    # Get how much above(or below) relative to the crate do you want inspection
+    self.plants_delta_z = rospy.get_param('~plants_delta_z', 0.0)
 
     # This vector contains x,y,z,yaw 
     self.box_config_vector = [0]*4
@@ -156,7 +158,7 @@ class BoxInspectionPoints:
       marker.ns = "Directions"
       marker.type = Marker.ARROW
       marker.action = marker.ADD
-      marker.scale.x = 0.5
+      marker.scale.x = abs(self.r1-self.r2)
       marker.scale.y = 0.04
       marker.scale.z = 0.04
       marker.color.r = 191.0/255.0
@@ -183,7 +185,7 @@ class BoxInspectionPoints:
 
     # Get inspection points in crate frame
     T_B_list = computeInspectionPointsInCrateFrame(
-      self.lx, self.ly, self.r1, self.r2)
+      self.lx, self.ly, self.r1, self.r2, self.plants_delta_z)
 
     # World to box transform
     T_W_B = transformMatrixFromTranslationAndYaw(box_vector)
@@ -207,7 +209,7 @@ def transformMatrixFromTranslationAndYaw(values):
       [0, 0, 0, 1]])
     return matrix
 
-def computeInspectionPointsInCrateFrame(lx, ly, r1, r2):
+def computeInspectionPointsInCrateFrame(lx, ly, r1, r2, dz):
   alpha = atan2(ly,lx)
   d1 = r1*ly/lx + ly/2
   d2 = r2*ly/lx + ly/2
@@ -215,19 +217,19 @@ def computeInspectionPointsInCrateFrame(lx, ly, r1, r2):
   list_T = []
 
   # First append points from left
-  temp_T = transformMatrixFromTranslationAndYaw([-lx/2-r1,d1,0,-alpha])
+  temp_T = transformMatrixFromTranslationAndYaw([-lx/2-r1,d1,dz,-alpha])
   list_T.append(copy.deepcopy(temp_T))
-  temp_T = transformMatrixFromTranslationAndYaw([-lx/2-r2,d2,0,-alpha])
+  temp_T = transformMatrixFromTranslationAndYaw([-lx/2-r2,d2,dz,-alpha])
   list_T.append(copy.deepcopy(temp_T))
   # Middle points
-  temp_T = transformMatrixFromTranslationAndYaw([-lx/2-r1,0,0,0])
+  temp_T = transformMatrixFromTranslationAndYaw([-lx/2-r1,0,dz,0])
   list_T.append(copy.deepcopy(temp_T))
-  temp_T = transformMatrixFromTranslationAndYaw([-lx/2-r2,0,0,0])
+  temp_T = transformMatrixFromTranslationAndYaw([-lx/2-r2,0,dz,0])
   list_T.append(copy.deepcopy(temp_T))
   # Points on the right
-  temp_T = transformMatrixFromTranslationAndYaw([-lx/2-r1,-d1,0,alpha])
+  temp_T = transformMatrixFromTranslationAndYaw([-lx/2-r1,-d1,dz,alpha])
   list_T.append(copy.deepcopy(temp_T))
-  temp_T = transformMatrixFromTranslationAndYaw([-lx/2-r2,-d2,0,alpha])
+  temp_T = transformMatrixFromTranslationAndYaw([-lx/2-r2,-d2,dz,alpha])
   list_T.append(copy.deepcopy(temp_T))
 
   return list_T
