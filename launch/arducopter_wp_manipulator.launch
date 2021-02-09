@@ -19,7 +19,7 @@
 
     <node name="generate_toppra_trajectory" pkg="topp_ros" type="generate_toppra_trajectory.py" output="screen" />
 
-    <node name="octomap_server_node" pkg="octomap_server" type="octomap_server_node" args="$(find larics_gazebo_worlds)/models/greenhouse/greenhouse4096.binvox.bt" output="screen">
+    <node name="octomap_server_node" pkg="octomap_server" type="octomap_server_node" args="$(find larics_gazebo_worlds)/models/greenhouse_row/greenhouse_row.binvox.bt" output="screen">
       <param name="frame_id" value="world" />
     </node>
 
@@ -35,6 +35,12 @@
     <node name="map_to_world_transform_publisher" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 world map 10" />
 
     <node name="plant_box_inspection_points" pkg="larics_motion_planning" type="plant_box_inspection_points.py" output="screen">
+      <param name="box_length" value="0.4" />
+      <param name="box_width" value="0.4" />
+      <param name="box_height" value="0.1" />
+      <param name="r1" value="1.5" />
+      <param name="r2" value="1.0" />
+      <param name="plants_delta_z" value="0.05" />
     </node>
 
     <node name="plant_box_inspection_state_machine" pkg="larics_motion_planning" type="plant_box_inspection_state_machine.py" output="screen">
