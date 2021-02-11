@@ -128,6 +128,7 @@ toppra_trajectory:
 state_validity_checker:
   type: "uav_and_wp_manipulator"
   uav_wp_manipulator:
+    #                                        a1                 a2                        a3                        a4                        d5
     manipulator_link_dimensions: [[0.0340, 0.1225, 0.0285], [0.1365, 0.0340, 0.0285], [0.0755, 0.0285, 0.0340], [0.0725, 0.0285, 0.0340], [0.0453, 0.0285, 0.0340]]
     manipulator_link_directions: ["y", "x", "x", "x", "x"]
 
