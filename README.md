@@ -28,7 +28,7 @@ roslaunch larics_gazebo_worlds spawn_ball.launch
 rosrun larics_motion_planning joint_trajectory_to_multi_dof_trajectory_point.py __ns:=uav
 ```
 
-##Novi launch fileovi
+##Launch fileovi za staklenik
 ```
 roslaunch mmuav_gazebo uav_attitude_position.launch manipulator_type:="wp_manipulator" start_gazebo:=false z:=1.0
 
@@ -39,10 +39,43 @@ roslaunch wp_manipulator planning_context.launch
 roslaunch larics_motion_planning arducopter_wp_manipulator.launch
 ```
 
+##Launch fileovi za impedanciju
+```
+roslaunch mmuav_gazebo uav_attitude_position.launch manipulator_type:="wp_manipulator_3rx" manipulator_tool:="rod" start_gazebo:=false z:=0.2
+
+roslaunch mmuav_gazebo uav_attitude_position.launch name:="model_uav" turn_off_all_collisions:="true" manipulator_type:="wp_manipulator_3rx" manipulator_tool:="rod" start_gazebo:=true z:=0.2 paused:="true" 
+
+roslaunch wp_manipulator_3rx planning_context.launch
+
+roslaunch larics_motion_planning arducopter_wp_manipulator_3rx.launch
+```
+
 ./binvox -e -bb -20.0 -35.0 0.0 20 4.0 2.0 ../models/greenhouse/greenhouse.stl
 [-20, -35.9957, -0.0211357, 1] - [20, 4.00428, 4.44961, 1]
 
 binvox2bt --bb -20.0 -35.0 0.0 20 4.0 2.0 greenhouse.binvox
+
+rosservice call /uav/model_correction_trajectory "waypoints:
+  header:
+    seq: 0
+    stamp: {secs: 0, nsecs: 0}
+    frame_id: ''
+  joint_names: ['']
+  points:
+  - positions: [2, 0, 0.3, 0.0, 0.0, -3.0, 0.787, 0.787, 0.787]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [6.11, -14.96, 1.1, 0.0, 0.0, 0.0, 0.787, 0.787, 0.787]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+publish_path: false
+publish_trajectory: true
+plan_path: false
+plan_trajectory: true"
 
 rosservice call /uav/model_correction_trajectory "waypoints:
   header:
