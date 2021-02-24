@@ -45,7 +45,11 @@ roslaunch mmuav_gazebo uav_attitude_position.launch manipulator_type:="wp_manipu
 
 roslaunch mmuav_gazebo uav_attitude_position.launch name:="model_uav" turn_off_all_collisions:="true" manipulator_type:="wp_manipulator_3rx" manipulator_tool:="rod" start_gazebo:=true z:=0.2 paused:="true" 
 
+roslaunch gazebo_ros empty_world.launch use_sim_time:=true world_name:=$(rospack find larics_gazebo_worlds)/worlds/wall_with_circles_inspection.world
+
 roslaunch wp_manipulator_3rx planning_context.launch
+roslaunch impedance_control impedance_control_asap_3rx.launch start_gazebo:=false
+rosrun impedance_control get_uav_airborne.sh
 
 roslaunch larics_motion_planning arducopter_wp_manipulator_3rx.launch
 ```
@@ -54,6 +58,153 @@ roslaunch larics_motion_planning arducopter_wp_manipulator_3rx.launch
 [-20, -35.9957, -0.0211357, 1] - [20, 4.00428, 4.44961, 1]
 
 binvox2bt --bb -20.0 -35.0 0.0 20 4.0 2.0 greenhouse.binvox
+
+rosservice call /uav/multi_dof_trajectory "waypoints:
+  header:
+    seq: 0
+    stamp: {secs: 0, nsecs: 0}
+    frame_id: ''
+  joint_names: ['']
+  points:
+  - positions: [1.37, 2, 1.8, 0.0, 0.0, 0.0, 0, 0, 0]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [6.78, 3.78, 1.3, 0.0, 0.0, 0.787, -0.443, 0.907, -0.463]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+publish_path: false
+publish_trajectory: true
+plan_path: false
+plan_trajectory: true"
+
+rosservice call /uav/multi_dof_trajectory "waypoints:
+  header:
+    seq: 0
+    stamp: {secs: 0, nsecs: 0}
+    frame_id: ''
+  joint_names: ['']
+  points:
+  - positions: [6.78, 3.78, 1.3, 0.0, 0.0, 0.787, -0.443, 0.907, -0.463]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [1.37, 2, 1.8, 0.0, 0.0, 0.0, 0, 0, 0]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+publish_path: false
+publish_trajectory: true
+plan_path: false
+plan_trajectory: true"
+
+rosservice call /uav/multi_dof_trajectory "waypoints:
+  header:
+    seq: 0
+    stamp: {secs: 0, nsecs: 0}
+    frame_id: ''
+  joint_names: ['']
+  points:
+  - positions: [1.37, 2, 1.8, 0.0, 0.0, 0.0, 0, 0, 0]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [3, 3, 3, 0.0, 0.0, 0.0, -0.443, 0.907, -0.463]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+publish_path: false
+publish_trajectory: true
+plan_path: false
+plan_trajectory: true"
+
+rosservice call /uav/multi_dof_trajectory "waypoints:
+  header:
+    seq: 0
+    stamp: {secs: 0, nsecs: 0}
+    frame_id: ''
+  joint_names: ['']
+  points:
+  - positions: [3, 3, 3, 0.0, 0.0, 0.0, -0.443, 0.907, -0.463]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [3, 3, 3, 0.0, 0.0, 0.0, -0.787, 0.787, -0.787]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+publish_path: false
+publish_trajectory: true
+plan_path: false
+plan_trajectory: true"
+
+rosservice call /uav/multi_dof_trajectory "waypoints:
+  header:
+    seq: 0
+    stamp: {secs: 0, nsecs: 0}
+    frame_id: ''
+  joint_names: ['']
+  points:
+  - positions: [3, 3, 3, 0.0, 0.0, 0.0, -0.0, 0.0, -0.0]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [3, 3, 3, 0.0, 0.0, 0.0, -0.443, 0.907, -0.463]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+publish_path: false
+publish_trajectory: true
+plan_path: false
+plan_trajectory: true"
+
+rosservice call /uav/multi_dof_trajectory "waypoints:
+  header:
+    seq: 0
+    stamp: {secs: 0, nsecs: 0}
+    frame_id: ''
+  joint_names: ['']
+  points:
+  - positions: [3, 3, 3, 0.0, 0.0, 0.0, -0.443, 0.907, -0.463]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [4, 3, 3, 0.0, 0.0, 0.0, 0.787, 0.787, 0.787]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [4, 4, 3, 0.0, 0.0, 0.0, 0.787, 0.787, 0.787]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [3, 4, 3, 0.0, 0.0, 0.0, 0.787, 0.787, 0.787]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [3, 3, 3, 0.0, 0.0, 0.0, 0.787, 0.787, 0.787]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+publish_path: false
+publish_trajectory: true
+plan_path: false
+plan_trajectory: true"
 
 rosservice call /uav/model_correction_trajectory "waypoints:
   header:

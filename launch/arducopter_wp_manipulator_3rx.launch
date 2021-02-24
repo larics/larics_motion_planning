@@ -1,5 +1,5 @@
 <launch>
-  <arg name="rate" default="10" />
+  <arg name="planner_rate" default="10" />
   <arg name="namespace" default="uav" />
   <arg name="model_namespace" default="model_uav" />
 
@@ -8,13 +8,17 @@
 
   <group ns="$(arg namespace)">
     <node name="global_planner" pkg="larics_motion_planning" type="global_planner_node" output="screen">
-      <param name="rate" value="$(arg rate)" />
+      <param name="rate" value="$(arg planner_rate)" />
       <param name="global_planner_config_file" value="$(find larics_motion_planning)/config/uav_and_wp_manipulator_3rx_config.yaml" />
       <param name="model_uav_namespace" value="/model_uav" />
 
       <!-- visualization parameters -->
       <param name="state_scale" value="0.05" />
       <param name="waypoints_scale" value="0.5" />
+    </node>
+
+    <node name="joint_trajectory_dequeue" pkg="larics_motion_planning" type="joint_trajectory_dequeue.py" output="screen">
+      <remap from="joint_trajectory_point" to="aerial_manipulator_control/trajectory_ref_input" />
     </node>
 
     <node name="generate_toppra_trajectory" pkg="topp_ros" type="generate_toppra_trajectory.py" output="screen" />
