@@ -27,6 +27,7 @@ bool UavWpManipulatorStateValidityChecker::configureFromFile(
   std::vector< std::vector<double> > link_dimensions_vector;
   link_dimensions_vector = config["state_validity_checker"]["uav_wp_manipulator"]["manipulator_link_dimensions"].as< std::vector< std::vector<double> > >();
   link_directions_ = config["state_validity_checker"]["uav_wp_manipulator"]["manipulator_link_directions"].as< std::vector<string> >();
+  num_joints_ = link_dimensions_vector.size();
   // Check sizes
   if (link_directions_.size() != link_dimensions_vector.size()){
     cout << "ERROR: Link directions and dimensions must have the same size." << endl;
@@ -202,8 +203,8 @@ Eigen::MatrixXd UavWpManipulatorStateValidityChecker::generateValidityPoints(
   //cout << state << endl;
   //Eigen::VectorXd q(5);
   //q << state(4), state(5), state(6), state(7), state(8);
-
-  Eigen::VectorXd q(int(state.size()-6));
+  
+  Eigen::VectorXd q(num_joints_);
   for (int i=0; i<q.size(); i++) q(i) = state(i+6);
 
   std::vector<Eigen::Affine3d> link_positions;
