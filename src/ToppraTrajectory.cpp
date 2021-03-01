@@ -40,9 +40,9 @@ bool ToppraTrajectory::configureFromFile(string config_filename)
   std::vector<double> velocities, accelerations;
 
   // Load everything from yaml file
-  velocities = config["toppra_trajectory"]["velocities"].as<
+  velocities = config["trajectory_planner"]["toppra_trajectory"]["velocities"].as<
     std::vector<double> >();
-  accelerations = config["toppra_trajectory"]["accelerations"].as<
+  accelerations = config["trajectory_planner"]["toppra_trajectory"]["accelerations"].as<
     std::vector<double> >();
 
   if (velocities.size() == accelerations.size()){
@@ -59,10 +59,10 @@ bool ToppraTrajectory::configureFromFile(string config_filename)
     }
 
     // Angle flags
-    is_angular_ = config["toppra_trajectory"]["is_angular"].as<std::vector<int> >();
+    is_angular_ = config["trajectory_planner"]["toppra_trajectory"]["is_angular"].as<std::vector<int> >();
 
     // Set up sampling frequency
-    sampling_frequency_ = config["toppra_trajectory"]["sampling_frequency"].as<double>();
+    sampling_frequency_ = config["trajectory_planner"]["toppra_trajectory"]["sampling_frequency"].as<double>();
   }
   else{
     cout << "Error in config: Velocity and acceleration constraints must have ";

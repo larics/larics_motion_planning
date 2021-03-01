@@ -136,15 +136,16 @@ path_planner:
       # out.
       max_steps: 5
 
-toppra_trajectory:
-  # Maximum velocities for [x, y]
-  velocities: [0.5, 0.5, 0.5]
-  # Maximum accelerations for [x, y, z, yaw]
-  accelerations: [0.3, 0.3, 0.3]
-  # If using SO states angular flag should be set to 1
-  is_angular: [0, 0, 0]
-  # Trajectory sampling frequency
-  sampling_frequency: 100.0
+trajectory_planner:
+  toppra_trajectory:
+    # Maximum velocities for [x, y]
+    velocities: [0.5, 0.5, 0.5]
+    # Maximum accelerations for [x, y, z, yaw]
+    accelerations: [0.3, 0.3, 0.3]
+    # If using SO states angular flag should be set to 1
+    is_angular: [0, 0, 0]
+    # Trajectory sampling frequency
+    sampling_frequency: 100.0
 
 state_validity_checker:
   # State validity checker examples. Note that type can also be point.

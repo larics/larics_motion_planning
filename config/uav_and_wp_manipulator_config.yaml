@@ -114,16 +114,17 @@ path_planner:
       is_used: true
       max_steps: 5
 
-toppra_trajectory:
-  velocities: [1.5, 1.5, 0.5, 100, 100, 0.3, 1.0, 1.0, 1.0, 1.0, 1.0]
-  accelerations: [0.6, 0.6, 0.4, 100, 100, 0.3, 1.2, 1.2, 1.2, 1.2, 1.2]
-  # This flag is important because it preconditiones angular values before 
-  # sending them to toppra trajectory. The problem is that toppra does not know
-  # for discontinuities at half circle (PI) and the planned trajectory will
-  # turn around the circle instead through discontinuity. This flag solves it
-  # by adding and subtracting k*2PI around the discontinuity.
-  is_angular: [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
-  sampling_frequency: 100.0
+trajectory_planner:
+  toppra_trajectory:
+    velocities: [1.5, 1.5, 0.5, 100, 100, 0.3, 1.0, 1.0, 1.0, 1.0, 1.0]
+    accelerations: [0.6, 0.6, 0.4, 100, 100, 0.3, 1.2, 1.2, 1.2, 1.2, 1.2]
+    # This flag is important because it preconditiones angular values before 
+    # sending them to toppra trajectory. The problem is that toppra does not know
+    # for discontinuities at half circle (PI) and the planned trajectory will
+    # turn around the circle instead through discontinuity. This flag solves it
+    # by adding and subtracting k*2PI around the discontinuity.
+    is_angular: [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+    sampling_frequency: 100.0
 
 state_validity_checker:
   type: "uav_and_wp_manipulator"
