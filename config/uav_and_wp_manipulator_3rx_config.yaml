@@ -114,6 +114,9 @@ path_planner:
       max_steps: 5
 
 trajectory_planner:
+  constant_velocity_reparametrization:
+    axes_index_list: [9, 10, 11, 12, 13, 14, 15]
+    velocity_constraints: [100, 100, 100, 100, 100, 100, 100]
   toppra_trajectory:
     # High values for velocity and acceleration will produce a step-like response. 
     # Problem arises when other(slower) degrees of freedom are changing because

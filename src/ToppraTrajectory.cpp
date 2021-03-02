@@ -1,6 +1,7 @@
 #include <larics_motion_planning/ToppraTrajectory.h>
 
-ToppraTrajectory::ToppraTrajectory(string config_filename)
+ToppraTrajectory::ToppraTrajectory(string config_filename) :
+TrajectoryInterface(config_filename)
 {
   string username = "/home/";
   username = username + getenv("USER") + "/";
@@ -146,6 +147,9 @@ bool ToppraTrajectory::generateTrajectory(Eigen::MatrixXd positions)
     }
   }
   else return false;
+
+  // Reparametrize desired axes with constant velocity trajectory
+  this->constantVelocityReparametrization(sampled_trajectory_, positions);
 
   return true;
 }
