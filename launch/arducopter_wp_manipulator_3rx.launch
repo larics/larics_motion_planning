@@ -11,6 +11,7 @@
       <param name="rate" value="$(arg planner_rate)" />
       <param name="global_planner_config_file" value="$(find larics_motion_planning)/config/uav_and_wp_manipulator_3rx_config.yaml" />
       <param name="model_uav_namespace" value="/model_uav" />
+      <param name="model_animation_dt_us" value="10" />
 
       <!-- visualization parameters -->
       <param name="state_scale" value="0.05" />

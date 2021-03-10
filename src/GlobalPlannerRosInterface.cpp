@@ -12,6 +12,8 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
   string model_uav_namespace;
   nh_private.param("model_uav_namespace", model_uav_namespace, 
     string("/model_uav"));
+  nh_private.param("model_animation_dt_us", model_animation_dt_, 
+    int(10));
 
   // Global planner config
   //global_planner_ = make_shared<GlobalPlanner>(global_planner_config_file_);
@@ -101,14 +103,14 @@ bool GlobalPlannerRosInterface::modelCorrectedTrajectoryCallback(
     trajectory = global_planner_->getTrajectory();
 
     cout << "Cols: " << trajectory.position.cols() << " Rows: " << trajectory.position.rows() << endl;
-
+    cout << "Animating initial trajectory" << endl;
     for (int i=0; i<trajectory.position.rows(); i++){
       trajectory.position(i, 3) = -0*trajectory.acceleration(i, 1)/9.81;
       trajectory.position(i, 4) = 0*trajectory.acceleration(i, 0)/9.81;
       visualization_.setStatePoints(
         global_planner_->getRobotStatePoints((trajectory.position.row(i)).transpose()));
       visualization_.publishStatePoints();
-      usleep(10000);
+      usleep(model_animation_dt_);
     }
     string tempstr;
     cout << "Animated uncompensated trajectory with roll and pitch estimated from compensation." << endl;
@@ -236,7 +238,7 @@ bool GlobalPlannerRosInterface::modelCorrectedTrajectoryCallback(
         trajectory.position.block(i, 6, 1, 3) = ik_solution.transpose();
       }
     }
-    cout << "Model corrections applied." << endl;
+    cout << "Model corrections applied. Animating with model corrections" << endl;
     for (int i=0; i<trajectory.position.rows(); i++){
       //trajectory.position(i, 3) = -trajectory.acceleration(i, 1)/9.81;
       //trajectory.position(i, 4) = trajectory.acceleration(i, 0)/9.81;
@@ -246,7 +248,7 @@ bool GlobalPlannerRosInterface::modelCorrectedTrajectoryCallback(
         global_planner_->getRobotStatePoints((trajectory.position.row(i)).transpose()));
       //cout << "175" << endl;
       visualization_.publishStatePoints();
-      usleep(10000);
+      usleep(model_animation_dt_);
     }
     //cout << "Press enter to publish compensated trajectory" << endl;
     //getline(cin, tempstr);

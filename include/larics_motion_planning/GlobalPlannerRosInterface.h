@@ -72,6 +72,8 @@ class GlobalPlannerRosInterface
     bool visualization_changed_;
     // Loop rate
     int rate_;
+    // Model based planning animation sleep
+    int model_animation_dt_;
 
     // ROS stuff. First node handle for accessing topics and services.
     ros::NodeHandle nh_;
