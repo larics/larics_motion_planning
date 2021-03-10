@@ -20,9 +20,15 @@ windows:
       layout: 0362,204x54,0,0{102x54,0,0,0,101x54,103,0[101x27,103,0,2,101x26,103,28,3]}
       panes:
         - waitForSimulation; sleep 5; roslaunch larics_motion_planning arducopter_wp_manipulator_3rx.launch
-        - echo "Service call for trajectory"
         - |
-          waitForRos; sleep 8; rostopic pub -1 /uav/reference_tracker/set_current_trajectory_point trajectory_msgs/JointTrajectoryPoint "
+          waitForSimulation; sleep 8; rostopic pub -1 /model_uav/reference_tracker/set_current_trajectory_point trajectory_msgs/JointTrajectoryPoint "
+          positions: [1.37, 2, 1.8, 0.0, 0.0, 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+          velocities: [0]
+          accelerations: [0]
+          effort: [0]
+          time_from_start: {secs: 0, nsecs: 0}"
+        - |
+          waitForSimulation; sleep 8; rostopic pub -1 /uav/reference_tracker/set_current_trajectory_point trajectory_msgs/JointTrajectoryPoint "
           positions: [1.37, 2, 1.8, 0.0, 0.0, 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
           velocities: [0]
           accelerations: [0]
