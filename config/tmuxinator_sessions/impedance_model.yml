@@ -1,0 +1,24 @@
+name: impedance_model
+root: ./
+startup_window: roscore
+pre_window: cd ~/; export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:$HOME/uav_ws/src/larics_gazebo_worlds/models
+windows:
+  - roscore_gazebo:
+      layout: tiled
+      panes:
+        - roscore
+        - waitForRos; roslaunch gazebo_ros empty_world.launch use_sim_time:=true paused:=false
+        - waitForSimulation; roslaunch larics_gazebo_worlds spawn_bridge.launch; roslaunch larics_gazebo_worlds spawn_bridge_blob.launch
+  - uavs:
+      layout: tiled
+      panes:
+        - waitForSimulation; roslaunch wp_manipulator_3rx planning_context.launch; history -s "roslaunch impedance_control impedance_control_asap_3rx.launch start_gazebo:=false turn_off_all_collisions:="true" name:="model_uav""
+        - history -s "roslaunch impedance_control impedance_control_asap_3rx.launch start_gazebo:=false"
+        - history -s "rosrun impedance_control get_uav_airborne.sh"
+        - history -s "rosrun impedance_control get_uav_airborne.sh model_uav"
+  - motion_planning:
+      layout: 0362,204x54,0,0{102x54,0,0,0,101x54,103,0[101x27,103,0,2,101x26,103,28,3]}
+      panes:
+        - waitForSimulation; sleep 5; roslaunch larics_motion_planning arducopter_wp_manipulator_3rx.launch
+        - echo "Service call for trajectory"
+        - echo "Service call for trajectory"
