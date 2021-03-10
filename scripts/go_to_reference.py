@@ -56,23 +56,36 @@ class GoToReference:
     if self.first_state_received == False:
       print("First state not yet received!")
     else:
-      print("Generating trajectory.")
-      # Create service request
-      req = MultiDofTrajectoryRequest()
-      req.waypoints.points.append(self.current_state)
-      req.waypoints.points.append(self.reference)
-      req.plan_path = False
-      req.publish_path = False
-      req.plan_trajectory = True
-      req.publish_trajectory = False
+      d = waypointNorm(self.current_state, self.reference)
 
-      # Call the service
-      res = self.plan_trajectory_service(req)
-      if res.success == False:
-        print("Well, something went wrong. Trajectory not planned.")
+      if d < 0.05:
+        print("Too close to initial point. Not going anywhere.")
       else:
-        self.joint_trajectory_pub.publish(res.trajectory)
+        print("Generating trajectory.")
+        # Create service request
+        req = MultiDofTrajectoryRequest()
+        req.waypoints.points.append(self.current_state)
+        req.waypoints.points.append(self.reference)
+        req.plan_path = False
+        req.publish_path = False
+        req.plan_trajectory = True
+        req.publish_trajectory = False
 
+        # Call the service
+        res = self.plan_trajectory_service(req)
+        if res.success == False:
+          print("Well, something went wrong. Trajectory not planned.")
+        else:
+          self.joint_trajectory_pub.publish(res.trajectory)
+
+def waypointNorm(w1, w2):
+  d = 0.0
+  if (len(w1.positions) != len(w2.positions)):
+    return -1.0
+  else:
+    for i in range(len(w1.positions)):
+      d = d + abs(w1.positions[i] - w2.positions[i])
+  return d
 
 if __name__ == '__main__':
 
