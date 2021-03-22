@@ -9,13 +9,36 @@ windows:
         - roscore
         - waitForRos; roslaunch gazebo_ros empty_world.launch use_sim_time:=true paused:=false
         - waitForSimulation; roslaunch larics_gazebo_worlds spawn_bridge.launch; roslaunch larics_gazebo_worlds spawn_bridge_blob.launch
+        - waitForSimulation; roslaunch wp_manipulator_3rx planning_context.launch
   - uavs:
       layout: tiled
       panes:
-        - waitForSimulation; roslaunch wp_manipulator_3rx planning_context.launch; history -s "roslaunch impedance_control impedance_control_asap_3rx.launch start_gazebo:=false turn_off_all_collisions:="true" name:="model_uav""
-        - history -s "roslaunch impedance_control impedance_control_asap_3rx.launch start_gazebo:=false"
-        - history -s "rosrun impedance_control get_uav_airborne.sh"
-        - history -s "rosrun impedance_control get_uav_airborne.sh model_uav"
+        - waitForSimulation; sleep 8; roslaunch impedance_control impedance_control_asap_3rx.launch start_gazebo:=false turn_off_all_collisions:="true" name:="model_uav"
+        - waitForSimulation; sleep 16; roslaunch impedance_control impedance_control_asap_3rx.launch start_gazebo:=false
+        - |
+          waitForSimulation; sleep 12.35; rosservice call /gazebo/pause_physics "{}"; sleep 2; rosservice call /gazebo/set_model_state "model_state:
+            model_name: 'model_uav'
+            pose:
+              position:
+                x: 2.0
+                y: 2.0
+                z: 1.0
+              orientation:
+                x: 0.0
+                y: 0.0
+                z: 0.0
+                w: 1.0
+            twist:
+              linear:
+                x: 0.0
+                y: 0.0
+                z: 0.0
+              angular:
+                x: 0.0
+                y: 0.0
+                z: 0.0
+            reference_frame: 'world'"; rosservice call /gazebo/unpause_physics "{}"; sleep 5; rosrun impedance_control get_uav_airborne.sh model_uav
+        - waitForSimulation; sleep 20; rosrun impedance_control get_uav_airborne.sh
   - motion_planning:
       layout: 0362,204x54,0,0{102x54,0,0,0,101x54,103,0[101x27,103,0,2,101x26,103,28,3]}
       panes:
