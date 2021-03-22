@@ -71,7 +71,7 @@ class ModelTrajectoryToImpedance:
 
     def executingTrajectoryInOtherNodeCallback(self, msg):
         self.executing_trajectory_in_other_node_previous = \
-            self.executing_trajectory_in_other_node
+            copy.deepcopy(self.executing_trajectory_in_other_node)
         self.executing_trajectory_in_other_node = msg.data
 
     def executeTrajectoryCallback(self, req):

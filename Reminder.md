@@ -97,7 +97,7 @@ rosservice call /uav/model_correction_trajectory "waypoints:
     accelerations: [0]
     effort: [0]
     time_from_start: {secs: 0, nsecs: 0}
-  - positions: [14.1061, 14.4936, 10.8134, 0.0, 0.0, 0.724, -0.443, 0.907, -0.463, 0, 0, 0, 0, 0, 0, 1]
+  - positions: [14.1561, 14.5436, 10.8134, 0.0, 0.0, 0.724, -0.443, 0.907, -0.463, 0.35, 0.35, 0, 0, 0, 0, 0]
     velocities: [0]
     accelerations: [0]
     effort: [0]
@@ -114,7 +114,7 @@ rosservice call /uav/multi_dof_trajectory "waypoints:
     frame_id: ''
   joint_names: ['']
   points:
-  - positions: [14.1061, 14.4936, 10.8134, 0.0, 0.0, 0.724, -0.443, 0.907, -0.463, 0, 0, 0, 0, 0, 0, 1]
+  - positions: [14.1561, 14.5436, 10.8134, 0.0, 0.0, 0.724, -0.443, 0.907, -0.463, 0, 0, 0, 0, 0, 0, 1]
     velocities: [0]
     accelerations: [0]
     effort: [0]
