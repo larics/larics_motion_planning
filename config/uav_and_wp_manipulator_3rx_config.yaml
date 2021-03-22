@@ -141,7 +141,8 @@ state_validity_checker:
 
     uav_dimensions: [0.4, 0.4, 0.17]
 
-    uav_manipulator_transform: [0, 0, 0.2, 1.57079632679, 0, 0]
+    #uav_manipulator_transform: [0, 0, 0.2, 1.57079632679, 0, 0]
+    uav_manipulator_transform: [0, 0, 0.2, 0, 0, 0]
 
     checker_resolution:
       manipulator: 0.01

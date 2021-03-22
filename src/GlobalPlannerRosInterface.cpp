@@ -40,10 +40,11 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
   parabolic_airdrop_info_pub_ = nh_.advertise<std_msgs::Float64MultiArray>(
     "parabolic_airdrop/info_vector", 1, latch_info_vector);
 
-  // TODO: Delete this service. Just testing service for now.
+  // Service for model correction trajectory.
   model_correction_service_server_ = nh_.advertiseService(
     "model_correction_trajectory",
     &GlobalPlannerRosInterface::modelCorrectedTrajectoryCallback, this);
+  // Service client for executing model trajectory and recording it.
   execute_trajectory_client_ = 
     nh_.serviceClient<larics_motion_planning::MultiDofTrajectory>(
     model_uav_namespace + "/execute_trajectory"); // /simulate_arducopter
@@ -144,17 +145,22 @@ bool GlobalPlannerRosInterface::modelCorrectedTrajectoryCallback(
     Eigen::Affine3d t_b_l0;
     t_b_l0 = Eigen::Affine3d::Identity();
     Eigen::Matrix3d rot_uav_manipulator;
-    // This is for arducopter in simulation
-    rot_uav_manipulator = Eigen::AngleAxisd(3.14159265359, Eigen::Vector3d::UnitZ())
+    // This is for arducopter with wp manipulator 3rx
+    rot_uav_manipulator = Eigen::AngleAxisd(0, Eigen::Vector3d::UnitZ())
       * Eigen::AngleAxisd(0,  Eigen::Vector3d::UnitY())
-      * Eigen::AngleAxisd(1.57079632679, Eigen::Vector3d::UnitX());
+      * Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX());
+    // This is for arducopter in simulation
+    //rot_uav_manipulator = Eigen::AngleAxisd(3.14159265359, Eigen::Vector3d::UnitZ())
+    //  * Eigen::AngleAxisd(0,  Eigen::Vector3d::UnitY())
+    //  * Eigen::AngleAxisd(1.57079632679, Eigen::Vector3d::UnitX());
     // This is for NEO
     /*rot_uav_manipulator = Eigen::AngleAxisd(-1.57079632679, Eigen::Vector3d::UnitZ())
       * Eigen::AngleAxisd(1.57079632679,  Eigen::Vector3d::UnitY())
       * Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX());*/
     // 0.075 z displacement for arducopter simulation
     // 0.125 z displacement for neo
-    t_b_l0.translate(Eigen::Vector3d(0, 0, 0.075));
+    // 0.2 z displacement for arducopter with wp manipulator 3rx
+    t_b_l0.translate(Eigen::Vector3d(0, 0, 0.2));
     t_b_l0.rotate(rot_uav_manipulator);
     shared_ptr<KinematicsInterface> kinematics = global_planner_->getKinematicsInterface();
     // Go through all trajectory points.
@@ -213,7 +219,7 @@ bool GlobalPlannerRosInterface::modelCorrectedTrajectoryCallback(
       // At this point roll and pitch are 0 since we don't plan for them
       //double roll = -trajectory.acceleration(i, 1)/9.81;
       //double pitch = trajectory.acceleration(i, 0)/9.81;
-      double roll = trajectory.position(i, 3)*1.0;
+      double roll = trajectory.position(i, 3);
       double pitch = trajectory.position(i, 4);
       double dy = t_w_ee.translation().y() - t_w_b.translation().y();
       double dx = t_w_ee.translation().x() - t_w_b.translation().x();
