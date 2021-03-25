@@ -33,6 +33,11 @@ class ModelTrajectoryToImpedance:
             'reference_tracker/set_current_trajectory_point',
             JointTrajectoryPoint, queue_size=1)
 
+        # Since this node will record the trajectory and return the recorded
+        # values, here are termination parameters
+        self.termination_roll = rospy.get_param('~record_termination/roll', 0.001)
+        self.termination_pitch = rospy.get_param('~record_termination/pitch', 0.001)
+        self.termination_timer = rospy.get_param('~record_termination/timer', 2.0)
 
         self.rate = rospy.get_param('~rate', 100)
         self.ros_rate = rospy.Rate(self.rate) 
@@ -175,7 +180,13 @@ class ModelTrajectoryToImpedance:
 
             # This can be checked through roll and pitch angles.
             # Also minimum time is required.
-            if abs(self.roll) < 0.001 and abs(self.pitch) < 0.001 and (time.time()-tstart) > 2.1:
+            if (abs(self.roll) < self.termination_roll and 
+                abs(self.pitch) < self.termination_pitch and 
+                (time.time()-tstart) > self.termination_timer):
+                print "Trajectory recorded."
+                print "Final roll: ", self.roll
+                print "Final pitch: ", self.roll
+                print "Extra time: ", (time.time()-tstart)
                 break
 
             rate.sleep()
