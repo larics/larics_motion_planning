@@ -1,5 +1,8 @@
 # larics\_motion\_planning
 
+rosbag record /uav/aerial_manipulator_control/end_effector/pose_output /uav/aerial_manipulator_control/end_effector/pose_stamped_ref_output /uav/aerial_manipulator_control/parameter_descriptions /uav/aerial_manipulator_control/parameter_updates /uav/aerial_manipulator_control/pose_output /uav/aerial_manipulator_control/pose_stamped_ref_output /uav/aerial_manipulator_control/state /uav/aerial_manipulator_control/transformation/world_end_effector /uav/aerial_manipulator_control/uav/pose_stamped_ref_output /uav/arm_joint_trajectory /uav/joint1_position_controller/command /uav/joint2_position_controller/command /uav/joint3_position_controller/command /uav/pose_ref /clock /uav/aerial_manipulator_control/end_effector/q_ref /uav/aerial_manipulator_control/force_torque_ref_input /uav/aerial_manipulator_control/pose_stamped_ref_input /uav/aerial_manipulator_control/trajectory_ref_input /uav/aerial_manipulator_control/uav/pose_stamped_ref_input /uav/control_mode /uav/end_effector/pose_ref /uav/force_sensor/force_torque_output /uav/joint1 /uav/joint2 /uav/joint3 /uav/joint_states /uav/odometry /model_uav/aerial_manipulator_control/end_effector/pose_output /model_uav/aerial_manipulator_control/end_effector/pose_stamped_ref_output /model_uav/aerial_manipulator_control/parameter_descriptions /model_uav/aerial_manipulator_control/parameter_updates /model_uav/aerial_manipulator_control/pose_output /model_uav/aerial_manipulator_control/pose_stamped_ref_output /model_uav/aerial_manipulator_control/state /model_uav/aerial_manipulator_control/transformation/world_end_effector /model_uav/aerial_manipulator_control/model_uav/pose_stamped_ref_output /model_uav/arm_joint_trajectory /model_uav/joint1_position_controller/command /model_uav/joint2_position_controller/command /model_uav/joint3_position_controller/command /model_uav/pose_ref /clock /model_uav/aerial_manipulator_control/end_effector/q_ref /model_uav/aerial_manipulator_control/force_torque_ref_input /model_uav/aerial_manipulator_control/pose_stamped_ref_input /model_uav/aerial_manipulator_control/trajectory_ref_input /model_uav/aerial_manipulator_control/model_uav/pose_stamped_ref_input /model_uav/control_mode /model_uav/end_effector/pose_ref /model_uav/force_sensor/force_torque_output /model_uav/joint1 /model_uav/joint2 /model_uav/joint3 /model_uav/joint_states /model_uav/odometry
+
+
 ## Just a reminder on how to run the code
 ```
 roslaunch mmuav_gazebo uav_attitude_position.launch manipulator_type:="wp_manipulator" start_gazebo:=true
@@ -74,7 +77,8 @@ accelerations: [0]
 effort: [0]
 time_from_start: {secs: 0, nsecs: 0}" 
 
-
+rosservice call /uav/model_correction_trajectory "waypoints:
+rosservice call /uav/multi_dof_trajectory "waypoints:
 rosservice call /uav/model_correction_trajectory "waypoints:
   header:
     seq: 0
@@ -82,7 +86,7 @@ rosservice call /uav/model_correction_trajectory "waypoints:
     frame_id: ''
   joint_names: ['']
   points:
-  - positions: [1.37, 2, 1.8, 0.0, 0.0, 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+  - positions: [1.37, 2.2, 2.0, 0.0, 0.0, 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
     velocities: [0]
     accelerations: [0]
     effort: [0]
@@ -97,7 +101,7 @@ rosservice call /uav/model_correction_trajectory "waypoints:
     accelerations: [0]
     effort: [0]
     time_from_start: {secs: 0, nsecs: 0}
-  - positions: [14.1561, 14.5436, 10.8134, 0.0, 0.0, 0.724, -0.443, 0.907, -0.463, 0.35, 0.35, 0, 0, 0, 0, 0]
+  - positions: [14.1061, 14.4936, 10.8134, 0.0, 0.0, 0.724, -0.443, 0.907, -0.463, 0.35, 0.35, 0, 0, 0, 0, 0]
     velocities: [0]
     accelerations: [0]
     effort: [0]
@@ -114,12 +118,17 @@ rosservice call /uav/multi_dof_trajectory "waypoints:
     frame_id: ''
   joint_names: ['']
   points:
-  - positions: [14.1561, 14.5436, 10.8134, 0.0, 0.0, 0.724, -0.443, 0.907, -0.463, 0, 0, 0, 0, 0, 0, 1]
+  - positions: [1.37, 2.2, 2.0, 0.0, 0.0, 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
     velocities: [0]
     accelerations: [0]
     effort: [0]
     time_from_start: {secs: 0, nsecs: 0}
-  - positions: [1.37, 2, 1.8, 0.0, 0.0, 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+  - positions: [1.37, 6.3, 2.0, 0.0, 0.0, 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [1.37, 2.2, 2.0, 0.0, 0.0, 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
     velocities: [0]
     accelerations: [0]
     effort: [0]
