@@ -158,8 +158,11 @@ class ModelTrajectoryToImpedance:
         # prolong the roll and pitch recording until the UAV gets to the steady
         # state.
         tstart = time.time()
+        iteration = 1
         while True: #(((abs(self.roll) > 0.001) or (abs(self.pitch) > 0.001)) or ((time.time() - tstart) < 0.5)):
             point = copy.deepcopy(self.current_trajectory_point)
+            point.time_from_start = point.time_from_start + rospy.Duration(float(iteration)/float(self.rate))
+            iteration = iteration + 1
             lst = list(point.positions)
             lst[3] = self.roll
             lst[4] = self.pitch
@@ -180,12 +183,12 @@ class ModelTrajectoryToImpedance:
 
             # This can be checked through roll and pitch angles.
             # Also minimum time is required.
-            if (abs(self.roll) < self.termination_roll and 
-                abs(self.pitch) < self.termination_pitch and 
+            if ((abs(self.roll) < self.termination_roll and 
+                abs(self.pitch) < self.termination_pitch) and 
                 (time.time()-tstart) > self.termination_timer):
                 print "Trajectory recorded."
                 print "Final roll: ", self.roll
-                print "Final pitch: ", self.roll
+                print "Final pitch: ", self.pitch
                 print "Extra time: ", (time.time()-tstart)
                 break
 

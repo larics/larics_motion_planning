@@ -67,9 +67,9 @@
     <node name="model_trajectory_to_impedance" pkg="larics_motion_planning" type="model_trajectory_to_impedance.py" output="screen">
       <remap from="model_trajectory/joint_trajectory_point" to="aerial_manipulator_control/trajectory_ref_input"/>
 
-      <param name="record_termination/roll" value="0.1" />
-      <param name="record_termination/pitch" value="0.1" />
-      <param name="record_termination/timer" value="2.1" />
+      <param name="record_termination/roll" value="0.01" />
+      <param name="record_termination/pitch" value="0.01" />
+      <param name="record_termination/timer" value="0.1" />
     </node>
 
   </group>

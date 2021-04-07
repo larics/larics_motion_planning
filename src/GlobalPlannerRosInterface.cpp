@@ -139,7 +139,10 @@ bool GlobalPlannerRosInterface::modelCorrectedTrajectoryCallback(
       //cout << service.response.pitch[i] << endl;
     }
     //trajectory = jointTrajectoryToTrajectory(rp_trajectory);
+    cout << "Trajectory rows before service call: " << trajectory.position.rows() << endl;
     trajectory = jointTrajectoryToTrajectory(service.response.trajectory);
+    cout << "Trajectory rows after service call: " << trajectory.position.rows() << endl;
+    cout << "Points in response: " << service.response.trajectory.points.size() << endl;
     // Compensation part
     // First get fixed transform between uav and manipulator
     Eigen::Affine3d t_b_l0;

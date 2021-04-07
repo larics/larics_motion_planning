@@ -35,3 +35,4 @@ windows:
           accelerations: [0]
           effort: [0]
           time_from_start: {secs: 0, nsecs: 0}"
+        - waitForSimulation; sleep 5; rosrun rqt_gui rqt_gui

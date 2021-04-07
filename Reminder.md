@@ -77,6 +77,54 @@ accelerations: [0]
 effort: [0]
 time_from_start: {secs: 0, nsecs: 0}" 
 
+3.3852, 2.2, 2.0, 0.0, 0.0, 0.0, -0.443, 0.907, -0.463, 0, 0, 0, 0, 0, 0, 1
+
+rosservice call /uav/model_correction_trajectory "waypoints:
+  header:
+    seq: 0
+    stamp: {secs: 0, nsecs: 0}
+    frame_id: ''
+  joint_names: ['']
+  points:
+  - positions: [1.37, 2.2, 2.0, 0.0, 0.0, 0.0, -0.443, 0.907, -0.463, 0, 0, 0, 0, 0, 0, 1]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [3.3852, 2.2, 2.0, 0.0, 0.0, 0.0, -0.443, 0.907, -0.463, 0.5, 0, 0, 0, 0, 0, 0]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+publish_path: false
+publish_trajectory: true
+plan_path: false
+plan_trajectory: true"
+
+
+rosservice call /uav/model_correction_trajectory "waypoints:
+  header:
+    seq: 0
+    stamp: {secs: 0, nsecs: 0}
+    frame_id: ''
+  joint_names: ['']
+  points:
+  - positions: [1.37, 2.2, 2.0, 0.0, 0.0, 0.0, -0.443, 0.907, -0.463, 0, 0, 0, 0, 0, 0, 1]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [14.1061, 14.4936, 10.8134, 0.0, 0.0, 0.724, -0.443, 0.907, -0.463, 0.35, 0.35, 0, 0, 0, 0, 1]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+publish_path: false
+publish_trajectory: true
+plan_path: false
+plan_trajectory: true"
+
+
 rosservice call /uav/model_correction_trajectory "waypoints:
 rosservice call /uav/multi_dof_trajectory "waypoints:
 rosservice call /uav/model_correction_trajectory "waypoints:
@@ -86,7 +134,7 @@ rosservice call /uav/model_correction_trajectory "waypoints:
     frame_id: ''
   joint_names: ['']
   points:
-  - positions: [1.37, 2.2, 2.0, 0.0, 0.0, 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+  - positions: [1.37, 2.2, 2.0, 0.0, 0.0, 0.0, -0.443, 0.907, -0.463, 0, 0, 0, 0, 0, 0, 1]
     velocities: [0]
     accelerations: [0]
     effort: [0]
@@ -118,12 +166,34 @@ rosservice call /uav/multi_dof_trajectory "waypoints:
     frame_id: ''
   joint_names: ['']
   points:
+  - positions: [14.1061, 14.4936, 10.8134, 0.0, 0.0, 0.724, -0.443, 0.907, -0.463, 0.35, 0.35, 0, 0, 0, 0, 1]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [1.37, 2.2, 2.0, 0.0, 0.0, 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}  
+publish_path: false
+publish_trajectory: true
+plan_path: false
+plan_trajectory: true"
+
+rosservice call /uav/multi_dof_trajectory "waypoints:
+  header:
+    seq: 0
+    stamp: {secs: 0, nsecs: 0}
+    frame_id: ''
+  joint_names: ['']
+  points:
   - positions: [1.37, 2.2, 2.0, 0.0, 0.0, 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
     velocities: [0]
     accelerations: [0]
     effort: [0]
     time_from_start: {secs: 0, nsecs: 0}
-  - positions: [1.37, 6.3, 2.0, 0.0, 0.0, 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+  - positions: [1.37, 3.3, 2.0, 0.0, 0.0, 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
     velocities: [0]
     accelerations: [0]
     effort: [0]
