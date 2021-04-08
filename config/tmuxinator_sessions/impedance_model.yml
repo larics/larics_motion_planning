@@ -13,10 +13,20 @@ windows:
   - uavs:
       layout: tiled
       panes:
-        - waitForSimulation; sleep 8; roslaunch impedance_control impedance_control_asap_3rx.launch start_gazebo:=false collision_bitmask:=1 name:="model_uav"
-        - waitForSimulation; sleep 8; roslaunch impedance_control impedance_control_asap_3rx.launch start_gazebo:=false collision_bitmask:=2
+        - >
+          waitForSimulation; 
+          sleep 8; 
+          roslaunch impedance_control impedance_control_asap_3rx.launch start_gazebo:=false collision_bitmask:=1 name:="model_uav"
+        - waitForSimulation; sleep 8; roslaunch impedance_control impedance_control_asap_3rx.launch start_gazebo:=false collision_bitmask:=2 mount_stereo_cam:=true
         - waitForSimulation; sleep 15; rosrun impedance_control get_uav_airborne.sh model_uav
         - waitForSimulation; sleep 15; rosrun impedance_control get_uav_airborne.sh
+  - blob_detection:
+      layout: tiled
+      panes:
+        - export UAV_NAMESPACE="uav"; waitForRos; roslaunch mood_ros detection_manager.launch odometry:="odometry"
+        - >
+          waitForRos; 
+          rosrun tf static_transform_publisher 0.025 0 0.1 -0.5 0.5 -0.5 0.5 uav/base_link uav/camera 10
   - motion_planning:
       layout: 0362,204x54,0,0{102x54,0,0,0,101x54,103,0[101x27,103,0,2,101x26,103,28,3]}
       panes:
