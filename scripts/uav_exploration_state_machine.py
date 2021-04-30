@@ -94,9 +94,9 @@ class UavExplorationSm:
     self.state_pub.publish(self.state)
 
     while not rospy.is_shutdown() and not self.first_measurement_received:
-      print "Waiting for first measurement..."
+      print("Waiting for first measurement...")
       time.sleep(1)
-    print "First measurement received. Starting state machine."
+    print("First measurement received. Starting state machine.")
 
     while not rospy.is_shutdown():
 
@@ -141,11 +141,11 @@ class UavExplorationSm:
         # If we did not manage to obtain a successful plan then go to
         # appropriate state.
         if response.success == False:
-          print "**********************************************"
-          print "In state:", self.state
-          print "Path planning failed!"
-          print "**********************************************"
-          print " "
+          print("**********************************************")
+          print("In state:", self.state)
+          print("Path planning failed!")
+          print("**********************************************")
+          print(" ")
           self.state = "end"
         # If plan was successful then execute it.
         else:
@@ -172,11 +172,11 @@ class UavExplorationSm:
           # explore a part of map during execution and new frontier will be
           # detected
           if self.n_execution_attempts >= self.max_execution_attempts:
-            print "**********************************************"
-            print "In state:", self.state
-            print "Exceeded maximum number of execution attempts!"
-            print "**********************************************"
-            print " "
+            print("**********************************************")
+            print("In state:", self.state)
+            print("Exceeded maximum number of execution attempts!")
+            print("**********************************************")
+            print(" ")
             self.state = "end"
             break
           # Pure timeout. It is based on trajectory duration which is multiplied
@@ -184,19 +184,19 @@ class UavExplorationSm:
           elif (self.execution_timeout_factor*self.current_trajectory_execution_time) < (
             time.time()-self.execution_start):
             self.state = "plan"
-            print "**********************************************"
-            print "In state:", self.state
-            print "Execution timeout factor triggered!"
-            print "**********************************************"
-            print " "
+            print("**********************************************")
+            print("In state:", self.state)
+            print("Execution timeout factor triggered!")
+            print("**********************************************")
+            print(" ")
             break
           # When trajectory is executed simply go to end state.
           elif self.checkTrajectoryExecuted() == True:
-            print "**********************************************"
-            print "In state:", self.state
-            print "Trajectory executed!"
-            print "**********************************************"
-            print " "
+            print("**********************************************")
+            print("In state:", self.state)
+            print("Trajectory executed!")
+            print("**********************************************")
+            print(" ")
             self.state = "end"
             break
           # If trajectory is stuck in potential field minimum then plan new
@@ -205,11 +205,11 @@ class UavExplorationSm:
           elif (self.checkIfStuck() == True) and (
             self.current_trajectory_execution_time*self.potential_field_minimum_time_factor <= (
               time.time()-self.execution_start)):
-            print "**********************************************"
-            print "In state:", self.state
-            print "Stuck in potential field minimum"
-            print "**********************************************"
-            print " "
+            print("**********************************************")
+            print("In state:", self.state)
+            print("Stuck in potential field minimum")
+            print("**********************************************")
+            print(" ")
             self.state = "plan"
             break
           rate.sleep()
@@ -232,11 +232,11 @@ class UavExplorationSm:
       rate.sleep()
 
   def printStates(self):
-    print "----------------------------------------------------"
-    print "State changed. Previous state:", self.state_previous
-    print "State changed. Current state:", self.state
-    print "----------------------------------------------------"
-    print " "
+    print("----------------------------------------------------")
+    print("State changed. Previous state:", self.state_previous)
+    print("State changed. Current state:", self.state)
+    print("----------------------------------------------------")
+    print(" ")
 
   def targetPointCallback(self, msg):
     if self.state == "start":
@@ -244,7 +244,7 @@ class UavExplorationSm:
       self.state = "plan"
       self.state_previous = "start"
     else:
-      print "Not accepting new target pose. Current pose not yet"
+      print("Not accepting new target pose. Current pose not yet")
 
   def globalPositionCallback(self, msg):
     self.current_pose = msg.pose.pose
@@ -324,7 +324,7 @@ class UavExplorationSm:
 
   def printFeedbackArray(self):
     for i in range(self.n_feedback_points):
-      print self.feedback_array[i]
+      print(self.feedback_array[i])
 
 if __name__ == '__main__':
 

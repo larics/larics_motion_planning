@@ -54,7 +54,7 @@ class ExecuteMultipleParabolicAirdrops:
       queue_size=1)
     self.uav_current_pose = Pose()
     rospy.Subscriber('pose', PoseStamped, self.uavPoseCallback, queue_size=1)
-    print "Constructor done."
+    print("Constructor done.")
 
   def run(self):
     rate = rospy.Rate(1)
@@ -64,7 +64,7 @@ class ExecuteMultipleParabolicAirdrops:
       if self.start_flag == True:
         self.start_flag = False
 
-        print "Starting to execute the procedure."
+        print("Starting to execute the procedure.")
         # Go through every config
 
         for i in range(len(self.targets)):
@@ -81,36 +81,36 @@ class ExecuteMultipleParabolicAirdrops:
           for j in range(self.drops_per_config):
             rate.sleep()
             if should_publish == True:
-              print " "
-              print "Executing ", (current_drop_count+1), "/", len(self.targets), " for ", j+1, "/", self.drops_per_config, " time"
-              print "Go above current position"
+              print(" ")
+              print("Executing ", (current_drop_count+1), "/", len(self.targets), " for ", j+1, "/", self.drops_per_config, " time")
+              print("Go above current position")
               pose = copy.deepcopy(self.uav_current_pose)
               pose.position.z = 7
               pose.position.x = pose.position.x - 10.0
               self.go_to_pub.publish(pose)
               time.sleep(15)
 
-              #print "Go above starting position"
+              #print("Go above starting position")
               #pose = copy.deepcopy(self.start_pose)
               #pose.position.z = 25.0
               #self.go_to_pub.publish(pose)
               #time.sleep(60)
 
-              print "Go to starting position"
+              print("Go to starting position")
               self.go_to_pub.publish(self.start_pose)
               time.sleep(60)
 
               # Spawn ball twice to eliminate weird shaking
-              print "Spawn ball first time"
+              print("Spawn ball first time")
               self.spawn_ball_service(EmptyRequest())
               time.sleep(7)
-              #print "Spawn ball second time"
+              #print("Spawn ball second time")
               #self.spawn_ball_service(EmptyRequest())
               #time.sleep(7)
 
             # Call airdrop service
             #self.airdrop_request.custom_parabola_params.clear()
-            print "Plan and execute trajectory"
+            print("Plan and execute trajectory")
             self.airdrop_request.target_pose.position.x = x
             self.airdrop_request.target_pose.position.y = y
             self.airdrop_request.target_pose.position.z = z
@@ -131,9 +131,9 @@ class ExecuteMultipleParabolicAirdrops:
               self.joint_trajectory_pub.publish(res.trajectory)
               time.sleep(duration + 10)
             else:
-              print "Ripmax, z<0.3 at some point."
-              print "Config v0 dz alpha dx psi"
-              print "Config: ", v0, " ", dz, " ", alpha, " ", dx, " ", psi
+              print("Ripmax, z<0.3 at some point.")
+              print("Config v0 dz alpha dx psi")
+              print("Config: ", v0, " ", dz, " ", alpha, " ", dx, " ", psi)
 
 
 

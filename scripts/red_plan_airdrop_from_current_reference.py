@@ -89,7 +89,7 @@ class PlanAirdropFromCurrentReference:
             self.airdrop_request.use_custom_parabola_params = True
             self.airdrop_request.custom_parabola_params = [v0, dz, alpha, dx, psi]
             self.airdrop_request.use_custom_psi_params = False
-            print self.airdrop_request
+            print(self.airdrop_request)
 
             self.target.position.x = msg.x
             self.target.position.y = msg.y

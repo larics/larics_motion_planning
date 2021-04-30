@@ -43,7 +43,7 @@ class JointTrajectoryToMarkerArray:
             self.marker_array_pub.publish(self.marker_array)
 
     def jointTrajectoryCallback(self, msg):
-        print "Received a trajectory."
+        print("Received a trajectory.")
         if len(msg.points) > 0:
             marker = self.jointTrajectoryToMarker(msg, self.id)
             self.id = self.id + 1

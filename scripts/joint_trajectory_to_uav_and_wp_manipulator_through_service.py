@@ -94,7 +94,7 @@ class JointTrajectoryToUavAndWpManipulatorReference:
 
     def executeTrajectoryCallback(self, req):
         if len(req.waypoints.points) < 0:
-            print "0 points in trajectory."
+            print("0 points in trajectory.")
             response = MultiDofTrajectoryResponse()
             response.path_length = -1.0
             return response
@@ -120,7 +120,7 @@ class JointTrajectoryToUavAndWpManipulatorReference:
         # If trajectory has not started, the model UAV is at the right spot.
         # Otherwise wait for the model UAV to get to the right spot.
         if (trajectory_start_flag  == False):
-            print "Model UAV not at required point. Moving model to first point."
+            print("Model UAV not at required point. Moving model to first point.")
             # Second loop waits for 2s so we are sure trajectory started
             start_time = time.time()
             initial_timer = 0.0
@@ -132,14 +132,14 @@ class JointTrajectoryToUavAndWpManipulatorReference:
                     trajectory_end_flag = True
                 initial_timer = time.time() - start_time
                 temp_rate.sleep()
-            print "Model trajectory executed. Waiting for 5s to start with intended trajectory."
+            print("Model trajectory executed. Waiting for 5s to start with intended trajectory.")
             # At this point the trajectory should ended so just wait for 5s so
             # that the model UAV can settle down.
             start_time = time.time()
             while (not rospy.is_shutdown()) and ((time.time() - start_time) < 5.0):
                 temp_rate.sleep()
 
-        print "Starting to execute trajectory. Length: ", len(req.waypoints.points)
+        print("Starting to execute trajectory. Length: ", len(req.waypoints.points))
         # Go through all points and execute the trajectory point by point
         response = MultiDofTrajectoryResponse()
         rate = rospy.Rate(self.rate)
@@ -202,18 +202,18 @@ class JointTrajectoryToUavAndWpManipulatorReference:
 
             rate.sleep()
 
-        print "Lenghtened trajectory length: ", len(response.trajectory.points)
-        print "Trajectory executed!"
+        print("Lenghtened trajectory length: ", len(response.trajectory.points))
+        print("Trajectory executed!")
         return response
 
     def jointTrajectoryCallback(self, msg):
-        print "Received a trajectory."
+        print("Received a trajectory.")
         if self.executing_trajectory_flag == False and \
             len(msg.points) > 0:
             self.trajectory = copy.deepcopy(msg)
             self.executing_trajectory_flag = True
         else:
-            print "Currently executing a trajectory."
+            print("Currently executing a trajectory.")
 
     def imuCallback(self, msg):
         q0 = msg.orientation.w
@@ -223,7 +223,7 @@ class JointTrajectoryToUavAndWpManipulatorReference:
 
         self.roll = math.atan2(2*(q0*q1 + q2*q3), 1-2*(q1*q1 + q2*q2))
         self.pitch = math.asin(2*(q0*q2 - q3*q1))
-        #print "{:10.6f}".format(self.roll), "{:10.6f}".format(self.pitch)
+        #print("{:10.6f}".format(self.roll), "{:10.6f}".format(self.pitch))
 
     def uavPoseCallback(self, msg):
         self.uav_current_pose = msg

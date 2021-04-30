@@ -129,7 +129,7 @@ class JointTrajectoryToMultiDofTrajectoryPoint:
 # acc: 3.5, cnt
 
     def jointTrajectoryCallback(self, msg):
-        print "Received a trajectory."
+        print("Received a trajectory.")
         if len(msg.points) > 0:
             self.joint_trajectory = copy.deepcopy(msg)
             self.executing_trajectory_flag = True
@@ -144,9 +144,9 @@ class JointTrajectoryToMultiDofTrajectoryPoint:
                         self.airdrop_velocity.linear.z = msg.points[i].velocities[2]
                         break
             else:
-                print "Airdrop was not provided. Will execute trajectory without turning the magnet off."
+                print("Airdrop was not provided. Will execute trajectory without turning the magnet off.")
         else:
-            print "Currently executing a trajectory."
+            print("Currently executing a trajectory.")
 
     def uavOdometryCallback(self,msg):
         self.uav_current_pose = msg.pose.pose

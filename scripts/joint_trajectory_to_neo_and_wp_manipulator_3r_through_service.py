@@ -66,12 +66,12 @@ class JointTrajectoryToUavAndWpManipulatorReference:
         response.trajectory = copy.deepcopy(req.waypoints)
         return response
         if len(req.waypoints.points) < 0:
-            print "0 points in trajectory."
+            print("0 points in trajectory.")
             response = MultiDofTrajectoryResponse()
             response.path_length = -1.0
             return response
 
-        print "Starting to execute trajectory. Length: ", len(req.waypoints.points)
+        print("Starting to execute trajectory. Length: ", len(req.waypoints.points))
         # Go through all points
         response = MultiDofTrajectoryResponse()
         rate = rospy.Rate(self.rate)
@@ -104,8 +104,8 @@ class JointTrajectoryToUavAndWpManipulatorReference:
 
             rate.sleep()
 
-        print "Lenghtened trajectory length: ", len(response.trajectory.points)
-        print "Trajectory executed!"
+        print("Lenghtened trajectory length: ", len(response.trajectory.points))
+        print("Trajectory executed!")
 
         # Reinterpolate trajectory with roll, pitch and new manipulator values
         # so it is within dynamic limits
@@ -124,7 +124,7 @@ class JointTrajectoryToUavAndWpManipulatorReference:
             toppra_request.plot = False
             toppra_response = self.toppra_trajectory_service(toppra_request)
 
-            print "Reinterpolated toppra trajectory length: ", len(toppra_response.trajectory.points)
+            print("Reinterpolated toppra trajectory length: ", len(toppra_response.trajectory.points))
 
             response.trajectory = copy.deepcopy(toppra_response.trajectory)
 
@@ -138,7 +138,7 @@ class JointTrajectoryToUavAndWpManipulatorReference:
 
         self.roll = math.atan2(2*(q0*q1 + q2*q3), 1-2*(q1*q1 + q2*q2))
         self.pitch = math.asin(2*(q0*q2 - q3*q1))
-        #print "{:10.6f}".format(self.roll), "{:10.6f}".format(self.pitch)
+        #print("{:10.6f}".format(self.roll), "{:10.6f}".format(self.pitch))
 
     def publishAll(self):
         self.manipulator_joint1_pub.publish(self.current_trajectory_point.positions[4+2])

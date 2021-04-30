@@ -47,7 +47,7 @@ class JointTrajectoryToNeo:
 
 
     def jointTrajectoryCallback(self, msg):
-        print "Received a trajectory."
+        print("Received a trajectory.")
         if len(msg.points) > 0:
             self.trajectory = copy.deepcopy(msg)
             multi_dof_trajectory = MultiDOFJointTrajectory()
@@ -56,9 +56,9 @@ class JointTrajectoryToNeo:
                     jointTrajectoryPointToMultiDofJointTrajectoryPoint(msg.points[i])))
 
             self.uav_trajectory_point_pub.publish(multi_dof_trajectory)
-            print "Published multi dof trajectory."
+            print("Published multi dof trajectory.")
         else:
-            print "Trajectory length must be greater than zero!"
+            print("Trajectory length must be greater than zero!")
 
     def uavPoseCallback(self, msg):
         self.uav_current_pose = msg.pose

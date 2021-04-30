@@ -166,7 +166,7 @@ class PlantInspectionStateMachine:
 
     # Call the service
     res = self.plan_trajectory_service(req)
-    #print res.trajectory.points[len(res.trajectory.points)-1].time_from_start.to_sec()
+    #print(res.trajectory.points[len(res.trajectory.points)-1].time_from_start.to_sec())
     if res.success == False:
       # Return to idle if trajectory was not planned
       self.state.data = "Idle"
@@ -180,7 +180,7 @@ class PlantInspectionStateMachine:
       temp_rate = rospy.Rate(10)
       while (not rospy.is_shutdown()) and ((time.time()-t0) < (dt + 5.0)):
         pass
-        #print "waiting: ", time.time()-t0
+        #print("waiting: ", time.time()-t0)
 
   def handleStateInspectForward(self):
     # Update current reference just in case
@@ -209,7 +209,7 @@ class PlantInspectionStateMachine:
 
     # Call the service for planning with the model
     res = self.plan_trajectory_with_model_service(req)
-    #print res.trajectory.points[len(res.trajectory.points)-1].time_from_start.to_sec()
+    #print(res.trajectory.points[len(res.trajectory.points)-1].time_from_start.to_sec())
     if res.success == False:
       # Return to idle if trajectory was not planned
       self.state.data = "Idle"
@@ -223,7 +223,7 @@ class PlantInspectionStateMachine:
       temp_rate = rospy.Rate(10)
       while (not rospy.is_shutdown()) and ((time.time()-t0) < (dt + 5.0)):
         pass
-        #print "dt: ", dt, " waiting: ", time.time()-t0
+        #print("dt: ", dt, " waiting: ", time.time()-t0)
 
 
   def handleStateInspectBack(self):
@@ -253,7 +253,7 @@ class PlantInspectionStateMachine:
 
     # Call the service for planning with the model
     res = self.plan_trajectory_with_model_service(req)
-    #print res.trajectory.points[len(res.trajectory.points)-1].time_from_start.to_sec()
+    #print(res.trajectory.points[len(res.trajectory.points)-1].time_from_start.to_sec())
     if res.success == False:
       # Return to idle if trajectory was not planned
       self.state.data = "Idle"
@@ -267,7 +267,7 @@ class PlantInspectionStateMachine:
       temp_rate = rospy.Rate(10)
       while (not rospy.is_shutdown()) and ((time.time()-t0) < (dt + 5.0)):
         pass
-        #print "dt: ", dt, " waiting: ", time.time()-t0
+        #print("dt: ", dt, " waiting: ", time.time()-t0)
 
   def handleStateDequeuePoints(self):
     # Remove first two points from the list of points.
@@ -299,7 +299,7 @@ class JointPositionControllerSubscriber:
 
     def jointReferenceCallback(self, msg):
         self.joint_state = msg.data
-        #print "Joint data is: ", self.joint_state
+        #print("Joint data is: ", self.joint_state)
 
 if __name__ == '__main__':
   node_name = 'plant_inspection_sm'

@@ -130,7 +130,7 @@ class JointPositionControllerSubscriber:
 
     def jointReferenceCallback(self, msg):
         self.joint_state = msg.data
-        #print "Joint data is: ", self.joint_state
+        #print("Joint data is: ", self.joint_state)
 
 def main(args):
   rospy.init_node('aerial_manipulator_state_recorder', anonymous=True)

@@ -127,7 +127,7 @@ class ParabolicAirdropDequeue:
 # acc: 3.5, cnt
 
     def jointTrajectoryCallback(self, msg):
-        print "Received a trajectory."
+        print("Received a trajectory.")
         if self.executing_trajectory_flag == False and \
             len(msg.points) > 0:
             self.joint_trajectory = copy.deepcopy(msg)
@@ -143,7 +143,7 @@ class ParabolicAirdropDequeue:
                         self.airdrop_velocity.linear.z = msg.points[i].velocities[2]
                         break
         else:
-            print "Currently executing a trajectory."
+            print("Currently executing a trajectory.")
 
     def uavOdometryCallback(self,msg):
         self.uav_current_pose = msg.pose.pose

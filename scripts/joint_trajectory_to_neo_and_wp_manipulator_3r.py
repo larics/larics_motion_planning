@@ -67,13 +67,13 @@ class JointTrajectoryToUavAndWpManipulatorReference:
 
 
     def jointTrajectoryCallback(self, msg):
-        print "Received a trajectory."
+        print("Received a trajectory.")
         if self.executing_trajectory_flag == False and \
             len(msg.points) > 0:
             self.trajectory = copy.deepcopy(msg)
             self.executing_trajectory_flag = True
         else:
-            print "Currently executing a trajectory."
+            print("Currently executing a trajectory.")
 
     def publishAll(self):
         self.manipulator_joint1_pub.publish(self.current_trajectory_point.positions[4+2])

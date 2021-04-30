@@ -58,12 +58,12 @@ class JointTrajectoryReferenceTracker:
                 self.executing_trajectory_pub.publish(0)
 
     def jointTrajectoryCallback(self, msg):
-        print "Received a trajectory."
+        print("Received a trajectory.")
         if len(msg.points) > 0:
             self.joint_trajectory = copy.deepcopy(msg)
             self.executing_trajectory_flag = True
         else:
-            print "Currently executing a trajectory."
+            print("Currently executing a trajectory.")
 
     def setCurrentPointCallback(self, msg):
         self.current_trajectory_point = msg

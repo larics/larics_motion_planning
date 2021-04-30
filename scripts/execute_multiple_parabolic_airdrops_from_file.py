@@ -51,7 +51,7 @@ class ExecuteMultipleParabolicAirdrops:
     self.start_flag = False
     rospy.Subscriber('execute_multiple_aridrops/start', Bool, self.startCallback, 
       queue_size=1)
-    print "Constructor done."
+    print("Constructor done.")
 
   def run(self):
     rate = rospy.Rate(1)
@@ -61,7 +61,7 @@ class ExecuteMultipleParabolicAirdrops:
       if self.start_flag == True:
         self.start_flag = False
 
-        print "Starting to execute the procedure."
+        print("Starting to execute the procedure.")
         # Go through every config
 
         for i in range(len(self.airdrop_configs)):
@@ -76,23 +76,23 @@ class ExecuteMultipleParabolicAirdrops:
           should_publish = True
           for j in range(self.drops_per_config):
             if should_publish == True:
-              print " "
-              print "Executing ", (current_drop_count+1), "/", len(self.airdrop_configs), " for ", j+1, "/", self.drops_per_config, " time"
-              print "Go to position"
+              print(" ")
+              print("Executing ", (current_drop_count+1), "/", len(self.airdrop_configs), " for ", j+1, "/", self.drops_per_config, " time")
+              print("Go to position")
               self.go_to_pub.publish(self.go_to_pose)
               time.sleep(10)
 
               # Spawn ball twice to eliminate weird shaking
-              print "Spawn ball first time"
+              print("Spawn ball first time")
               self.spawn_ball_service(EmptyRequest())
               time.sleep(7)
-              #print "Spawn ball second time"
+              #print("Spawn ball second time")
               #self.spawn_ball_service(EmptyRequest())
               #time.sleep(7)
 
             # Call airdrop service
             #self.airdrop_request.custom_parabola_params.clear()
-            print "Plan and execute trajectory"
+            print("Plan and execute trajectory")
             self.airdrop_request.custom_parabola_params[0] = v0
             self.airdrop_request.custom_parabola_params[1] = dz
             self.airdrop_request.custom_parabola_params[2] = alpha
@@ -112,9 +112,9 @@ class ExecuteMultipleParabolicAirdrops:
               self.joint_trajectory_pub.publish(res.trajectory)
               time.sleep(duration + 5)
             else:
-              print "Ripmax, z<0.3 at some point."
-              print "Config v0 dz alpha dx psi"
-              print "Config: ", v0, " ", dz, " ", alpha, " ", dx, " ", psi
+              print("Ripmax, z<0.3 at some point.")
+              print("Config v0 dz alpha dx psi")
+              print("Config: ", v0, " ", dz, " ", alpha, " ", dx, " ", psi)
 
 
 

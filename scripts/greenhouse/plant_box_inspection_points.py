@@ -51,7 +51,7 @@ class BoxInspectionPoints:
     while not rospy.is_shutdown():
       rate.sleep()
       self.marker_array_pub.publish(self.marker_array)
-      #print self.box_config_vector
+      #print(self.box_config_vector)
 
   def boxConfigCallback(self, msg):
     if len(msg.data) < len(self.box_config_vector):

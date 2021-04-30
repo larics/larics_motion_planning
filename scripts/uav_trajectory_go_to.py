@@ -92,7 +92,7 @@ class UavGoTo:
         self.uav_current_pose.orientation.z = msg.points[0].transforms[0].rotation.z
         self.uav_current_pose.orientation.w = msg.points[0].transforms[0].rotation.w
 
-        #print self.uav_current_pose
+        #print(self.uav_current_pose)
 
     def carrotReferenceCallback(self, msg):
         self.uav_current_pose.position.x = msg.transforms[0].translation.x
@@ -247,7 +247,7 @@ class JointPositionControllerSubscriber:
 
     def jointReferenceCallback(self, msg):
         self.joint_state = msg.data
-        #print "Joint data is: ", self.joint_state
+        #print("Joint data is: ", self.joint_state)
 
 if __name__ == '__main__':
 

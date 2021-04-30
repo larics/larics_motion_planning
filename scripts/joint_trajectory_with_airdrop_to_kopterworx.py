@@ -122,7 +122,7 @@ class JointTrajectoryToKopterworx:
                 
                 if len(self.joint_trajectory.points) == 0:
                     self.executing_trajectory_flag = False
-                    print "Trajectory executed."
+                    print("Trajectory executed.")
                     if self.airdrop_flag == True:
                         self.magnet_gain = 1.0
                         self.airdrop_counter = 0
@@ -135,7 +135,7 @@ class JointTrajectoryToKopterworx:
 # acc: 3.5, cnt
 
     def jointTrajectoryCallback(self, msg):
-        print "Received a trajectory. Call start service to start executing."
+        print("Received a trajectory. Call start service to start executing.")
         if len(msg.points) > 0:
             self.joint_trajectory = copy.deepcopy(msg)
             #self.executing_trajectory_flag = True
@@ -150,16 +150,16 @@ class JointTrajectoryToKopterworx:
                         self.airdrop_velocity.linear.z = msg.points[i].velocities[2]
                         break
             else:
-                print "Airdrop was not provided. Will execute trajectory without turning the magnet off."
+                print("Airdrop was not provided. Will execute trajectory without turning the magnet off.")
         else:
-            print "Currently executing a trajectory."
+            print("Currently executing a trajectory.")
 
     def startTrajectoryCallback(self, req):
         if len(self.joint_trajectory.points) > 0:
-            print "Starting trajectory."
+            print("Starting trajectory.")
             self.executing_trajectory_flag = True
         else:
-            print "There is no trajectory to execute."
+            print("There is no trajectory to execute.")
 
         return std_srvs.srv.EmptyResponse()
 
