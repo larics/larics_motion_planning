@@ -21,7 +21,7 @@ windows:
           waitForSimulation; 
           sleep 8; 
           roslaunch impedance_control impedance_control_asap_3rx.launch start_gazebo:=false collision_bitmask:=1 name:="model_uav"
-        - waitForSimulation; sleep 8; roslaunch impedance_control impedance_control_asap_3rx.launch start_gazebo:=false collision_bitmask:=2 mount_stereo_cam:=false
+        - waitForSimulation; sleep 8; roslaunch impedance_control impedance_control_asap_3rx.launch start_gazebo:=false collision_bitmask:=2 mount_stereo_cam:=true
         - waitForSimulation; sleep 15; rosrun impedance_control get_uav_airborne.sh model_uav
         - waitForSimulation; sleep 15; rosrun impedance_control get_uav_airborne.sh
   - blob_detection:
