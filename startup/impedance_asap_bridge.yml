@@ -21,7 +21,7 @@ windows:
           waitForSimulation; 
           sleep 8; 
           roslaunch impedance_control impedance_control_asap_3rx.launch start_gazebo:=false collision_bitmask:=1 name:="model_uav"
-        - waitForSimulation; sleep 8; roslaunch impedance_control impedance_control_asap_3rx.launch start_gazebo:=false collision_bitmask:=2 mount_stereo_cam:=true
+        - waitForSimulation; sleep 8; roslaunch impedance_control impedance_control_asap_3rx.launch start_gazebo:=false collision_bitmask:=2 mount_stereo_cam:=false
         - waitForSimulation; sleep 15; rosrun impedance_control get_uav_airborne.sh model_uav
         - waitForSimulation; sleep 15; rosrun impedance_control get_uav_airborne.sh
   - blob_detection:
@@ -56,3 +56,8 @@ windows:
         - |
           cd ~/bags/impedance_bridge;
           history -s "rosbag record -a -x \"/(.*)(gazebo|camera|bias|joint_states)(.*)\" -o impedance_asap_bridge"
+        - history -s "rosrun larics_motion_planning aerial_manipulator_state_recorder.py _filename:=asap_bridge_impedance __ns:=uav"
+        - |
+          history -s "rosservice call /uav/record_trajectory \"data: true\""
+        - |
+          history -s "rosservice call /uav/record_trajectory \"data: false\""
