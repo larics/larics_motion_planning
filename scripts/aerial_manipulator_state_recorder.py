@@ -28,10 +28,11 @@ class AerialManipulatorStateRecorder:
     self.filename = rospy.get_param('~filename', "aerial_manipulator")
     extension = ".csv"
     i = 0
-    while os.path.exists(self.directory + "/" + self.filename  + extension):
+    check_filename = copy.deepcopy(self.filename)
+    while os.path.exists(self.directory + "/" + check_filename + extension):
       i = i + 1
-      self.filename = self.filename + "_" + str(i)
-    self.aerial_manipulator_state_file = open(self.directory + "/" + self.filename + 
+      check_filename = copy.deepcopy(self.filename) + "_" + str(i)
+    self.aerial_manipulator_state_file = open(self.directory + "/" + check_filename + 
       extension, "w")
 
     self.recording_flag = False
