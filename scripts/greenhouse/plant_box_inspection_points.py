@@ -5,6 +5,7 @@ __author__ = 'aivanovic'
 import rospy
 import copy, os, psutil
 import numpy as np
+import math
 from math import sin, cos, tan, atan2
 from std_msgs.msg import Float64MultiArray
 from visualization_msgs.msg import Marker, MarkerArray
@@ -19,18 +20,40 @@ class BoxInspectionPoints:
     self.rate = rospy.get_param('~rate', 1)
     # Params for box dimensions
     self.lx = rospy.get_param('~box_length', 0.9)
-    self.ly = rospy.get_param('~box_width', 0.63)
-    self.lz = rospy.get_param('~box_height', 0.2)
+    self.ly = rospy.get_param('~box_width', 0.5) #0.63
+    self.lz = rospy.get_param('~box_height', 1.0) #0.2
     # Get r1 and r2 distances from box during inspection
     self.r1 = rospy.get_param('~r1', 1.0)
     self.r2 = rospy.get_param('~r2', 0.5)
     # Get how much above(or below) relative to the crate do you want inspection
     self.plants_delta_z = rospy.get_param('~plants_delta_z', 0.0)
 
+    # Another type of inspection points is ellipsoid. These are additional
+    # parameters for it.
+    # First the distance from the plant itself
+    self.ellipse_d = rospy.get_param('~ellipse/distance', 1.5)
+    # Which type of waypoint planner is used. By default it will be box, but
+    # change it if ellipse is selected.
+    self.waypoints_type = rospy.get_param('~waypoints_type', 'box')
+    print("[PlantInspection]->init: Using " + self.waypoints_type + " waypoints type.")
+    # Angle step for sampling the parametrized ellipse. Automatically
+    # recalculate angle step to be integer multiple of pi.
+    self.ellipse_angle_step = rospy.get_param('~ellipse/angle_step', 0.25)
+    self.ellipse_n_points = math.ceil(2.0*math.pi/self.ellipse_angle_step)
+    self.ellipse_angle_step = 2.0*math.pi/self.ellipse_n_points
+    print("[PlantInspection]->init: Recalculated ellipse angle step: " +
+      str(self.ellipse_angle_step))
+    # Alpha down and up refer to max and min angles of the manipulator pitch
+    # during inspection.
+    self.ellipse_alpha_down = rospy.get_param('~ellipse/alpha_down', 0.685)
+    self.ellipse_alpha_up = rospy.get_param('~ellipse/alpha_up', -0.267)
+
     # This vector contains x,y,z,yaw 
     self.box_config_vector = [0]*4
     # List of inspection points
     self.T_points = []
+    # Additionally alpha angles for ellipse type
+    self.alpha = []
 
     # Publishers
     self.marker_array = MarkerArray()
@@ -59,7 +82,13 @@ class BoxInspectionPoints:
     else:
       for i in range(0,len(self.box_config_vector)):
         self.box_config_vector[i] = msg.data[i]
-      self.T_points = self.getInspectionPoints(self.box_config_vector)
+      if self.waypoints_type == 'box':
+        self.T_points = self.getInspectionPointsBox(self.box_config_vector)
+      elif self.waypoints_type == 'ellipse':
+        self.T_points, self.alpha = self.getInspectionPointsEllipse(self.box_config_vector)
+        res.ellipse_alpha_vector = self.alpha
+      else:
+        print("[PlantInspection]->boxConfigCallback: No such waypoints type!")
       self.createVisualizationMessage()
 
   def inspectionPointsCallback(self, req):
@@ -71,7 +100,13 @@ class BoxInspectionPoints:
     else:
       for i in range(0,len(self.box_config_vector)):
         self.box_config_vector[i] = req.box_config_vector[i]
-      self.T_points = self.getInspectionPoints(self.box_config_vector)
+      if self.waypoints_type == 'box':
+        self.T_points = self.getInspectionPointsBox(self.box_config_vector)
+      elif self.waypoints_type == 'ellipse':
+        self.T_points, self.alpha = self.getInspectionPointsEllipse(self.box_config_vector)
+        res.ellipse_alpha_vector = self.alpha
+      else:
+        print("[PlantInspection]->boxConfigCallback: No such waypoints type!")
       self.createVisualizationMessage()
 
       # Apart from visualizing, return the pose array
@@ -153,31 +188,32 @@ class BoxInspectionPoints:
     self.marker_array.markers.append(copy.deepcopy(marker))
 
     # Add arrows pointing the inspection direction
-    for i in range(3):
-      marker.id = len(self.marker_array.markers)
-      marker.ns = "Directions"
-      marker.type = Marker.ARROW
-      marker.action = marker.ADD
-      marker.scale.x = abs(self.r1-self.r2)
-      marker.scale.y = 0.04
-      marker.scale.z = 0.04
-      marker.color.r = 191.0/255.0
-      marker.color.g = 25.0/255.0
-      marker.color.b = 58.0/255.0
-      marker.color.a = 1.0
-      marker.lifetime = rospy.Duration()
-      marker.points = [] # Reset points
-      temp_point = numpyMatrixToPoint(self.T_points[i*2])
-      marker.pose.position.x = temp_point.x
-      marker.pose.position.y = temp_point.y
-      marker.pose.position.z = temp_point.z
-      alpha = atan2(self.T_points[i*2][1][0], self.T_points[i*2][0][0])
-      marker.pose.orientation.z = sin(alpha/2.0)
-      marker.pose.orientation.w = cos(alpha/2.0)
-      self.marker_array.markers.append(copy.deepcopy(marker))
+    if self.waypoints_type == "box":
+      for i in range(3):
+        marker.id = len(self.marker_array.markers)
+        marker.ns = "Directions"
+        marker.type = Marker.ARROW
+        marker.action = marker.ADD
+        marker.scale.x = abs(self.r1-self.r2)
+        marker.scale.y = 0.04
+        marker.scale.z = 0.04
+        marker.color.r = 191.0/255.0
+        marker.color.g = 25.0/255.0
+        marker.color.b = 58.0/255.0
+        marker.color.a = 1.0
+        marker.lifetime = rospy.Duration()
+        marker.points = [] # Reset points
+        temp_point = numpyMatrixToPoint(self.T_points[i*2])
+        marker.pose.position.x = temp_point.x
+        marker.pose.position.y = temp_point.y
+        marker.pose.position.z = temp_point.z
+        alpha = atan2(self.T_points[i*2][1][0], self.T_points[i*2][0][0])
+        marker.pose.orientation.z = sin(alpha/2.0)
+        marker.pose.orientation.w = cos(alpha/2.0)
+        self.marker_array.markers.append(copy.deepcopy(marker))
 
 
-  def getInspectionPoints(self, box_vector):
+  def getInspectionPointsBox(self, box_vector):
     x0 = box_vector[0]
     y0 = box_vector[1]
     z0 = box_vector[2]
@@ -196,6 +232,45 @@ class BoxInspectionPoints:
       T_W_list.append(np.matmul(T_W_B,T_B_list[i]))
 
     return T_W_list
+
+  def getInspectionPointsEllipse(self, box_vector):
+    print("PlantInspection]->getInspectionPointsEllipse started.")
+    x0 = box_vector[0]
+    y0 = box_vector[1]
+    z0 = box_vector[2]
+    yaw0 = box_vector[3]
+
+    # First sample the ellipse in y-z axis
+    list_T = []
+    list_alpha = []
+    for i in range(int(self.ellipse_n_points)):
+      dy = (self.ly/2.0)*sin(i*self.ellipse_angle_step)
+      dz = (self.lz/2.0)*cos(i*self.ellipse_angle_step)
+      # Get ellipse points in the center of plant frame
+      temp_T = transformMatrixFromTranslationAndYaw([0,dy,dz,0])
+      # Rotate distance vector which is initially only along x axis.
+      Rd = transformMatrixFromTranslationAndYaw([0,0,0,box_vector[3]])
+      Td = transformMatrixFromTranslationAndYaw([self.ellipse_d,0,0,0])
+      Td = np.matmul(Rd, Td)
+      # Rotate and translate initial points to be farther away from the
+      # box at the imagined origin.
+      temp_T = np.matmul(Td, temp_T)
+      # Finally translate points to be in front of the box
+      Tw = transformMatrixFromTranslationAndYaw([x0, y0, z0, 0])
+      temp_T = np.matmul(Tw, temp_T)
+      list_T.append(copy.deepcopy(temp_T))
+
+      # Calcululate alpha angle which will be pitch of the manipulator during
+      # inspection
+      if dz >= 0.0:
+        # When the uav is above the plant center, this will look down since
+        # alpha_up is negative, and dz is positive
+        list_alpha.append(self.ellipse_alpha_up*dz/(self.lz/2.0))
+      else:
+        # When the uav is below the plant center, this will look up
+        list_alpha.append(-self.ellipse_alpha_down*dz/(self.lz/2.0))
+
+    return list_T, list_alpha
 
 def transformMatrixFromTranslationAndYaw(values):
     x = values[0]
