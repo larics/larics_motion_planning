@@ -19,7 +19,7 @@ class BoxInspectionPoints:
     # Get node parameters
     self.rate = rospy.get_param('~rate', 1)
     # Params for box dimensions
-    self.lx = rospy.get_param('~box_length', 0.9)
+    self.lx = rospy.get_param('~box_length', 0.5) #0.9
     self.ly = rospy.get_param('~box_width', 0.5) #0.63
     self.lz = rospy.get_param('~box_height', 1.0) #0.2
     # Get r1 and r2 distances from box during inspection
@@ -41,6 +41,7 @@ class BoxInspectionPoints:
     self.ellipse_angle_step = rospy.get_param('~ellipse/angle_step', 0.25)
     self.ellipse_n_points = math.ceil(2.0*math.pi/self.ellipse_angle_step)
     self.ellipse_angle_step = 2.0*math.pi/self.ellipse_n_points
+    self.ellipse_n_points = self.ellipse_n_points + 1
     print("[PlantInspection]->init: Recalculated ellipse angle step: " +
       str(self.ellipse_angle_step))
     # Alpha down and up refer to max and min angles of the manipulator pitch
@@ -52,8 +53,10 @@ class BoxInspectionPoints:
     self.box_config_vector = [0]*4
     # List of inspection points
     self.T_points = []
-    # Additionally alpha angles for ellipse type
+    # Additionally alpha angles for ellipse and delta yaw for manipulator to
+    # always look towards the center of the plant
     self.alpha = []
+    self.delta_yaw = []
 
     # Publishers
     self.marker_array = MarkerArray()
@@ -85,8 +88,9 @@ class BoxInspectionPoints:
       if self.waypoints_type == 'box':
         self.T_points = self.getInspectionPointsBox(self.box_config_vector)
       elif self.waypoints_type == 'ellipse':
-        self.T_points, self.alpha = self.getInspectionPointsEllipse(self.box_config_vector)
+        self.T_points, self.alpha, self.delta_yaw = self.getInspectionPointsEllipse(self.box_config_vector)
         res.ellipse_alpha_vector = self.alpha
+        res.ellipse_delta_yaw = self.delta_yaw
       else:
         print("[PlantInspection]->boxConfigCallback: No such waypoints type!")
       self.createVisualizationMessage()
@@ -103,8 +107,9 @@ class BoxInspectionPoints:
       if self.waypoints_type == 'box':
         self.T_points = self.getInspectionPointsBox(self.box_config_vector)
       elif self.waypoints_type == 'ellipse':
-        self.T_points, self.alpha = self.getInspectionPointsEllipse(self.box_config_vector)
+        self.T_points, self.alpha, self.delta_yaw = self.getInspectionPointsEllipse(self.box_config_vector)
         res.ellipse_alpha_vector = self.alpha
+        res.ellipse_delta_yaw = self.delta_yaw
       else:
         print("[PlantInspection]->boxConfigCallback: No such waypoints type!")
       self.createVisualizationMessage()
@@ -243,6 +248,7 @@ class BoxInspectionPoints:
     # First sample the ellipse in y-z axis
     list_T = []
     list_alpha = []
+    list_yaw = []
     for i in range(int(self.ellipse_n_points)):
       dy = (self.ly/2.0)*sin(i*self.ellipse_angle_step)
       dz = (self.lz/2.0)*cos(i*self.ellipse_angle_step)
@@ -270,7 +276,11 @@ class BoxInspectionPoints:
         # When the uav is below the plant center, this will look up
         list_alpha.append(-self.ellipse_alpha_down*dz/(self.lz/2.0))
 
-    return list_T, list_alpha
+      # Also calculate delta yaw which the UAV has to execute to look towards
+      # the center of the plant.
+      list_yaw.append(atan2(dy,self.ellipse_d))
+
+    return list_T, list_alpha, list_yaw
 
 def transformMatrixFromTranslationAndYaw(values):
     x = values[0]

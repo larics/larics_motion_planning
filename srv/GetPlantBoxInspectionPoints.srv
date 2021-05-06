@@ -3,3 +3,4 @@ float64[]           box_config_vector
 nav_msgs/Path       inspection_points
 bool                success
 float64[]           ellipse_alpha_vector
+float64[]           ellipse_delta_yaw

@@ -33,7 +33,7 @@ windows:
           velocities: [0]
           accelerations: [0]
           effort: [0]
-          time_from_start: {secs: 0, nsecs: 0}"
+          time_from_start: {secs: 0, nsecs: 0}";
         - |
           waitForSimulation; sleep 8; rostopic pub -1 /uav/reference_tracker/set_current_trajectory_point trajectory_msgs/JointTrajectoryPoint "
           positions: [2.0, 0, 1.0, 0.0, 0.0, 0.0, 0, 0, 0, 0, 0]
@@ -41,4 +41,21 @@ windows:
           accelerations: [0]
           effort: [0]
           time_from_start: {secs: 0, nsecs: 0}"
+  - ellipse_waypoints:
+      layout: tiled
+      panes:
+        - >
+          waitForRos; sleep 1; 
+          rosrun larics_motion_planning plant_box_inspection_points.py _waypoints_type:="ellipse" __ns:="uav"
+        - >
+          waitForRos; sleep 1; 
+          rosrun larics_motion_planning ellipse_waypoints_to_plant_inspection_trajectory.py __ns:=uav
+        - |
+          waitForRos; sleep 3; rostopic pub -1 /uav/ellipse_waypoints_trajectory_planner/default_reference std_msgs/Float64MultiArray "layout:
+            dim:
+            - label: ''
+              size: 0
+              stride: 0
+            data_offset: 0
+          data: [0, 0, 0, 0, 0, 0, 0.787, 0.787, 0.787, -1.57, 0.787]"
         - waitForSimulation; sleep 5; rosrun rqt_gui rqt_gui

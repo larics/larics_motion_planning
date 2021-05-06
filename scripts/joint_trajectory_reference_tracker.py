@@ -58,7 +58,7 @@ class JointTrajectoryReferenceTracker:
                 self.executing_trajectory_pub.publish(0)
 
     def jointTrajectoryCallback(self, msg):
-        print("Received a trajectory.")
+        print("[ReferenceTracker]: Received a trajectory.")
         if len(msg.points) > 0:
             self.joint_trajectory = copy.deepcopy(msg)
             self.executing_trajectory_flag = True
