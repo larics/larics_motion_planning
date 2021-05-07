@@ -106,9 +106,9 @@ class EllipseWaypointsHandler:
       temp_trajectory_point.positions[0] = res_wp.inspection_points.poses[i].pose.position.x
       temp_trajectory_point.positions[1] = res_wp.inspection_points.poses[i].pose.position.y
       temp_trajectory_point.positions[2] = res_wp.inspection_points.poses[i].pose.position.z
-      temp_trajectory_point.positions[5] = \
-        quat2yaw(res_wp.inspection_points.poses[i].pose.orientation) + \
+      yaw = quat2yaw(res_wp.inspection_points.poses[i].pose.orientation) + \
         res_wp.ellipse_delta_yaw[i] + math.pi
+      temp_trajectory_point.positions[5] = atan2(sin(yaw), cos(yaw))
       # Convert alpha to joint value
       temp_trajectory_point.positions[self.alpha_dof_id] = self.alpha2q(res_wp.ellipse_alpha_vector[i])
       req_traj.waypoints.points.append(copy.deepcopy(temp_trajectory_point))
