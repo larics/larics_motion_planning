@@ -20,8 +20,8 @@ class BoxInspectionPoints:
     self.rate = rospy.get_param('~rate', 1)
     # Params for box dimensions
     self.lx = rospy.get_param('~box_length', 0.5) #0.9
-    self.ly = rospy.get_param('~box_width', 0.5) #0.63
-    self.lz = rospy.get_param('~box_height', 1.0) #0.2
+    self.ly = rospy.get_param('~box_width', 0.25) #0.63
+    self.lz = rospy.get_param('~box_height', 0.5) #0.2
     # Get r1 and r2 distances from box during inspection
     self.r1 = rospy.get_param('~r1', 1.0)
     self.r2 = rospy.get_param('~r2', 0.5)
@@ -31,10 +31,10 @@ class BoxInspectionPoints:
     # Another type of inspection points is ellipsoid. These are additional
     # parameters for it.
     # First the distance from the plant itself
-    self.ellipse_d = rospy.get_param('~ellipse/distance', 1.5)
+    self.ellipse_d = rospy.get_param('~ellipse/distance', 1.0)
     # Which type of waypoint planner is used. By default it will be box, but
     # change it if ellipse is selected.
-    self.waypoints_type = rospy.get_param('~waypoints_type', 'box')
+    self.waypoints_type = rospy.get_param('~waypoints_type', 'ellipse_row')
     print("[PlantInspection]->init: Using " + self.waypoints_type + " waypoints type.")
     # Angle step for sampling the parametrized ellipse. Automatically
     # recalculate angle step to be integer multiple of pi.
@@ -48,6 +48,12 @@ class BoxInspectionPoints:
     # during inspection.
     self.ellipse_alpha_down = rospy.get_param('~ellipse/alpha_down', 0.685)
     self.ellipse_alpha_up = rospy.get_param('~ellipse/alpha_up', -0.267)
+
+    # Well, more additional parameters for ellipse row
+    self.ellipse_row_lx = rospy.get_param('~ellipse_row/lx', 2.0)
+    self.ellipse_row_ly = rospy.get_param('~ellipse_row/ly', 2.0)
+    self.ellipse_row_n_plants = rospy.get_param(
+      '~ellipse_row/number_of_plants', int(4))
 
     # This vector contains x,y,z,yaw 
     self.box_config_vector = [0]*4
@@ -91,6 +97,10 @@ class BoxInspectionPoints:
         self.T_points, self.alpha, self.delta_yaw = self.getInspectionPointsEllipse(self.box_config_vector)
         res.ellipse_alpha_vector = self.alpha
         res.ellipse_delta_yaw = self.delta_yaw
+      elif self.waypoints_type == 'ellipse_row':
+        self.T_points, self.alpha, self.delta_yaw = self.getInspectionPointsEllipseRow(self.box_config_vector)
+        res.ellipse_alpha_vector = self.alpha
+        res.ellipse_delta_yaw = self.delta_yaw
       else:
         print("[PlantInspection]->boxConfigCallback: No such waypoints type!")
       self.createVisualizationMessage()
@@ -108,6 +118,10 @@ class BoxInspectionPoints:
         self.T_points = self.getInspectionPointsBox(self.box_config_vector)
       elif self.waypoints_type == 'ellipse':
         self.T_points, self.alpha, self.delta_yaw = self.getInspectionPointsEllipse(self.box_config_vector)
+        res.ellipse_alpha_vector = self.alpha
+        res.ellipse_delta_yaw = self.delta_yaw
+      elif self.waypoints_type == 'ellipse_row':
+        self.T_points, self.alpha, self.delta_yaw = self.getInspectionPointsEllipseRow(self.box_config_vector)
         res.ellipse_alpha_vector = self.alpha
         res.ellipse_delta_yaw = self.delta_yaw
       else:
@@ -279,6 +293,59 @@ class BoxInspectionPoints:
       # Also calculate delta yaw which the UAV has to execute to look towards
       # the center of the plant.
       list_yaw.append(atan2(dy,self.ellipse_d))
+
+    return list_T, list_alpha, list_yaw
+
+  def getInspectionPointsEllipseRow(self, row_center):
+    print("PlantInspection]->getInspectionPointsEllipseRow started.")
+    # These are now row centroids.
+    x0 = row_center[0]
+    y0 = row_center[1]
+    z0 = row_center[2]
+    yaw0 = row_center[3]
+
+    list_T = []
+    list_alpha = []
+    list_yaw = []
+
+    # Following will find the points in local frame of plant row! Afterwards, 
+    # we will transform them to the world frame
+    # Separation between plants along x axis
+    sep = self.ellipse_row_lx/float(self.ellipse_row_n_plants)
+    if (self.ellipse_row_n_plants % 2) == 0:
+      start = -float(self.ellipse_row_n_plants/2-1)*sep - 0.5*sep
+    else:
+      start = -float(math.floor(self.ellipse_row_n_plants/2))*sep
+    print start, sep
+
+    # This above was in local frame along x axis of the row. Rotate it and do
+    # the front row
+    sep_x = sep*cos(yaw0)
+    sep_y = sep*sin(yaw0)
+    start_x = start*cos(yaw0) + x0
+    start_y = start*sin(yaw0) + y0
+    # First do the front row
+    for i in range(self.ellipse_row_n_plants):
+      box_vector = [start_x + float(i)*sep_x, start_y + float(i)*sep_y, \
+        z0, yaw0+math.pi/2]
+      print box_vector
+      l_T, l_alpha, l_yaw = self.getInspectionPointsEllipse(box_vector)
+      list_T.extend(copy.deepcopy(l_T))
+      list_alpha.extend(copy.deepcopy(l_alpha))
+      list_yaw.extend(copy.deepcopy(l_yaw))
+
+    # First do the front row
+    for i in range(self.ellipse_row_n_plants):
+      box_vector = [start_x + float(i)*sep_x, start_y + float(i)*sep_y, \
+        z0, yaw0+math.pi/2+math.pi]
+      print box_vector
+      l_T, l_alpha, l_yaw = self.getInspectionPointsEllipse(box_vector)
+      list_T.extend(copy.deepcopy(l_T))
+      list_alpha.extend(copy.deepcopy(l_alpha))
+      list_yaw.extend(copy.deepcopy(l_yaw))
+
+
+
 
     return list_T, list_alpha, list_yaw
 

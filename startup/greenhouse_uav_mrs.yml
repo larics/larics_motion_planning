@@ -46,7 +46,7 @@ windows:
       panes:
         - >
           waitForRos; sleep 1; 
-          rosrun larics_motion_planning plant_box_inspection_points.py _waypoints_type:="ellipse" __ns:="uav"
+          rosrun larics_motion_planning plant_box_inspection_points.py _waypoints_type:="ellipse_row" __ns:="uav"
         - >
           waitForRos; sleep 1; 
           rosrun larics_motion_planning ellipse_waypoints_to_plant_inspection_trajectory.py __ns:=uav
