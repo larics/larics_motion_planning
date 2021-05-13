@@ -38,7 +38,7 @@ class BoxInspectionPoints:
     print("[PlantInspection]->init: Using " + self.waypoints_type + " waypoints type.")
     # Angle step for sampling the parametrized ellipse. Automatically
     # recalculate angle step to be integer multiple of pi.
-    self.ellipse_angle_step = rospy.get_param('~ellipse/angle_step', 0.25)
+    self.ellipse_angle_step = rospy.get_param('~ellipse/angle_step', 0.75)
     self.ellipse_n_points = math.ceil(2.0*math.pi/self.ellipse_angle_step)
     self.ellipse_angle_step = 2.0*math.pi/self.ellipse_n_points
     self.ellipse_n_points = self.ellipse_n_points + 1
@@ -264,8 +264,8 @@ class BoxInspectionPoints:
     list_alpha = []
     list_yaw = []
     for i in range(int(self.ellipse_n_points)):
-      dy = (self.ly/2.0)*sin(i*self.ellipse_angle_step)
-      dz = (self.lz/2.0)*cos(i*self.ellipse_angle_step)
+      dy = (self.ly/2.0)*sin((self.ellipse_n_points-i-1)*self.ellipse_angle_step)
+      dz = (self.lz/2.0)*cos((self.ellipse_n_points-i-1)*self.ellipse_angle_step)
       # Get ellipse points in the center of plant frame
       temp_T = transformMatrixFromTranslationAndYaw([0,dy,dz,0])
       # Rotate distance vector which is initially only along x axis.
@@ -316,7 +316,6 @@ class BoxInspectionPoints:
       start = -float(self.ellipse_row_n_plants/2-1)*sep - 0.5*sep
     else:
       start = -float(math.floor(self.ellipse_row_n_plants/2))*sep
-    print start, sep
 
     # This above was in local frame along x axis of the row. Rotate it and do
     # the front row
@@ -324,28 +323,91 @@ class BoxInspectionPoints:
     sep_y = sep*sin(yaw0)
     start_x = start*cos(yaw0) + x0
     start_y = start*sin(yaw0) + y0
-    # First do the front row
+    lx = 0*self.ellipse_row_lx*cos(yaw0) - self.ellipse_row_ly*sin(yaw0)
+    ly = 0*self.ellipse_row_lx*sin(yaw0) + self.ellipse_row_ly*cos(yaw0)
+
+    # First the side ellipse
+    i = 0
+    box_vector = [start_x + float(i)*sep_x + lx/4.0, start_y + float(i)*sep_y + ly/4.0, \
+        z0, yaw0+math.pi/2 + math.pi/2]
+    l_T, l_alpha, l_yaw = self.getInspectionPointsEllipse(box_vector)
+    list_T.extend(copy.deepcopy(l_T))
+    list_alpha.extend(copy.deepcopy(l_alpha))
+    list_yaw.extend(copy.deepcopy(l_yaw))
+    # Then a point on the side
+    i = 0
+    box_vector = [start_x + float(i)*sep_x + lx/2.0, start_y + float(i)*sep_y + ly/2.0, \
+        z0, yaw0+math.pi/2 + math.pi/2]
+    l_T, l_alpha, l_yaw = self.getInspectionPointsEllipse(box_vector)
+    list_T.append(copy.deepcopy(l_T[0]))
+    list_alpha.append(copy.deepcopy(l_alpha[0]))
+    list_yaw.append(copy.deepcopy(l_yaw[0]))
+    # Then the front row
     for i in range(self.ellipse_row_n_plants):
       box_vector = [start_x + float(i)*sep_x, start_y + float(i)*sep_y, \
         z0, yaw0+math.pi/2]
-      print box_vector
       l_T, l_alpha, l_yaw = self.getInspectionPointsEllipse(box_vector)
       list_T.extend(copy.deepcopy(l_T))
       list_alpha.extend(copy.deepcopy(l_alpha))
       list_yaw.extend(copy.deepcopy(l_yaw))
+    # Then a point on the side
+    i = self.ellipse_row_n_plants - 1
+    box_vector = [start_x + float(i)*sep_x + lx/2.0, start_y + float(i)*sep_y + ly/2.0, \
+        z0, yaw0+math.pi/2 - math.pi/2]
+    l_T, l_alpha, l_yaw = self.getInspectionPointsEllipse(box_vector)
+    list_T.append(copy.deepcopy(l_T[0]))
+    list_alpha.append(copy.deepcopy(l_alpha[0]))
+    list_yaw.append(copy.deepcopy(l_yaw[0]))
+    # And the ellipse on the other side
+    i = self.ellipse_row_n_plants - 1
+    box_vector = [start_x + float(i)*sep_x + lx/4.0, start_y + float(i)*sep_y + ly/4.0, \
+        z0, yaw0+math.pi/2 - math.pi/2]
+    l_T, l_alpha, l_yaw = self.getInspectionPointsEllipse(box_vector)
+    list_T.extend(copy.deepcopy(l_T))
+    list_alpha.extend(copy.deepcopy(l_alpha))
+    list_yaw.extend(copy.deepcopy(l_yaw))
 
-    # First do the front row
-    for i in range(self.ellipse_row_n_plants):
+    # Back row first side ellipse
+    i = self.ellipse_row_n_plants - 1
+    box_vector = [start_x + float(i)*sep_x - lx/4.0, start_y + float(i)*sep_y - ly/4.0, \
+        z0, yaw0+math.pi/2+math.pi+math.pi/2]
+    l_T, l_alpha, l_yaw = self.getInspectionPointsEllipse(box_vector)
+    list_T.extend(copy.deepcopy(l_T))
+    list_alpha.extend(copy.deepcopy(l_alpha))
+    list_yaw.extend(copy.deepcopy(l_yaw))
+    # Then a point
+    i = self.ellipse_row_n_plants - 1
+    box_vector = [start_x + float(i)*sep_x - lx/2.0, start_y + float(i)*sep_y - ly/2.0, \
+        z0, yaw0+math.pi/2+math.pi+math.pi/2]
+    l_T, l_alpha, l_yaw = self.getInspectionPointsEllipse(box_vector)
+    list_T.append(copy.deepcopy(l_T[0]))
+    list_alpha.append(copy.deepcopy(l_alpha[0]))
+    list_yaw.append(copy.deepcopy(l_yaw[0]))
+    
+    # Back row
+    for i in range(self.ellipse_row_n_plants-1, -1, -1):
       box_vector = [start_x + float(i)*sep_x, start_y + float(i)*sep_y, \
         z0, yaw0+math.pi/2+math.pi]
-      print box_vector
       l_T, l_alpha, l_yaw = self.getInspectionPointsEllipse(box_vector)
       list_T.extend(copy.deepcopy(l_T))
       list_alpha.extend(copy.deepcopy(l_alpha))
       list_yaw.extend(copy.deepcopy(l_yaw))
-
-
-
+    # Then a point
+    i = 0
+    box_vector = [start_x + float(i)*sep_x - lx/2.0, start_y + float(i)*sep_y - ly/2.0, \
+        z0, yaw0+math.pi/2+math.pi-math.pi/2]
+    l_T, l_alpha, l_yaw = self.getInspectionPointsEllipse(box_vector)
+    list_T.append(copy.deepcopy(l_T[0]))
+    list_alpha.append(copy.deepcopy(l_alpha[0]))
+    list_yaw.append(copy.deepcopy(l_yaw[0]))
+    # Other side ellipse
+    i = 0
+    box_vector = [start_x + float(i)*sep_x - lx/4.0, start_y + float(i)*sep_y - ly/4.0, \
+        z0, yaw0+math.pi/2+math.pi-math.pi/2]
+    l_T, l_alpha, l_yaw = self.getInspectionPointsEllipse(box_vector)
+    list_T.extend(copy.deepcopy(l_T))
+    list_alpha.extend(copy.deepcopy(l_alpha))
+    list_yaw.extend(copy.deepcopy(l_yaw))
 
     return list_T, list_alpha, list_yaw
 
