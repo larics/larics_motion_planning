@@ -14,12 +14,12 @@ windows:
   - uavs:
       layout: tiled
       panes:
-        - >
+        - > #UAV
           waitForSimulation; sleep 5; 
-          roslaunch mmuav_gazebo uav_attitude_position.launch start_gazebo:=false x:=2.0 z:=1.0 manipulator_type:="wp_manipulator" manipulator_tool:="rod" collision_bitmask:=1
-        - >
+          roslaunch mmuav_gazebo uav_attitude_position.launch start_gazebo:=false x:=2.0 z:=1.0 manipulator_type:="wp_manipulator" manipulator_tool:="rod_with_camera" collision_bitmask:=1
+        - > # Model uav if needed
           waitForSimulation; sleep 5; 
-          roslaunch mmuav_gazebo uav_attitude_position.launch start_gazebo:=false name:="model_uav" x:=2.0 z:=1.0 manipulator_type:="wp_manipulator" manipulator_tool:="rod" collision_bitmask:=2
+          history -s "roslaunch mmuav_gazebo uav_attitude_position.launch start_gazebo:=false name:=\"model_uav\" x:=2.0 z:=1.0 manipulator_type:=\"wp_manipulator\" manipulator_tool:=\"rod_with_camera\" collision_bitmask:=2"
   - planning:
       layout: tiled
       panes:
@@ -58,4 +58,11 @@ windows:
               stride: 0
             data_offset: 0
           data: [0, 0, 0, 0, 0, 0, 0.787, 0.787, 0.787, -1.57, 0.787]"
+  - gui:
+      layout: tiled
+      panes:
         - waitForSimulation; sleep 5; rosrun rqt_gui rqt_gui
+        - |
+          waitForSimulation; sleep 5; 
+          roscd larics_motion_planning/startup; rosrun rviz rviz -d greenhouse_uav_mrs_rviz.rviz
+        - waitForRos; rosrun larics_motion_planning visualize_mrs2021_paper.py __ns:=uav
