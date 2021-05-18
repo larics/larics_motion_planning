@@ -631,6 +631,54 @@ bool GlobalPlannerRosInterface::visualizeStateCallback(
   visualization_.setStatePoints(global_planner_->getRobotStatePoints(state));
   visualization_.publishStatePoints();
 
+
+  Eigen::Affine3d t_b_l0;
+  t_b_l0 = Eigen::Affine3d::Identity();
+  Eigen::Matrix3d rot_uav_manipulator;
+  // This is for arducopter with wp manipulator 3rx
+  rot_uav_manipulator = Eigen::AngleAxisd(3.14159265359, Eigen::Vector3d::UnitZ())
+      * Eigen::AngleAxisd(0,  Eigen::Vector3d::UnitY())
+      * Eigen::AngleAxisd(1.57079632679, Eigen::Vector3d::UnitX());
+  t_b_l0.translate(Eigen::Vector3d(0, 0, 0.075));
+  t_b_l0.rotate(rot_uav_manipulator);
+  // End-effector transform
+  Eigen::Affine3d t_w_b = Eigen::Affine3d::Identity();
+  t_w_b.translate(Eigen::Vector3d(req.state.data[0], 
+    req.state.data[1], req.state.data[2]));
+  Eigen::Matrix3d r_w_b;
+  // At this point roll and pitch are 0 since we don't plan for them
+  r_w_b = Eigen::AngleAxisd(req.state.data[5], Eigen::Vector3d::UnitZ())
+    * Eigen::AngleAxisd(req.state.data[4]*0.0,  Eigen::Vector3d::UnitY())
+    * Eigen::AngleAxisd(req.state.data[3]*0.0,  Eigen::Vector3d::UnitX());
+  t_w_b.rotate(r_w_b);
+
+  // Transform from l0 to end effector.
+  int q_size = req.state.data.size() - 6;
+  Eigen::VectorXd q(q_size);
+  for (int i=6; i<req.state.data.size(); i++){
+    q(i-6) = req.state.data[i];
+  }
+  // TODO: This might not exist in all kinematics. Maybe add getter for the
+  // end-effector and just use that pose instead of doing it like this.
+  shared_ptr<KinematicsInterface> kinematics = global_planner_->getKinematicsInterface();
+  Eigen::Affine3d t_l0_ee = kinematics->getEndEffectorTransform(q);
+  // Calculate end effector pose in global coordinate system.
+  Eigen::Affine3d t_ee_tool = Eigen::Affine3d::Identity();
+  t_ee_tool.translate(Eigen::Vector3d(0.3, 0, 0));
+  Eigen::Affine3d t_w_ee = t_w_b*t_b_l0*t_l0_ee*t_ee_tool;
+  //cout << t_w_ee.translation() << endl;
+  //cout << t_w_ee.rotation() << endl;
+  Eigen::Quaterniond quat(t_w_ee.rotation());
+
+
+  res.end_effector.position.x = t_w_ee.translation().x();
+  res.end_effector.position.y = t_w_ee.translation().y();
+  res.end_effector.position.z = t_w_ee.translation().z();
+  res.end_effector.orientation.x = quat.x();
+  res.end_effector.orientation.y = quat.y();
+  res.end_effector.orientation.z = quat.z();
+  res.end_effector.orientation.w = quat.w();
+
   cout << req.state.data.size() << endl;
   return true;
 }
