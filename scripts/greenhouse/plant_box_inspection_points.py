@@ -11,7 +11,8 @@ from std_msgs.msg import Float64MultiArray
 from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import Point, Pose, PoseStamped
 from larics_motion_planning.srv import GetPlantBoxInspectionPoints, \
-  GetPlantBoxInspectionPointsRequest, GetPlantBoxInspectionPointsResponse
+  GetPlantBoxInspectionPointsRequest, GetPlantBoxInspectionPointsResponse, \
+  VisualizeState, VisualizeStateRequest, VisualizeStateResponse
 
 class BoxInspectionPoints:
 
@@ -46,7 +47,7 @@ class BoxInspectionPoints:
       str(self.ellipse_angle_step))
     # Alpha down and up refer to max and min angles of the manipulator pitch
     # during inspection.
-    self.ellipse_alpha_down = rospy.get_param('~ellipse/alpha_down', 0.685)
+    self.ellipse_alpha_down = rospy.get_param('~ellipse/alpha_down', 0.267) #0.685
     self.ellipse_alpha_up = rospy.get_param('~ellipse/alpha_up', -0.267)
 
     # Well, more additional parameters for ellipse row
@@ -54,6 +55,10 @@ class BoxInspectionPoints:
     self.ellipse_row_ly = rospy.get_param('~ellipse_row/ly', 2.0)
     self.ellipse_row_n_plants = rospy.get_param(
       '~ellipse_row/number_of_plants', int(4))
+    # Also, calling visualize state to get end effector pose is part of ellipse
+    # row stuff
+    self.visualize_state_service = rospy.ServiceProxy(
+      "visualize_state", VisualizeState)
 
     # This vector contains x,y,z,yaw 
     self.box_config_vector = [0]*4
@@ -165,6 +170,9 @@ class BoxInspectionPoints:
     self.marker_array.markers.append(copy.deepcopy(marker))
 
     # Next add the plant box
+    marker = Marker()
+    marker.header.stamp = rospy.Time.now()
+    marker.header.frame_id = "world"
     marker.id = len(self.marker_array.markers)
     marker.ns = "plant box"
     marker.type = Marker.CUBE
@@ -186,6 +194,9 @@ class BoxInspectionPoints:
     self.marker_array.markers.append(copy.deepcopy(marker))
 
     # Next add the plant box centroid
+    marker = Marker()
+    marker.header.stamp = rospy.Time.now()
+    marker.header.frame_id = "world"
     marker.id = len(self.marker_array.markers)
     marker.ns = "plant box center"
     marker.type = Marker.SPHERE
@@ -209,6 +220,9 @@ class BoxInspectionPoints:
     # Add arrows pointing the inspection direction
     if self.waypoints_type == "box":
       for i in range(3):
+        marker = Marker()
+        marker.header.stamp = rospy.Time.now()
+        marker.header.frame_id = "world"
         marker.id = len(self.marker_array.markers)
         marker.ns = "Directions"
         marker.type = Marker.ARROW
@@ -331,9 +345,9 @@ class BoxInspectionPoints:
     box_vector = [start_x + float(i)*sep_x + lx/4.0, start_y + float(i)*sep_y + ly/4.0, \
         z0, yaw0+math.pi/2 + math.pi/2]
     l_T, l_alpha, l_yaw = self.getInspectionPointsEllipse(box_vector)
-    list_T.extend(copy.deepcopy(l_T))
-    list_alpha.extend(copy.deepcopy(l_alpha))
-    list_yaw.extend(copy.deepcopy(l_yaw))
+    list_T.append(copy.deepcopy(l_T[0]))
+    list_alpha.append(copy.deepcopy(l_alpha[0]))
+    list_yaw.append(copy.deepcopy(l_yaw[0]))
     # Then a point on the side
     i = 0
     box_vector = [start_x + float(i)*sep_x + lx/2.0, start_y + float(i)*sep_y + ly/2.0, \
@@ -363,18 +377,18 @@ class BoxInspectionPoints:
     box_vector = [start_x + float(i)*sep_x + lx/4.0, start_y + float(i)*sep_y + ly/4.0, \
         z0, yaw0+math.pi/2 - math.pi/2]
     l_T, l_alpha, l_yaw = self.getInspectionPointsEllipse(box_vector)
-    list_T.extend(copy.deepcopy(l_T))
-    list_alpha.extend(copy.deepcopy(l_alpha))
-    list_yaw.extend(copy.deepcopy(l_yaw))
+    list_T.append(copy.deepcopy(l_T[0]))
+    list_alpha.append(copy.deepcopy(l_alpha[0]))
+    list_yaw.append(copy.deepcopy(l_yaw[0]))
 
     # Back row first side ellipse
     i = self.ellipse_row_n_plants - 1
     box_vector = [start_x + float(i)*sep_x - lx/4.0, start_y + float(i)*sep_y - ly/4.0, \
         z0, yaw0+math.pi/2+math.pi+math.pi/2]
     l_T, l_alpha, l_yaw = self.getInspectionPointsEllipse(box_vector)
-    list_T.extend(copy.deepcopy(l_T))
-    list_alpha.extend(copy.deepcopy(l_alpha))
-    list_yaw.extend(copy.deepcopy(l_yaw))
+    list_T.append(copy.deepcopy(l_T[0]))
+    list_alpha.append(copy.deepcopy(l_alpha[0]))
+    list_yaw.append(copy.deepcopy(l_yaw[0]))
     # Then a point
     i = self.ellipse_row_n_plants - 1
     box_vector = [start_x + float(i)*sep_x - lx/2.0, start_y + float(i)*sep_y - ly/2.0, \
@@ -405,9 +419,9 @@ class BoxInspectionPoints:
     box_vector = [start_x + float(i)*sep_x - lx/4.0, start_y + float(i)*sep_y - ly/4.0, \
         z0, yaw0+math.pi/2+math.pi-math.pi/2]
     l_T, l_alpha, l_yaw = self.getInspectionPointsEllipse(box_vector)
-    list_T.extend(copy.deepcopy(l_T))
-    list_alpha.extend(copy.deepcopy(l_alpha))
-    list_yaw.extend(copy.deepcopy(l_yaw))
+    list_T.append(copy.deepcopy(l_T[0]))
+    list_alpha.append(copy.deepcopy(l_alpha[0]))
+    list_yaw.append(copy.deepcopy(l_yaw[0]))
 
     return list_T, list_alpha, list_yaw
 
