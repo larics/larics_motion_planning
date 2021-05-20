@@ -88,7 +88,7 @@ class ModelTrajectoryToImpedance:
 
         # Send the model UAV to the initial point
         self.trajectory_go_to_pub.publish(req.waypoints.points[0])
-        start_time = time.time()
+        start_time = rospy.Time.now().to_sec()
         initial_timer = 0.0
         temp_rate = rospy.Rate(self.rate)
         # First loop waits for 2s to see if trajectory started. If it has not
@@ -99,7 +99,7 @@ class ModelTrajectoryToImpedance:
             if (self.executing_trajectory_in_other_node_previous == 0) and \
                 (self.executing_trajectory_in_other_node == 1):
                 trajectory_start_flag = False
-            initial_timer = time.time() - start_time
+            initial_timer = rospy.Time.now().to_sec() - start_time
             temp_rate.sleep()
 
         # If trajectory has not started, the model UAV is at the right spot.
@@ -107,7 +107,7 @@ class ModelTrajectoryToImpedance:
         if (trajectory_start_flag  == False):
             print("Model UAV not at required point. Moving model to first point.")
             # Second loop waits for 2s so we are sure trajectory started
-            start_time = time.time()
+            start_time = rospy.Time.now().to_sec()
             initial_timer = 0.0
             trajectory_end_flag = False
             while (not rospy.is_shutdown()) and ((initial_timer < 2.0) or \
@@ -115,13 +115,13 @@ class ModelTrajectoryToImpedance:
                 if (self.executing_trajectory_in_other_node_previous == 1) and \
                     (self.executing_trajectory_in_other_node == 0):
                     trajectory_end_flag = True
-                initial_timer = time.time() - start_time
+                initial_timer = rospy.Time.now().to_sec() - start_time
                 temp_rate.sleep()
             print("Model trajectory executed. Waiting for 5s to start with intended trajectory.")
             # At this point the trajectory should ended so just wait for 5s so
             # that the model UAV can settle down.
-            start_time = time.time()
-            while (not rospy.is_shutdown()) and ((time.time() - start_time) < 5.0):
+            start_time = rospy.Time.now().to_sec()
+            while (not rospy.is_shutdown()) and ((rospy.Time.now().to_sec() - start_time) < 5.0):
                 temp_rate.sleep()
 
         print("Starting to execute trajectory. Length: ", len(req.waypoints.points))
@@ -157,9 +157,9 @@ class ModelTrajectoryToImpedance:
         # Since the UAV 'lags' when executing the trajectory we want to
         # prolong the roll and pitch recording until the UAV gets to the steady
         # state.
-        tstart = time.time()
+        tstart = rospy.Time.now().to_sec()
         iteration = 1
-        while True: #(((abs(self.roll) > 0.001) or (abs(self.pitch) > 0.001)) or ((time.time() - tstart) < 0.5)):
+        while True: #(((abs(self.roll) > 0.001) or (abs(self.pitch) > 0.001)) or ((rospy.Time.now().to_sec() - tstart) < 0.5)):
             point = copy.deepcopy(self.current_trajectory_point)
             point.time_from_start = point.time_from_start + rospy.Duration(float(iteration)/float(self.rate))
             iteration = iteration + 1
@@ -183,13 +183,13 @@ class ModelTrajectoryToImpedance:
 
             # This can be checked through roll and pitch angles.
             # Also minimum time is required.
-            if ((abs(self.roll) < self.termination_roll and 
-                abs(self.pitch) < self.termination_pitch) and 
-                (time.time()-tstart) > self.termination_timer):
+            if ((abs(self.roll) < self.termination_roll) and 
+                (abs(self.pitch) < self.termination_pitch) and 
+                ((rospy.Time.now().to_sec()-tstart) > self.termination_timer)):
                 print("Trajectory recorded.")
                 print("Final roll: ", self.roll)
                 print("Final pitch: ", self.pitch)
-                print("Extra time: ", (time.time()-tstart))
+                print("Extra time: ", (rospy.Time.now().to_sec()-tstart))
                 break
 
             rate.sleep()
