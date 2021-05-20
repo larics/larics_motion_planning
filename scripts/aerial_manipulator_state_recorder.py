@@ -10,6 +10,7 @@ import math
 import time
 from std_msgs.msg import Int32, Float64
 from geometry_msgs.msg import PoseStamped
+from control_msgs.msg import JointControllerState
 from std_srvs.srv import SetBool, SetBoolRequest, SetBoolResponse
 
 class AerialManipulatorStateRecorder:
@@ -54,9 +55,9 @@ class AerialManipulatorStateRecorder:
     for i in range(self.dof_manipulator):
       joint = JointPositionControllerSubscriber()
       self.manipulator_joint_states.append(copy.deepcopy(joint))
-      topic = "joint" + str(i+1) + "_position_controller/command" 
-      rospy.Subscriber(topic, Float64, 
-        self.manipulator_joint_states[i].jointReferenceCallback, queue_size=1)
+      topic = "joint" + str(i+1) + "_position_controller/state" 
+      rospy.Subscriber(topic, JointControllerState, 
+        self.manipulator_joint_states[i].jointStateCallback, queue_size=1)
 
   def run(self):
     rate = rospy.Rate(self.rate)
@@ -129,8 +130,8 @@ class JointPositionControllerSubscriber:
     def __init__(self):
         self.joint_state = 0.0
 
-    def jointReferenceCallback(self, msg):
-        self.joint_state = msg.data
+    def jointStateCallback(self, msg):
+        self.joint_state = msg.process_value
         #print("Joint data is: ", self.joint_state)
 
 def main(args):
