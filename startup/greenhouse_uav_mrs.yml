@@ -66,3 +66,13 @@ windows:
           waitForSimulation; sleep 5; 
           roscd larics_motion_planning/startup; rosrun rviz rviz -d greenhouse_uav_mrs_rviz.rviz
         - waitForRos; rosrun larics_motion_planning visualize_mrs2021_paper.py __ns:=uav
+  - logging:
+      layout: tiled
+      panes:
+        - >
+          history -s "rosrun larics_motion_planning aerial_manipulator_state_recorder.py 
+          _filename:=greenhouse_uav_mrs _manipulator_dof:=5 __ns:=uav"
+        - |
+          history -s "rosservice call /uav/record_trajectory \"data: true\""
+        - |
+          history -s "rosservice call /uav/record_trajectory \"data: false\""
