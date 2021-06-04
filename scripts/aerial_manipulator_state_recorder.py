@@ -35,6 +35,8 @@ class AerialManipulatorStateRecorder:
       check_filename = copy.deepcopy(self.filename) + "_" + str(i)
     self.aerial_manipulator_state_file = open(self.directory + "/" + check_filename + 
       extension, "w")
+    print("[AerialManipulatorStateRecorder] Saving to file")
+    print(self.directory + "/" + check_filename + extension)
 
     self.recording_flag = False
     self.recording_flag_service = rospy.Service('record_trajectory', 
@@ -51,7 +53,9 @@ class AerialManipulatorStateRecorder:
 
     # Subscribers for manipulator references
     self.manipulator_joint_states = []
-    self.dof_manipulator = 3
+    self.dof_manipulator = rospy.get_param("~manipulator_dof", int(3))
+    print("[AerialManipulatorStateRecorder]: Using " + 
+      str(self.dof_manipulator) + " dof manipulator.")
     for i in range(self.dof_manipulator):
       joint = JointPositionControllerSubscriber()
       self.manipulator_joint_states.append(copy.deepcopy(joint))
