@@ -301,12 +301,25 @@ bool GlobalPlannerRosInterface::modelCorrectedTrajectoryCallback(
   cout << "Reverse trajectory ervice call was: " << reverse_trajectory_success << endl;
   */
 
+  // TODO: Check this!!
+  // Append last planned point to resulting trajectory and set velocities and
+  // accelerations to zero.
+  res.trajectory.points.push_back(
+    req.waypoints.points[req.waypoints.points.size()-1]);
+  int dof = res.trajectory.points.size()-1;
+  res.trajectory.points[dof].velocities = res.trajectory.points[dof].positions;
+  res.trajectory.points[dof].accelerations = res.trajectory.points[dof].positions;
+  for (int i=0; i<res.trajectory.points[dof].positions.size(); i++){
+    res.trajectory.points[dof].velocities[i] = 0;
+    res.trajectory.points[dof].accelerations[i] = 0;
+  }
+
   // Publish path and trajectory if requested.
   if (req.publish_trajectory){
     cout << "Press enter to publish compensated trajectory" << endl;
     string tempstr;
     getline(cin, tempstr);
-    joint_trajectory_pub_.publish(trajectoryToJointTrajectory(trajectory));
+    joint_trajectory_pub_.publish(res.trajectory);
   }
   if (req.publish_path){
     // Don't publish path for now
