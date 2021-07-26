@@ -107,7 +107,7 @@ rosservice call /uav/model_correction_trajectory "waypoints:
     accelerations: [0]
     effort: [0]
     time_from_start: {secs: 0, nsecs: 0}
-  - positions: [2.918, 0, 2.425, 0.0, 0.0, 3.14159, -0.833, 0.517, -0.853, -0.1918, 0, 0.4618, 0, 0, 0, 0]
+  - positions: [2.918, 0, 2.425, 0.0, 0.0, 3.14159, -0.833, 0.517, -0.853, -0.1918, 0, 0.4618, 0, 0, 0, 0.5]
     velocities: [0]
     accelerations: [0]
     effort: [0]
@@ -130,11 +130,6 @@ rosservice call /uav/model_correction_trajectory "waypoints:
     accelerations: [0]
     effort: [0]
     time_from_start: {secs: 0, nsecs: 0}
-  - positions: [8, 0, 3.14571, 0.0, 0.0, 3.14159, -0.443, 0.907, -0.463, 0, 0, 0, 0, 0, 0, 1]
-    velocities: [0]
-    accelerations: [0]
-    effort: [0]
-    time_from_start: {secs: 0, nsecs: 0}
   - positions: [6, 0, 3.14571, 0.0, 0.0, 3.14159, -0.443, 0.907, -0.463, 0, 0, 0, 0, 0, 0, 1]
     velocities: [0]
     accelerations: [0]
@@ -145,7 +140,7 @@ rosservice call /uav/model_correction_trajectory "waypoints:
     accelerations: [0]
     effort: [0]
     time_from_start: {secs: 0, nsecs: 0}
-  - positions: [3.405, 0, 3.14571, 0.0, 0.0, 3.14159, -0.443, 0.907, -0.463, 0.0, 0, 0, 0, 0, 0, 1]
+  - positions: [3.405, 0, 3.14571, 0.0, 0.0, 3.14159, -0.443, 0.907, -0.463, -0.5, 0, 0, 0, 0, 0, 1.0]
     velocities: [0]
     accelerations: [0]
     effort: [0]
@@ -154,6 +149,39 @@ publish_path: false
 publish_trajectory: true
 plan_path: false
 plan_trajectory: true"
+
+rosservice call /uav/model_correction_trajectory "waypoints:
+  header:
+    seq: 0
+    stamp: {secs: 0, nsecs: 0}
+    frame_id: ''
+  joint_names: ['']
+  points:
+  - positions: [1.37, 2.2, 2.0, 0.0, 0.0, 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [4.875, 0, 2.0, 0.0, 0.0, 0.0, -1.2, -0.9, 0.529, 0, 0, 0, 0, 0, 0, 1]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [4.875, 0, 3.0, 0.0, 0.0, 0.0, -1.2, -0.9, 0.529, 0, 0, 0, 0, 0, 0, 1]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [4.875, 0, 4.322, 0.0, 0.0, 0.0, -1.2, -0.9, 0.529, 0, 0, 0.5, 0, 0, 0, 1.0]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+publish_path: false
+publish_trajectory: true
+plan_path: false
+plan_trajectory: true"
+
 
 rosservice call /uav/model_correction_trajectory "waypoints:
   header:
