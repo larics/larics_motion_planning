@@ -77,16 +77,16 @@ octomap:
 path_planner:
   spaces:
     # We are planning for UAV only, this means one space(x, y, z, yaw)
-    number: 1
+    number: 2
     # There are 4 dimensions we plan for.
-    dimensions: [4]
+    dimensions: [3, 1]
     # Weights are important when using multiple spaces
-    weights: [1.0]
+    weights: [1.0, 1.0]
     # Types of spaces that are used
-    types: ["RealVector"]
+    types: ["RealVector", "SO2"]
     # Bounds are defined by 
     #bounds: [[[-20, 20], [-10, 20], [0.0, 20.0], [-3.15, 3.15]]]
-    bounds: [[[-1, 11], [-11, 11], [0.0, 3.0], [-3.15, 3.15]]]
+    bounds: [[[-1, 11], [-11, 11], [0.0, 3.0]], [[-3.15, 3.15]]]
 
   # RRT* parameter set
 
@@ -186,7 +186,7 @@ trajectory_planner:
     # Maximum accelerations for [x, y, z, yaw]
     accelerations: [1.2, 1.2, 0.5, 0.8]
     # If using SO states angular must be set to 1
-    is_angular: [0, 0, 0, 0]
+    is_angular: [0, 0, 0, 1]
     # Trajectory sampling frequency
     sampling_frequency: 100.0
 
