@@ -7,6 +7,7 @@
   <!-- roslaunch wp_manipulator planning_context.launch -->
 
   <group ns="$(arg namespace)">
+    <!-- Global planner generates path and/or trajectory based on desired waypoints.-->
     <node name="global_planner" pkg="larics_motion_planning" type="global_planner_node" output="screen">
       <param name="rate" value="$(arg planner_rate)" />
       <param name="global_planner_config_file" value="$(find larics_motion_planning)/config/uav_and_wp_manipulator_3rx_config.yaml" />
@@ -18,11 +19,20 @@
       <param name="waypoints_scale" value="0.5" />
     </node>
 
+    <!-- Simple tracker that receives trajectory and sends it to the UAV. It also publishes current vehicle state.-->
     <node name="joint_trajectory_reference_tracker" pkg="larics_motion_planning" type="joint_trajectory_reference_tracker.py" output="screen">
-      <remap from="reference_tracker/joint_trajectory_point" to="aerial_manipulator_control/trajectory_ref_input" />
+      <!--remap from="reference_tracker/joint_trajectory_point" to="aerial_manipulator_control/trajectory_ref_input" /-->
       <remap from="reference_tracker/joint_trajectory" to="joint_trajectory" />
     </node>
 
+    <!-- A helper node for delaying some parts of the trajectory. In this case it delays force because the UAV lags behind the referent trajectory due to the impedance filter.-->
+    <node name="impedance_joint_trajectory_handler" pkg="larics_motion_planning" type="impedance_joint_trajectory_handler.py" output="screen">
+      <remap from="impedance_joint_trajectory_handler/joint_trajectory_point_in" to="reference_tracker/joint_trajectory_point" />
+      <remap from="impedance_joint_trajectory_handler/joint_trajectory_point_out" to="aerial_manipulator_control/trajectory_ref_input" />
+      <param name="delay_time" value="0.5" />
+    </node>
+
+    <!-- Node that plans a straight trajectory to the end point upon request. -->
     <node name="go_to_reference" pkg="larics_motion_planning" type="go_to_reference.py" output="screen">
       <remap from="go_to/trajectory_request" to="multi_dof_trajectory" />
       <remap from="go_to/joint_trajectory" to="joint_trajectory" />
@@ -52,9 +62,16 @@
     </node>
 
     <node name="joint_trajectory_reference_tracker" pkg="larics_motion_planning" type="joint_trajectory_reference_tracker.py" output="screen">
-      <remap from="reference_tracker/joint_trajectory_point" to="aerial_manipulator_control/trajectory_ref_input" />
+      <!--remap from="reference_tracker/joint_trajectory_point" to="aerial_manipulator_control/trajectory_ref_input" /-->
       <remap from="reference_tracker/joint_trajectory" to="joint_trajectory" />
     </node>
+
+    <node name="impedance_joint_trajectory_handler" pkg="larics_motion_planning" type="impedance_joint_trajectory_handler.py" output="screen">
+      <remap from="impedance_joint_trajectory_handler/joint_trajectory_point_in" to="reference_tracker/joint_trajectory_point" />
+      <remap from="impedance_joint_trajectory_handler/joint_trajectory_point_out" to="aerial_manipulator_control/trajectory_ref_input" />
+      <param name="delay_time" value="0.1" />
+    </node>
+
 
     <node name="go_to_reference" pkg="larics_motion_planning" type="go_to_reference.py" output="screen">
       <remap from="go_to/trajectory_request" to="multi_dof_trajectory" />
@@ -65,11 +82,12 @@
     <node name="generate_toppra_trajectory" pkg="topp_ros" type="generate_toppra_trajectory.py" output="screen" />
 
     <node name="model_trajectory_to_impedance" pkg="larics_motion_planning" type="model_trajectory_to_impedance.py" output="screen">
-      <remap from="model_trajectory/joint_trajectory_point" to="aerial_manipulator_control/trajectory_ref_input"/>
+      <!--remap from="model_trajectory/joint_trajectory_point" to="aerial_manipulator_control/trajectory_ref_input"/-->
+      <remap from="model_trajectory/joint_trajectory_point" to="reference_tracker/joint_trajectory_point"/>
 
-      <param name="record_termination/roll" value="0.01" />
-      <param name="record_termination/pitch" value="0.01" />
-      <param name="record_termination/timer" value="0.1" />
+      <param name="record_termination/roll" value="0.1" />
+      <param name="record_termination/pitch" value="0.1" />
+      <param name="record_termination/timer" value="2.0" />
     </node>
 
   </group>
