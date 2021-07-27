@@ -1,4 +1,4 @@
-name: empty_world_airdrop
+name: airdrop_sim
 root: ./
 startup_window: roscore
 pre_window: |
@@ -14,21 +14,77 @@ windows:
         - roscore
         - waitForRos; roslaunch gazebo_ros empty_world.launch use_sim_time:=true paused:=false
         - |
-          waitForSimulation; sleep 5;
-          if [ "$AIRDROP_TYPE" == "bucket" ];
-            then roslaunch larics_gazebo_worlds spawn_bucket.launch;
-            else exit
+          waitForSimulation; sleep 20;
+          if [ "$AIRDROP_TYPE" == "bucket" ]; then
+            roslaunch larics_gazebo_worlds spawn_bucket.launch
+          elif [ "$AIRDROP_TYPE" == "camellia" ]; then
+            roslaunch larics_gazebo_worlds spawn_camellia_city_mbzirc_building.launch
+            roslaunch larics_gazebo_worlds spawn_mbzirc_tower.launch
+          elif [ "$AIRDROP_TYPE" == "office" ]; then
+            roslaunch larics_gazebo_worlds spawn_office.launch
+          else exit
           fi
   - uav:
       layout: tiled
       panes:
         - waitForSimulation; roslaunch mmuav_gazebo uav_attitude_position.launch mount_magnet:=true z:=1 start_gazebo:=false
+        - |
+          waitForSimulation; sleep 10;
+          if [ "$AIRDROP_TYPE" == "camellia" ]; then
+          rostopic pub -1 /uav/go_to/reference geometry_msgs/Pose "position:
+            x: -30.0
+            y: -100.0
+            z: 2.0
+          orientation:
+            x: 0.0
+            y: 0.0
+            z: 0.0
+            w: 1.0"
+          elif [ "$AIRDROP_TYPE" == "office" ]; then
+          rostopic pub -1 /uav/go_to/reference geometry_msgs/Pose "position:
+            x: 0.0
+            y: 0.0
+            z: 7.0
+          orientation:
+            x: 0.0
+            y: 0.0
+            z: 0.0
+            w: 1.0"
+          fi
   - motion_planning:
       layout: tiled
       panes:
-        - waitForSimulation; roslaunch larics_motion_planning parabolic_airdrop.launch
+        - |
+          waitForSimulation;
+          if [ "$AIRDROP_TYPE" == "camellia" ]; then
+            roslaunch larics_motion_planning camellia_city_parabolic_airdrop.launch
+          elif [ "$AIRDROP_TYPE" == "office" ]; then
+            roslaunch larics_motion_planning office_parabolic_airdrop.launch
+          else roslaunch larics_motion_planning parabolic_airdrop.launch
+          fi
         - history -s "rosservice call /uav/spawn_ball \"{}\""
         - |
+          if [ "$AIRDROP_TYPE" == "camellia" ]; then
+          history -s "rostopic pub -1 /uav/go_to/reference geometry_msgs/Pose \"position:
+            x: -30.0
+            y: -100.0
+            z: 2.0
+          orientation:
+            x: 0.0
+            y: 0.0
+            z: 0.0
+            w: 1.0\""
+          elif [ "$AIRDROP_TYPE" == "office" ]; then
+          history -s "rostopic pub -1 /uav/go_to/reference geometry_msgs/Pose \"position:
+            x: 35.0
+            y: 20.0
+            z: 1.0
+          orientation:
+            x: 0.0
+            y: 0.0
+            z: 0.0
+            w: 1.0\""
+          else
           history -s "rostopic pub -1 /uav/go_to/reference geometry_msgs/Pose \"position:
             x: -8.0
             y: 0.0
@@ -38,7 +94,41 @@ windows:
             y: 0.0
             z: 0.0
             w: 1.0\""
+          fi
         - |
+          if [ "$AIRDROP_TYPE" == "camellia" ]; then
+          history -s "rosservice call /uav/parabolic_airdrop_trajectory \"uav_pose:
+            position: {x: -30.0, y: -100.0, z: 2.0}
+            orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}
+          target_pose:
+            position: {x: 2.946, y: 10.0, z: 6.9}
+            orientation: {x: 0.0, y: 0.0, z: 0.0, w: 0.0}
+          publish_path: true
+          publish_trajectory: true
+          plan_path: true
+          plan_trajectory: true
+          use_custom_parabola_params: false
+          custom_parabola_params: [0]
+          use_custom_psi_params: true
+          custom_psi_params: [-90, 1, -90]\""
+
+          elif [ "$AIRDROP_TYPE" == "office" ]; then
+          history -s "rosservice call /uav/parabolic_airdrop_trajectory \"uav_pose:
+            position: {x: 35.0, y: 20.0, z: 1.0}
+            orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}
+          target_pose:
+            position: {x: 6.12, y: 3.94, z: 1.1}
+            orientation: {x: 0.0, y: 0.0, z: 0.0, w: 0.0}
+          publish_path: true
+          publish_trajectory: true
+          plan_path: true
+          plan_trajectory: true
+          use_custom_parabola_params: false
+          custom_parabola_params: [0]
+          use_custom_psi_params: true
+          custom_psi_params: [180, 1, 180]\""
+
+          else
           history -s "rosservice call /uav/parabolic_airdrop_trajectory \"uav_pose:
             position: {x: -8.0, y: 0.0, z: 5.0}
             orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}
@@ -53,9 +143,15 @@ windows:
           custom_parabola_params: [0]
           use_custom_psi_params: false
           custom_psi_params: [0]\""
+          fi
   - logging:
       layout: tiled
       panes:
         - |
+          if [ -d "~/bags/parabolic_airdrop"]
+          then
+          else
+            mkdir ~/bags/parabolic_airdrop
+          fi;
           cd ~/bags/parabolic_airdrop;
-          history -s "rosbag record -a -x \"/(.*)(gazebo|camera|bias|joint_states|parameter_descriptions|parameter_updates)(.*)\" -o parabolic_airdrop"
+          history -s "rosbag record -a -x \"/(.*)(gazebo|camera|bias|joint_states|parameter_descriptions|parameter_updates|mfs)(.*)\" -o parabolic_airdrop"
