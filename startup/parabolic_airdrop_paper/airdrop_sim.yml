@@ -154,4 +154,5 @@ windows:
             mkdir ~/bags/parabolic_airdrop
           fi;
           cd ~/bags/parabolic_airdrop;
-          history -s "rosbag record -a -x \"/(.*)(gazebo|camera|bias|joint_states|parameter_descriptions|parameter_updates|mfs)(.*)\" -o parabolic_airdrop"
+          history -s "rosbag record -a -x \"/(.*)(gazebo|camera|bias|joint_states|parameter_descriptions|parameter_updates|mfs|odometry)(.*)\" -o parabolic_airdrop";
+          history -s "rosbag record --chunksize=64 /ball/pose /ball/velocity_relative /uav/euler_ref /uav/executing_trajectory /uav/go_to/reference /uav/imu /uav/joint_trajectory /uav/magnet/gain /uav/mot_vel_ref /uav/motor_speed /uav/pose /uav/toppra_raw_trajectory /uav/toppra_raw_waypoints /uav/trajectory_point_ref /uav/velocity_relative /uav/visualization/state_points /uav/parabolic_airdrop/info_vector -o parabolic_airdrop"
