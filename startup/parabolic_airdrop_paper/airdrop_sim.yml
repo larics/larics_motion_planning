@@ -14,7 +14,7 @@ windows:
         - roscore
         - waitForRos; roslaunch gazebo_ros empty_world.launch use_sim_time:=true paused:=false
         - |
-          waitForSimulation; sleep 20;
+          waitForSimulation; sleep 20; roslaunch larics_gazebo_worlds spawn_ball.launch;
           if [ "$AIRDROP_TYPE" == "bucket" ]; then
             roslaunch larics_gazebo_worlds spawn_bucket.launch
           elif [ "$AIRDROP_TYPE" == "camellia" ]; then
@@ -144,6 +144,12 @@ windows:
           use_custom_psi_params: false
           custom_psi_params: [0]\""
           fi
+  - multiple_executions:
+      layout: tiled
+      panes:
+        - history -s "rosrun larics_motion_planning execute_multiple_parabolic_airdrops_from_file.py __ns:=uav"
+        - |
+          history -s "rostopic pub -1 /uav/execute_multiple_aridrops/start std_msgs/Bool \"data: true\""
   - logging:
       layout: tiled
       panes:
