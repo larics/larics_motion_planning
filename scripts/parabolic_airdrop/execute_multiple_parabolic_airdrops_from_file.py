@@ -46,6 +46,7 @@ class ExecuteMultipleParabolicAirdrops:
     self.drops_per_config = rospy.get_param('~drops_per_config', int(5))
     self.filename = rospy.get_param('~configs_file', 
       str('/home/antun/catkin_ws/src/larics_motion_planning/config/airdrop_configs/airdrop_configs_for_paper.csv'))
+    print('Using config file: ', self.filename)
     self.airdrop_configs = np.loadtxt(open(self.filename, "rb"), delimiter=",")
 
     self.start_flag = False
@@ -80,7 +81,7 @@ class ExecuteMultipleParabolicAirdrops:
               print("Executing ", (current_drop_count+1), "/", len(self.airdrop_configs), " for ", j+1, "/", self.drops_per_config, " time")
               print("Go to position")
               self.go_to_pub.publish(self.go_to_pose)
-              time.sleep(10)
+              time.sleep(15)
 
               # Spawn ball twice to eliminate weird shaking
               print("Spawn ball first time")
