@@ -64,7 +64,7 @@ windows:
             roslaunch larics_motion_planning camellia_city_parabolic_airdrop.launch
           elif [ "$AIRDROP_TYPE" == "office" ]; then
             roslaunch larics_motion_planning office_parabolic_airdrop.launch
-          else roslaunch larics_motion_planning parabolic_airdrop.launch
+          else roslaunch larics_motion_planning parabolic_airdrop.launch odometry_type:="realistic"
           fi
         - history -s "rosservice call /uav/spawn_ball \"{}\""
         - |
@@ -153,7 +153,7 @@ windows:
       panes:
         - |
           roscd larics_motion_planning/config/airdrop_configs;
-          history -s "rosrun larics_motion_planning execute_multiple_parabolic_airdrops_from_file.py _drops_per_config:=2 _configs_file:=\"airdrop_configs_rev.csv\" __ns:=uav"
+          history -s "rosrun larics_motion_planning execute_multiple_parabolic_airdrops_from_file.py _drops_per_config:=1 _configs_file:=\"airdrop_configs_paper_revision.csv\" __ns:=uav"
         - |
           history -s "rostopic pub -1 /uav/execute_multiple_aridrops/start std_msgs/Bool \"data: true\""
   - logging:
