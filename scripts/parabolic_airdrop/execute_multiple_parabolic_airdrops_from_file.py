@@ -81,12 +81,12 @@ class ExecuteMultipleParabolicAirdrops:
               print("Executing ", (current_drop_count+1), "/", len(self.airdrop_configs), " for ", j+1, "/", self.drops_per_config, " time")
               print("Go to position")
               self.go_to_pub.publish(self.go_to_pose)
-              time.sleep(15)
+              time.sleep(20)
 
               # Spawn ball twice to eliminate weird shaking
               print("Spawn ball first time")
               self.spawn_ball_service(EmptyRequest())
-              time.sleep(7)
+              time.sleep(2)
               #print("Spawn ball second time")
               #self.spawn_ball_service(EmptyRequest())
               #time.sleep(7)
