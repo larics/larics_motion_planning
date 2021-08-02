@@ -6,7 +6,22 @@ pre_window: |
   export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:$HOME/uav_ws/src/larics_gazebo_worlds/models;
   if [[ -z "${AIRDROP_TYPE}" ]];
     then export AIRDROP_TYPE=empty
-  fi
+  fi;
+  if [ "$AIRDROP_TYPE" == "camellia" ]
+  then
+    export UAV_X=-20.0
+    export UAV_Y=-20.0
+    export UAV_Z=1.0
+  elif [ "$AIRDROP_TYPE" == "office" ]
+  then
+    export UAV_X=35.0
+    export UAV_Y=20.0
+    export UAV_Z=1.0
+  else
+    export UAV_X=0.0
+    export UAV_Y=0.0
+    export UAV_Z=1.0
+  fi;
 windows:
   - roscore_gazebo:
       layout: tiled
@@ -14,7 +29,7 @@ windows:
         - roscore
         - waitForRos; roslaunch gazebo_ros empty_world.launch use_sim_time:=true paused:=false
         - |
-          waitForSimulation; sleep 20; roslaunch larics_gazebo_worlds spawn_ball.launch;
+          waitForSimulation; sleep 5; roslaunch larics_gazebo_worlds spawn_ball.launch;
           if [ "$AIRDROP_TYPE" == "bucket" ]; then
             roslaunch larics_gazebo_worlds spawn_bucket.launch
           elif [ "$AIRDROP_TYPE" == "camellia" ]; then
@@ -30,11 +45,12 @@ windows:
         - >
           waitForSimulation; 
           roslaunch mmuav_gazebo uav_attitude_position.launch 
-          mount_magnet:=true z:=1 start_gazebo:=false odometry_type:="realistic"
+          mount_magnet:=true x:=$UAV_X y:=$UAV_Y z:=$UAV_Z 
+          start_gazebo:=false odometry_type:="realistic"
           position_control_params_file:="UavPositionControlRealistic.yaml"
         - |
           waitForSimulation; sleep 10;
-          if [ "$AIRDROP_TYPE" == "camellia" ]; then
+          if [ "$AIRDROP_TYPE" == "not_required_anymore" ]; then
           rostopic pub -1 /uav/go_to/reference geometry_msgs/Pose "position:
             x: -30.0
             y: -100.0
@@ -44,7 +60,7 @@ windows:
             y: 0.0
             z: 0.0
             w: 1.0"
-          elif [ "$AIRDROP_TYPE" == "office" ]; then
+          elif [ "$AIRDROP_TYPE" == "not_required_anymore" ]; then
           rostopic pub -1 /uav/go_to/reference geometry_msgs/Pose "position:
             x: 0.0
             y: 0.0
@@ -152,8 +168,14 @@ windows:
       layout: tiled
       panes:
         - |
-          roscd larics_motion_planning/config/airdrop_configs/repeatability_separated;
-          history -s "rosrun larics_motion_planning execute_multiple_parabolic_airdrops_from_file.py _drops_per_config:=10 _configs_file:=\"rep14.csv\" __ns:=uav"
+          if [ "$AIRDROP_TYPE" == "office" ]
+          then
+            roscd larics_motion_planning/config/airdrop_configs/office_rooms_separated
+            history -s "rosrun larics_motion_planning execute_multiple_parabolic_airdrops_to_different_targets.py _configs_file:=\"room1.csv\" _drops_per_config:=5 _environment_type:=\"office\" __ns:=uav"
+          else
+            roscd larics_motion_planning/config/airdrop_configs/repeatability_separated;
+            history -s "rosrun larics_motion_planning execute_multiple_parabolic_airdrops_from_file.py _drops_per_config:=10 _configs_file:=\"rep14.csv\" __ns:=uav"
+          fi
         - |
           history -s "rostopic pub -1 /uav/execute_multiple_aridrops/start std_msgs/Bool \"data: true\""
   - logging:
