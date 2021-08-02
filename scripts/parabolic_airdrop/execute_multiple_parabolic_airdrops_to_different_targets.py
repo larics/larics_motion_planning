@@ -19,11 +19,22 @@ class ExecuteMultipleParabolicAirdrops:
       "spawn_ball", Empty)
     self.go_to_pub = rospy.Publisher('go_to/reference', 
       Pose, queue_size=1)
+
+    # Set up executing for office or camellia city environment
+    self.environment_type = rospy.get_param("~environment_type", "office")
+
     self.start_pose = Pose()
-    self.start_pose.position.x = -30#35
-    self.start_pose.position.y = -100#20
-    self.start_pose.position.z = 2#1.0
-    self.start_pose.orientation.w = 1.0
+    self.delta_displacement_pose = Pose()
+    if self.environment_type == "office":
+      # Starting pose outside office
+      self.start_pose.position.x = 35#-30#35
+      self.start_pose.position.y = 20#-100#20
+      self.start_pose.position.z = 1.0#2#1.0
+      self.start_pose.orientation.w = 1.0
+      # Displacement from final pose
+      self.delta_displacement_pose.position.x = 0.0
+      self.delta_displacement_pose.position.y = 0.0
+      self.delta_displacement_pose.position.z = 6.0
 
     # Publisher for trajectory
     self.joint_trajectory_pub = rospy.Publisher('joint_trajectory', 
@@ -46,8 +57,12 @@ class ExecuteMultipleParabolicAirdrops:
 
     self.drops_per_config = rospy.get_param('~drops_per_config', int(5))
     self.filename = rospy.get_param('~configs_file', 
-      str('/home/antun/catkin_ws/src/larics_motion_planning/config/airdrop_configs/camellia_city_building.csv'))
+      str('/home/antun/catkin_ws/src/larics_motion_planning/config/airdrop_configs/office_multiple_targets.csv'))
     self.targets = np.loadtxt(open(self.filename, "rb"), delimiter=",")
+
+    print("Config file: " + self.filename)
+    print("Environment type: " + self.environment_type)
+    print("Drops per config: " + str(self.drops_per_config))
 
     self.start_flag = False
     rospy.Subscriber('execute_multiple_aridrops/start', Bool, self.startCallback, 
@@ -85,25 +100,29 @@ class ExecuteMultipleParabolicAirdrops:
               print("Executing ", (current_drop_count+1), "/", len(self.targets), " for ", j+1, "/", self.drops_per_config, " time")
               print("Go above current position")
               pose = copy.deepcopy(self.uav_current_pose)
-              pose.position.z = 7
-              pose.position.x = pose.position.x - 10.0
+              # Add delta displacement to avoid obstacles
+              pose.position.x = pose.position.x + self.delta_displacement_pose.position.x
+              pose.position.y = pose.position.y + self.delta_displacement_pose.position.y
+              pose.position.z = pose.position.z + self.delta_displacement_pose.position.z
+              #pose.position.x = pose.position.x - 10.0
               self.go_to_pub.publish(pose)
               time.sleep(15)
 
-              #print("Go above starting position")
-              #pose = copy.deepcopy(self.start_pose)
-              #pose.position.z = 25.0
-              #self.go_to_pub.publish(pose)
-              #time.sleep(60)
+              print("Go above starting position")
+              pose_above = copy.deepcopy(self.start_pose)
+              # Go to the same height as in previous goto
+              pose_above.position.z = pose.position.z
+              self.go_to_pub.publish(pose_above)
+              time.sleep(45)
 
               print("Go to starting position")
               self.go_to_pub.publish(self.start_pose)
-              time.sleep(60)
+              time.sleep(22)
 
               # Spawn ball twice to eliminate weird shaking
               print("Spawn ball first time")
               self.spawn_ball_service(EmptyRequest())
-              time.sleep(7)
+              time.sleep(2)
               #print("Spawn ball second time")
               #self.spawn_ball_service(EmptyRequest())
               #time.sleep(7)
