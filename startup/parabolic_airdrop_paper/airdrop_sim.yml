@@ -152,8 +152,8 @@ windows:
       layout: tiled
       panes:
         - |
-          roscd larics_motion_planning/config/airdrop_configs;
-          history -s "rosrun larics_motion_planning execute_multiple_parabolic_airdrops_from_file.py _drops_per_config:=1 _configs_file:=\"airdrop_configs_paper_revision.csv\" __ns:=uav"
+          roscd larics_motion_planning/config/airdrop_configs/repeatability_separated;
+          history -s "rosrun larics_motion_planning execute_multiple_parabolic_airdrops_from_file.py _drops_per_config:=10 _configs_file:=\"rep14.csv\" __ns:=uav"
         - |
           history -s "rostopic pub -1 /uav/execute_multiple_aridrops/start std_msgs/Bool \"data: true\""
   - logging:
