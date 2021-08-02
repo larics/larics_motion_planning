@@ -52,7 +52,7 @@ global_planner:
     # Dropoff trajectory constraints [x, y, z, yaw]
     max_line_integral: 5.0
     dropoff_velocity: [4, 4, 3, 2]
-    dropoff_acceleration: [1.5, 1.5, 1, 1.0]
+    dropoff_acceleration: [2.0, 2.0, 1, 1.0]
     use_horizontal_dropoff_acceleration: false
     horizontal_dropoff_acceleration: 2.0
     # Common for both trajectories is acceleration between dropoff and stopping
@@ -60,7 +60,7 @@ global_planner:
     # the uav does not interact with dropped object. [x, y, z, yaw]
     intermediate_acceleration: [0, 0, 0, 0]
     use_horizontal_intermediate_acceleration: true
-    horizontal_intermediate_acceleration: 1.0
+    horizontal_intermediate_acceleration: 1.5
 
     spline_sampling_time: 0.01
 
@@ -222,7 +222,7 @@ state_validity_checker:
 
   # Prism will be a set of rectangles
   prism:
-    x_dimension: 0.8
-    y_dimension: 0.8
-    z_dimension: 0.5
+    x_dimension: 0.9
+    y_dimension: 0.9
+    z_dimension: 0.7
     resolution: 0.05
