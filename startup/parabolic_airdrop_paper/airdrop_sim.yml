@@ -37,6 +37,7 @@ windows:
             roslaunch larics_gazebo_worlds spawn_mbzirc_tower.launch
           elif [ "$AIRDROP_TYPE" == "office" ]; then
             roslaunch larics_gazebo_worlds spawn_office.launch
+            roslaunch larics_gazebo_worlds spawn_bucket.launch x:=12.0 y:=21.0 z:=1.05
           else exit
           fi
   - uav:
