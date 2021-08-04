@@ -134,8 +134,8 @@ class UavGoTo:
             waypoint.positions = [self.uav_current_pose.position.x, \
                 self.uav_current_pose.position.y, \
                 self.uav_current_pose.position.z, current_yaw, 0]
-            waypoint.velocities = [1, 1, 0.5, 1, 100]
-            waypoint.accelerations = [0.5, 0.5, 0.5, 0.5, 100]
+            waypoint.velocities = [2.5, 2.5, 0.5, 1, 100]
+            waypoint.accelerations = [0.75, 0.75, 0.5, 0.5, 100]
             request.waypoints.points.append(copy.deepcopy(waypoint))
             # Add second waypoint as current uav pose
             waypoint.positions = [msg.position.x, \
