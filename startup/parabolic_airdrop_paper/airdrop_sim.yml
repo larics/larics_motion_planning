@@ -34,7 +34,7 @@ windows:
             roslaunch larics_gazebo_worlds spawn_bucket.launch
           elif [ "$AIRDROP_TYPE" == "camellia" ]; then
             roslaunch larics_gazebo_worlds spawn_camellia_city_mbzirc_building.launch
-            roslaunch larics_gazebo_worlds spawn_mbzirc_tower.launch
+            roslaunch larics_gazebo_worlds spawn_mbzirc_tower.launch z:=0.5
           elif [ "$AIRDROP_TYPE" == "office" ]; then
             roslaunch larics_gazebo_worlds spawn_office.launch
             roslaunch larics_gazebo_worlds spawn_bucket.launch x:=12.0 y:=21.0 z:=1.05
@@ -173,6 +173,10 @@ windows:
           then
             roscd larics_motion_planning/config/airdrop_configs/office_rooms_separated
             history -s "rosrun larics_motion_planning execute_multiple_parabolic_airdrops_to_different_targets.py _configs_file:=\"room1.csv\" _drops_per_config:=5 _environment_type:=\"office\" __ns:=uav"
+          elif [ "$AIRDROP_TYPE" == "camellia" ]
+          then
+            roscd larics_motion_planning/config/airdrop_configs
+            history -s "rosrun larics_motion_planning execute_multiple_parabolic_airdrops_to_different_targets.py _configs_file:=\"camellia_city_building.csv\" _drops_per_config:=20 _environment_type:=\"camellia\" __ns:=uav"
           else
             roscd larics_motion_planning/config/airdrop_configs/repeatability_separated;
             history -s "rosrun larics_motion_planning execute_multiple_parabolic_airdrops_from_file.py _drops_per_config:=10 _configs_file:=\"rep14.csv\" __ns:=uav"

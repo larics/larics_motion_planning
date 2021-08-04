@@ -35,6 +35,26 @@ class ExecuteMultipleParabolicAirdrops:
       self.delta_displacement_pose.position.x = 0.0
       self.delta_displacement_pose.position.y = 0.0
       self.delta_displacement_pose.position.z = 6.0
+      # Sleep times
+      self.t_go_above_current = 15
+      self.t_go_above_start = 45
+      self.t_go_to_start = 22
+      self.t_spawn_ball = 2
+    elif self.environment_type == "camellia":
+      # Starting pose outside office
+      self.start_pose.position.x = -30.0
+      self.start_pose.position.y = -100.0
+      self.start_pose.position.z = 2.0
+      self.start_pose.orientation.w = 1.0
+      # Displacement from final pose
+      self.delta_displacement_pose.position.x = -10.0
+      self.delta_displacement_pose.position.y = 0.0
+      self.delta_displacement_pose.position.z = 0.0
+      # Sleep times
+      self.t_go_above_current = 12
+      self.t_go_above_start = 55
+      self.t_go_to_start = 22
+      self.t_spawn_ball = 2
 
     # Publisher for trajectory
     self.joint_trajectory_pub = rospy.Publisher('joint_trajectory', 
@@ -106,23 +126,23 @@ class ExecuteMultipleParabolicAirdrops:
               pose.position.z = pose.position.z + self.delta_displacement_pose.position.z
               #pose.position.x = pose.position.x - 10.0
               self.go_to_pub.publish(pose)
-              time.sleep(15)
+              time.sleep(self.t_go_above_current)
 
               print("Go above starting position")
               pose_above = copy.deepcopy(self.start_pose)
               # Go to the same height as in previous goto
               pose_above.position.z = pose.position.z
               self.go_to_pub.publish(pose_above)
-              time.sleep(45)
+              time.sleep(self.t_go_above_start)
 
               print("Go to starting position")
               self.go_to_pub.publish(self.start_pose)
-              time.sleep(22)
+              time.sleep(self.t_go_to_start)
 
               # Spawn ball twice to eliminate weird shaking
               print("Spawn ball first time")
               self.spawn_ball_service(EmptyRequest())
-              time.sleep(2)
+              time.sleep(self.t_spawn_ball)
               #print("Spawn ball second time")
               #self.spawn_ball_service(EmptyRequest())
               #time.sleep(7)
@@ -136,6 +156,7 @@ class ExecuteMultipleParabolicAirdrops:
             self.airdrop_request.custom_psi_params[0] = psi_min
             self.airdrop_request.custom_psi_params[1] = psi_inc
             self.airdrop_request.custom_psi_params[2] = psi_max
+            print self.airdrop_request
             res = self.airdrop_service(self.airdrop_request)
             duration = len(res.trajectory.points)/100.0
 
