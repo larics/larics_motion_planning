@@ -2,11 +2,13 @@ name: airdrop_sim
 root: ./
 startup_window: roscore
 pre_window: |
+  export AIRDROP_TYPE=<%= @settings["airdrop_type"]%>;
+  if [[ -z "${AIRDROP_TYPE}" ]]
+  then 
+    export AIRDROP_TYPE=empty
+  fi;
   cd ~/; 
   export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:$HOME/uav_ws/src/larics_gazebo_worlds/models;
-  if [[ -z "${AIRDROP_TYPE}" ]];
-    then export AIRDROP_TYPE=empty
-  fi;
   if [ "$AIRDROP_TYPE" == "camellia" ]
   then
     export UAV_X=-20.0
@@ -26,10 +28,11 @@ windows:
   - roscore_gazebo:
       layout: tiled
       panes:
+        - echo $AIRDROP_TYPE
         - roscore
         - waitForRos; roslaunch gazebo_ros empty_world.launch use_sim_time:=true paused:=false
         - |
-          waitForSimulation; sleep 5; roslaunch larics_gazebo_worlds spawn_ball.launch;
+          waitForSimulation; sleep 5;
           if [ "$AIRDROP_TYPE" == "bucket" ]; then
             roslaunch larics_gazebo_worlds spawn_bucket.launch
           elif [ "$AIRDROP_TYPE" == "camellia" ]; then
@@ -39,7 +42,8 @@ windows:
             roslaunch larics_gazebo_worlds spawn_office.launch
             roslaunch larics_gazebo_worlds spawn_bucket.launch x:=12.0 y:=21.0 z:=1.05
           else exit
-          fi
+          fi;
+          roslaunch larics_gazebo_worlds spawn_ball.launch;
   - uav:
       layout: tiled
       panes:
@@ -187,10 +191,9 @@ windows:
       layout: tiled
       panes:
         - |
-          if [ -d "~/bags/parabolic_airdrop"]
+          if [ ! -d "$HOME/bags/parabolic_airdrop" ];
           then
-          else
-            mkdir ~/bags/parabolic_airdrop
+            mkdir $HOME/bags/parabolic_airdrop;
           fi;
           cd ~/bags/parabolic_airdrop;
           history -s "rosbag record -a -x \"/(.*)(gazebo|camera|bias|joint_states|parameter_descriptions|parameter_updates|mfs|odometry)(.*)\" -o parabolic_airdrop";
