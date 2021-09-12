@@ -1,0 +1,38 @@
+name: cooperative_transport_uav
+root: ./
+startup_window: roscore
+pre_window: cd ~/; export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:$HOME/uav_ws/src/larics_gazebo_worlds/models
+windows:
+  - roscore_gazebo:
+      layout: tiled
+      panes:
+        - roscore
+        - waitForRos; roslaunch gazebo_ros empty_world.launch use_sim_time:=true paused:=false
+        # Optional world elements
+        - >
+          waitForSimulation;
+  - uavs:
+      layout: tiled
+      panes:
+        - >
+          waitForSimulation; 
+          sleep 2; 
+          roslaunch mmuav_gazebo uav_attitude_position.launch start_gazebo:=false collision_bitmask:=1 name:="uav1" manipulator_type:="wp_manipulator" z:=0.5
+        - >
+          waitForSimulation; 
+          sleep 4; 
+          roslaunch mmuav_gazebo uav_attitude_position.launch start_gazebo:=false collision_bitmask:=1 name:="uav2" manipulator_type:="wp_manipulator" x:=1.0 z:=0.5
+        - >
+          waitForSimulation; 
+          sleep 6; 
+          roslaunch mmuav_gazebo uav_attitude_position.launch start_gazebo:=false collision_bitmask:=2 name:="model_uav1" manipulator_type:="wp_manipulator" z:=0.5
+        - >
+          waitForSimulation; 
+          sleep 8; 
+          roslaunch mmuav_gazebo uav_attitude_position.launch start_gazebo:=false collision_bitmask:=2 name:="model_uav2" manipulator_type:="wp_manipulator" x:=1.0 z:=0.5
+  - logging:
+      layout: tiled
+      panes:
+        - |
+          cd ~/bags/impedance_bridge;
+          history -s "rosbag record -a -x \"/(.*)(gazebo|camera|bias|joint_states|parameter_descriptions|parameter_updates)(.*)\" -o cooperative_transport"
