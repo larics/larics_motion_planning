@@ -1,7 +1,7 @@
 <launch>
   <arg name="planner_rate" default="10" />
-  <arg name="namespace" default="uav" />
-  <arg name="model_namespace" default="model_uav" />
+  <arg name="namespace" default="planner" />
+  <arg name="model_namespace" default="model_planner" />
 
   <!-- Before launching this file you need to launch planning context-->
   <!-- roslaunch wp_manipulator planning_context.launch -->
