@@ -12,9 +12,9 @@ class CooperativeTransportTwoUavsHandler:
 
   def __init__(self):
     # Joint trajectory point is only published while trajectory is non-empty
-    self.joint_trajectory_point_pub = rospy.Publisher(
-      'cooperative_transport_two_uavs_trajectory_handler/joint_trajectory_point_out', 
-      JointTrajectoryPoint, queue_size=1)
+    #self.joint_trajectory_point_pub = rospy.Publisher(
+    #  'cooperative_transport_two_uavs_trajectory_handler/joint_trajectory_point_out', 
+    #  JointTrajectoryPoint, queue_size=1)
 
     # Parameters
     self.rate = rospy.get_param('~rate', 100)

@@ -32,6 +32,15 @@
       <remap from="go_to/current_state" to="reference_tracker/current_reference" />
     </node>
 
+    <!-- Trajectory decomposition to two UAVs -->
+    <node name="cooperative_transport_two_uavs_handler" pkg="larics_motion_planning" type="cooperative_transport_two_uavs_handler.py" output="screen">
+      <param name="first_uav_namespace" value="/uav1" />
+      <param name="second_uav_namespace" value="/uav2" />
+      <param name="manipulator_dof" value="5" />
+
+      <remap from="cooperative_transport_two_uavs_trajectory_handler/joint_trajectory_point_in" to="reference_tracker/joint_trajectory_point" />
+    </node>
+
     <node name="generate_toppra_trajectory" pkg="topp_ros" type="generate_toppra_trajectory.py" output="screen" />
 
     <!--node name="octomap_server_node" pkg="octomap_server" type="octomap_server_node" args="$(find larics_gazebo_worlds)/models/greenhouse_row/greenhouse_row.binvox.bt" output="screen">
@@ -59,11 +68,19 @@
       <remap from="reference_tracker/joint_trajectory" to="joint_trajectory" />
     </node>
 
-
     <node name="go_to_reference" pkg="larics_motion_planning" type="go_to_reference.py" output="screen">
       <remap from="go_to/trajectory_request" to="multi_dof_trajectory" />
       <remap from="go_to/joint_trajectory" to="joint_trajectory" />
       <remap from="go_to/current_state" to="reference_tracker/current_reference" />
+    </node>
+
+    <!-- Trajectory decomposition to two UAVs -->
+    <node name="cooperative_transport_two_uavs_handler" pkg="larics_motion_planning" type="cooperative_transport_two_uavs_handler.py" output="screen">
+      <param name="first_uav_namespace" value="/model_uav1" />
+      <param name="second_uav_namespace" value="/model_uav2" />
+      <param name="manipulator_dof" value="5" />
+
+      <remap from="cooperative_transport_two_uavs_trajectory_handler/joint_trajectory_point_in" to="reference_tracker/joint_trajectory_point" />
     </node>
 
     <node name="generate_toppra_trajectory" pkg="topp_ros" type="generate_toppra_trajectory.py" output="screen" />
