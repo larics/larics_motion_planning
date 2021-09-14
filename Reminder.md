@@ -80,7 +80,7 @@ time_from_start: {secs: 0, nsecs: 0}"
 3.3852, 2.2, 2.0, 0.0, 0.0, 0.0, -0.443, 0.907, -0.463, 0, 0, 0, 0, 0, 0, 1
 
 
-rosservice call /model_planner/multi_dof_trajectory "waypoints:
+rosservice call /planner/multi_dof_trajectory "waypoints:
   header:
     seq: 0
     stamp: {secs: 0, nsecs: 0}

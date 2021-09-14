@@ -55,6 +55,19 @@ bool GlobalPlanner::configureFromFile(string config_filename)
       map_interface_, kinematics_interface_);
     cout << "State validity checker type is: uav_and_wp_manipulator" << endl;
   }
+  else if (state_validity_checker_type_ == "multiple_manipulators"){
+    // First set up kinematics for multiple manipulators
+    kinematics_interface_ = make_shared<MultipleManipulatorsKinematics>(
+      config["global_planner"]["kinematics_config_file"].as<string>());
+    // Set up validity checker for multiple manipulators.
+    // TODO: switch to multiple manipulators state validity checker.
+    // TODO: neka svaki manipulator ima svoju bazu neke velicine, pa makar ta baza
+    //  bila nepokretna.
+    state_validity_checker_interface_ = make_shared<UavWpManipulatorStateValidityChecker>(
+      config["global_planner"]["state_validity_checker_config_file"].as<string>(),
+      map_interface_, kinematics_interface_);
+    cout << "State validity checker type is: multiple_manipulators" << endl;
+  }
   else{
     cout << "State validity checker type is: " << state_validity_checker_type_ << endl;
     cout << "  This type is not supported!" << endl;

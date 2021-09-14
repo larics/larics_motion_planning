@@ -9,6 +9,7 @@
 #include <larics_motion_planning/OctomapMap.h>
 #include <larics_motion_planning/KinematicsInterface.h>
 #include <larics_motion_planning/WpManipulatorKinematics.h>
+#include <larics_motion_planning/MultipleManipulatorsKinematics.h>
 #include <larics_motion_planning/PathPlanningInterface.h>
 #include <larics_motion_planning/RrtPathPlanner.h>
 #include <larics_motion_planning/TrajectoryInterface.h>

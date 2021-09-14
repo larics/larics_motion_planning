@@ -128,7 +128,7 @@ trajectory_planner:
     sampling_frequency: 100.0
 
 state_validity_checker:
-  type: "uav_and_wp_manipulator"
+  type: "multiple_manipulators"
   uav_wp_manipulator:
     #                                        a1                 a2                        a3                        a4                        d5
     manipulator_link_dimensions: [[0.0340, 0.1225, 0.0285], [0.1365, 0.0340, 0.0285], [0.0755, 0.0285, 0.0340], [0.0725, 0.0285, 0.0340], [0.0453, 0.0285, 0.0340]]
