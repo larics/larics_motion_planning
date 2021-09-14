@@ -27,6 +27,14 @@ class WpManipulatorKinematics : public KinematicsInterface
     /// \param config_filename Path to config file.
     WpManipulatorKinematics(string config_filename);
 
+    /// \brief Constructor
+    /// \param robot_model_name Robot model name for moveit configuration.
+    /// \param joint_group_name Joint group name for moveit configuration.
+    /// \param dh_parameters_file DH parameters file location required by
+    ///   ManipulatorControl.
+    WpManipulatorKinematics(string robot_model_name, 
+      string joint_group_name, string dh_parameters_file);
+
     /// \brief Configures everything from file
     /// \param config_filename Path to config file
     /// \return true if configuration was successful, false otherwise

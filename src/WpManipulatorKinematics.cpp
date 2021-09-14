@@ -7,6 +7,19 @@ WpManipulatorKinematics::WpManipulatorKinematics(string config_filename)
   configureFromFile(username + config_filename);
 }
 
+WpManipulatorKinematics::WpManipulatorKinematics(string robot_model_name, 
+  string joint_group_name, string dh_parameters_file)
+{
+  string username = "/home/";
+  username = username + getenv("USER") + "/";
+  string params_file = username + dh_parameters_file;
+
+  // Configure manipulator
+  manipulator_.setManipulatorName(robot_model_name, joint_group_name);
+  manipulator_.LoadParameters(params_file);
+  manipulator_.init();
+}
+
 bool WpManipulatorKinematics::configureFromFile(string config_filename)
 {
   cout << "Configuring WP manipulator kinematics from file: " << endl;
