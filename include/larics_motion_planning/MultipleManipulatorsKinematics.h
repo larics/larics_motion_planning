@@ -54,7 +54,11 @@ class MultipleManipulatorsKinematics : public KinematicsInterface
 
   private:
     //ManipulatorControl manipulator_;
-    std::vector<KinematicsInterface> manipulators_;
+    // Container of multiple manipulators
+    std::vector<shared_ptr<KinematicsInterface> > manipulators_;
+
+    // Number of manipulators
+    int n_manipulators_;
 };
 
 #endif // MULTIPLE_MANIPULATORS_KINEMATICS_H

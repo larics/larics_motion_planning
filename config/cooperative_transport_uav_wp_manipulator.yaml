@@ -147,8 +147,21 @@ state_validity_checker:
       dimensions: [0.3453, 0.01, 0.01]
       direction: "x"
 
+# TODO: Dodati transformacije od centra prihvatnog objekta do end-effectora
+# svakog manipulatora.
 kinematics:
-  wp_manipulator_kinematics:
-    robot_model_name: "wp_manipulator"
-    joint_group_name: "wp_manipulator_arm"
-    dh_parameters_file: "catkin_ws/src/aerial_manipulators/aerial_manipulators_control/config/wp_manipulator_dh_parameters.yaml"
+  multiple_manipulators:
+    - 
+      type: "wp_manipulator"
+      degrees_of_freedom: 5
+      indexes: [6, 7, 8, 9, 10]
+      robot_model_name: "wp_manipulator"
+      joint_group_name: "wp_manipulator_arm"
+      dh_parameters_file: "catkin_ws/src/aerial_manipulators/aerial_manipulators_control/config/wp_manipulator_dh_parameters.yaml"
+    -
+      type: "wp_manipulator"
+      degrees_of_freedom: 5
+      indexes: [17, 18, 19, 20, 21]
+      robot_model_name: "wp_manipulator"
+      joint_group_name: "wp_manipulator_arm"
+      dh_parameters_file: "catkin_ws/src/aerial_manipulators/aerial_manipulators_control/config/wp_manipulator_dh_parameters.yaml"
