@@ -71,7 +71,8 @@ add_library(map ${MAP_SOURCES})
 target_link_libraries(map ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES})
 
 set(KINEMATICS_SOURCES src/KinematicsInterface.cpp 
-  src/WpManipulatorKinematics.cpp)
+  src/WpManipulatorKinematics.cpp 
+  src/MultipleManipulatorsKinematics.cpp)
 add_library(kinematics ${KINEMATICS_SOURCES})
 target_link_libraries(kinematics ${catkin_LIBRARIES})
 
