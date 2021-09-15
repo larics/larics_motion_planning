@@ -155,6 +155,9 @@ kinematics:
       type: "wp_manipulator"
       degrees_of_freedom: 5
       indexes: [6, 7, 8, 9, 10]
+      grasp_transform:
+        translation: [0, -0.15, 0]
+        rotation: [0, 0, 1.57079632679]
       robot_model_name: "wp_manipulator"
       joint_group_name: "wp_manipulator_arm"
       dh_parameters_file: "catkin_ws/src/aerial_manipulators/aerial_manipulators_control/config/wp_manipulator_dh_parameters.yaml"
@@ -162,6 +165,9 @@ kinematics:
       type: "wp_manipulator"
       degrees_of_freedom: 5
       indexes: [17, 18, 19, 20, 21]
+      grasp_transform:
+        translation: [0, 0.15, 0]
+        rotation: [0, 0, -1.57079632679]
       robot_model_name: "wp_manipulator"
       joint_group_name: "wp_manipulator_arm"
       dh_parameters_file: "catkin_ws/src/aerial_manipulators/aerial_manipulators_control/config/wp_manipulator_dh_parameters.yaml"

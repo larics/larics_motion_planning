@@ -59,6 +59,13 @@ class MultipleManipulatorsKinematics : public KinematicsInterface
 
     // Number of manipulators
     int n_manipulators_;
+
+    // Degrees of freedom and indexes of these dofs
+    std::vector<int> dofs_;
+    std::vector< std::vector<int> > dofs_indexes_;
+
+    // Grasp transforms
+    std::vector<Eigen::Affine3d> grasp_transforms_;
 };
 
 #endif // MULTIPLE_MANIPULATORS_KINEMATICS_H

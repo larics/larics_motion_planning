@@ -34,6 +34,36 @@ bool MultipleManipulatorsKinematics::configureFromFile(string config_filename)
       man = make_shared<WpManipulatorKinematics>(robot_model_name,
         joint_group_name, dh_parameters_file);
       manipulators_.push_back(man);
+
+      // Load degrees of freedom and indexes.
+      int temp_dof = config["kinematics"]["multiple_manipulators"][i]["degrees_of_freedom"].as<int>();
+      std::vector<int> temp_indexes = config["kinematics"]["multiple_manipulators"][i]["indexes"].as< std::vector<int> >();
+      if (temp_dof != temp_indexes.size()){
+        cout << "MultipleManipulatorsKinematics" << endl;
+        cout << "Manipulator config " << i << endl;
+        cout << "  Number of dofs is different from number of indexes." << endl;
+        exit(0);
+      }
+
+      // Load grasp transforms.
+      double x = config["kinematics"]["multiple_manipulators"][i]["grasp_transform"]["translation"][0].as<double>();
+      double y = config["kinematics"]["multiple_manipulators"][i]["grasp_transform"]["translation"][1].as<double>();
+      double z = config["kinematics"]["multiple_manipulators"][i]["grasp_transform"]["translation"][2].as<double>();
+      double roll = config["kinematics"]["multiple_manipulators"][i]["grasp_transform"]["rotation"][0].as<double>();
+      double pitch = config["kinematics"]["multiple_manipulators"][i]["grasp_transform"]["rotation"][1].as<double>();
+      double yaw = config["kinematics"]["multiple_manipulators"][i]["grasp_transform"]["rotation"][2].as<double>();
+      Eigen::Affine3d temp_transform;
+      temp_transform = Eigen::Affine3d::Identity();
+      // Create rotation matrix in order ZYX
+      Eigen::Matrix3d temp_rotation;
+      temp_rotation = Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ())
+      * Eigen::AngleAxisd(pitch,  Eigen::Vector3d::UnitY())
+      * Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX());
+      // Translate and rotate the transform
+      temp_transform.translate(Eigen::Vector3d(x,y,z));
+      //temp_transform.rotate(temp_rotation);
+      // Append to transform list
+      grasp_transforms_.push_back(temp_transform);
     }
     else {
       cout << "MultipleManipulatorsKinematics" << endl;
@@ -41,6 +71,17 @@ bool MultipleManipulatorsKinematics::configureFromFile(string config_filename)
         config["kinematics"]["multiple_manipulators"][i]["type"].as<string>() << endl;
       exit(0);
     }
+  }
+
+  Eigen::VectorXd q(5);
+  q << 0.7, 0.7, 0.2, 0.5, -0.7;
+  std::vector<Eigen::Affine3d> hm;
+  hm = manipulators_[1]->getJointPositions(q);
+  cout << hm.size() << endl;
+  for (int i=0; i<hm.size(); i++){
+    cout << "Link " << i << endl;
+    cout << hm[i].translation() << endl;
+    cout << hm[i].rotation() << endl << endl;
   }
   exit(0);
   
