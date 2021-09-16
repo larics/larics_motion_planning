@@ -18,6 +18,8 @@
       <param name="state_scale" value="0.05" />
       <param name="waypoints_scale" value="0.5" />
     </node>
+  </group>
+  <group if="0">
 
     <!-- Simple tracker that receives trajectory and sends it to the UAV. It also publishes current vehicle state.-->
     <node name="joint_trajectory_reference_tracker" pkg="larics_motion_planning" type="joint_trajectory_reference_tracker.py" output="screen">
@@ -52,7 +54,7 @@
   </group>
 
   <!-- This is the part where we get corrections based on model -->
-  <group ns="$(arg model_namespace)">
+  <group ns="$(arg model_namespace)" if="0">
     <node name="global_planner" pkg="larics_motion_planning" type="global_planner_node" output="screen">
       <param name="rate" value="$(arg planner_rate)" />
       <param name="global_planner_config_file" value="$(find larics_motion_planning)/config/cooperative_transport_uav_wp_manipulator.yaml" />

@@ -37,12 +37,16 @@ bool MultipleManipulatorsKinematics::configureFromFile(string config_filename)
 
       // Load degrees of freedom and indexes.
       int temp_dof = config["kinematics"]["multiple_manipulators"][i]["degrees_of_freedom"].as<int>();
+      n_dofs_.push_back(temp_dof);
       std::vector<int> temp_indexes = config["kinematics"]["multiple_manipulators"][i]["indexes"].as< std::vector<int> >();
       if (temp_dof != temp_indexes.size()){
         cout << "MultipleManipulatorsKinematics" << endl;
         cout << "Manipulator config " << i << endl;
         cout << "  Number of dofs is different from number of indexes." << endl;
         exit(0);
+      }
+      else {
+        dofs_indexes_.push_back(temp_indexes);
       }
 
       // Load grasp transforms.
@@ -72,37 +76,49 @@ bool MultipleManipulatorsKinematics::configureFromFile(string config_filename)
       exit(0);
     }
   }
-
-  Eigen::VectorXd q(5);
-  q << 0.7, 0.7, 0.2, 0.5, -0.7;
+  Eigen::VectorXd q(22);
+  //q << 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22;
+  q << 1,2,3,4,5,6,1.38491,-0.945959,1.57,-2,-0.23384,12,13,14,15,16,17,0.787,0.787,0.787,-1.57,0.787;
   std::vector<Eigen::Affine3d> hm;
-  hm = manipulators_[1]->getJointPositions(q);
-  cout << hm.size() << endl;
+  hm = this->getMultipleEndEffectorTransforms(q);
   for (int i=0; i<hm.size(); i++){
-    cout << "Link " << i << endl;
-    cout << hm[i].translation() << endl;
-    cout << hm[i].rotation() << endl << endl;
+    cout << hm[i].translation() << endl << hm[i].rotation() << endl << endl;
   }
   exit(0);
-  
-  // Load manipulator configuration
-  /*string robot_model_name, joint_group_name, dh_parameters_file;
-  robot_model_name = config["kinematics"]["wp_manipulator_kinematics"]["robot_model_name"].as<string>();
-  joint_group_name = config["kinematics"]["wp_manipulator_kinematics"]["joint_group_name"].as<string>();
-  string username = "/home/";
-  username = username + getenv("USER") + "/";
-  dh_parameters_file = username + config["kinematics"]["wp_manipulator_kinematics"]["dh_parameters_file"].as<string>();
-  // Configure manipulator
-  manipulator_.setManipulatorName(robot_model_name, joint_group_name);
-  manipulator_.LoadParameters(dh_parameters_file);
-  manipulator_.init();
-  */
+
+  Eigen::Affine3d hm2;
+  hm2 = Eigen::Affine3d::Identity();
+  hm2.translate(Eigen::Vector3d(-0.373199, 0.085557, -0.00252645));
+  Eigen::Matrix3d rotm;
+  rotm << 0.999987, 0.00399997, 0.00320367, -0.00320364, 1.28146e-05, -0.999995, -0.00399999, -0.999992, 4.89664e-12;
+  cout << rotm << endl;
+  hm2.rotate(rotm);
+  bool flag;
+  cout << this->calculateInverseKinematics(hm2, flag) << endl;
 }
 
 std::vector<Eigen::Affine3d> MultipleManipulatorsKinematics::getJointPositions(
   Eigen::VectorXd q)
 {
-  return manipulators_[0]->getJointPositions(q);
+  std::vector<Eigen::Affine3d> transforms;
+  // Go through all manipulators in the list.
+  for (int i=0; i<n_manipulators_; i++){
+    // Set up length of the current manipulator q.
+    Eigen::VectorXd current_manipulator_q(n_dofs_[i]);
+    // Get joint values from the full q as a blok from start index row, column 0,
+    // and size of n_dofs_[i], 1.
+    current_manipulator_q = q.block(dofs_indexes_[i][0],0,n_dofs_[i],1);
+    //for (int j=0; j<n_dofs_[i]; j++){
+    //  current_manipulator_q(j) = q(dofs_indexes_[i][j]);
+    //}
+
+    // Now that we have q, get transforms from each manipulator.
+    std::vector<Eigen::Affine3d> current_transforms = 
+      manipulators_[i]->getJointPositions(current_manipulator_q);
+    transforms.insert(transforms.end(), current_transforms.begin(),
+      current_transforms.end());
+  }
+  return transforms;
 }
 
 Eigen::Affine3d MultipleManipulatorsKinematics::getEndEffectorTransform(
@@ -111,8 +127,41 @@ Eigen::Affine3d MultipleManipulatorsKinematics::getEndEffectorTransform(
   return manipulators_[0]->getEndEffectorTransform(q);
 }
 
+std::vector<Eigen::Affine3d> MultipleManipulatorsKinematics::getMultipleEndEffectorTransforms(
+  Eigen::VectorXd q)
+{
+  std::vector<Eigen::Affine3d> transforms;
+
+  for (int i=0; i<n_manipulators_; i++){
+    Eigen::VectorXd current_manipulator_q(n_dofs_[i]);
+    current_manipulator_q = q.block(dofs_indexes_[i][0],0,n_dofs_[i],1);
+    transforms.push_back(manipulators_[i]->getEndEffectorTransform(current_manipulator_q));
+  }
+
+  return transforms;
+}
+
 Eigen::VectorXd MultipleManipulatorsKinematics::calculateInverseKinematics(
   Eigen::Affine3d transform, bool &found_ik)
 {
-  return manipulators_[0]->calculateInverseKinematics(transform, found_ik);
+  Eigen::VectorXd joint_states;
+  cout << transform.translation() << endl << transform.rotation() << endl;
+  cout << joint_states.rows() << endl;
+  bool multiple_found_ik = true;
+  int start_index = 0;
+  for (int i=0; i<n_manipulators_; i++){
+    Eigen::VectorXd current_manipulator_state;
+    current_manipulator_state = 
+      manipulators_[i]->calculateInverseKinematics(transform, multiple_found_ik);
+    cout << "cms " << endl << current_manipulator_state << endl << endl;
+    found_ik &= multiple_found_ik;
+    joint_states.conservativeResize(joint_states.rows() + 
+      current_manipulator_state.rows(), 1);
+    joint_states.block(start_index, 0, current_manipulator_state.rows(), 1) = 
+      current_manipulator_state;
+    start_index += current_manipulator_state.rows();
+    cout << "Joint states" << endl << joint_states << endl << endl;
+  }
+
+  return joint_states;
 }

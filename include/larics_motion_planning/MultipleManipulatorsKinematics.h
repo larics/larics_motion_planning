@@ -33,10 +33,9 @@ class MultipleManipulatorsKinematics : public KinematicsInterface
     /// \return true if configuration was successful, false otherwise
     bool configureFromFile(string config_filename);
 
-    /// \brief Function that gets all joint positions in manipulator base frame.
-    ///   In other words, direct kinematics to each joint and end-effector.
-    /// \param q Manipulator state vector.
-    /// \return List of transformations to all joints.
+    /// \brief Function that returns all joint transforms of all manipulators.
+    /// \param q Full system state vector.
+    /// \return List of transformations to all joints of manipulators.
     std::vector<Eigen::Affine3d> getJointPositions(Eigen::VectorXd q);
 
     /// \brief Direct kinematics to end effector.
@@ -52,6 +51,14 @@ class MultipleManipulatorsKinematics : public KinematicsInterface
     Eigen::VectorXd calculateInverseKinematics(
       Eigen::Affine3d transform, bool &found_ik);
 
+    /// \brief Direct kinematics for multiple manipulators.
+    /// \param q 
+    /// \return Eigen::Affine3d transform of the manipulator
+    ///   end-effector. This is further transformed by grasp_transform of
+    ///   each manipulator to obtain each end-effector configuration.
+    std::vector<Eigen::Affine3d> getMultipleEndEffectorTransforms(
+      Eigen::VectorXd q);
+
   private:
     //ManipulatorControl manipulator_;
     // Container of multiple manipulators
@@ -61,7 +68,7 @@ class MultipleManipulatorsKinematics : public KinematicsInterface
     int n_manipulators_;
 
     // Degrees of freedom and indexes of these dofs
-    std::vector<int> dofs_;
+    std::vector<int> n_dofs_;
     std::vector< std::vector<int> > dofs_indexes_;
 
     // Grasp transforms

@@ -22,6 +22,13 @@ class KinematicsInterface
     virtual Eigen::Affine3d getEndEffectorTransform(Eigen::VectorXd q) = 0;
     virtual Eigen::VectorXd calculateInverseKinematics(
       Eigen::Affine3d transform, bool &found_ik) = 0;
+    virtual std::vector<Eigen::Affine3d> getMultipleEndEffectorTransforms(
+      Eigen::VectorXd q)
+    {
+      std::vector<Eigen::Affine3d> vec;
+      vec.push_back(this->getEndEffectorTransform(q));
+      return vec;
+    }
 };
 
 #endif // KINEMATICS_INTERFACE_H
