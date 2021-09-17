@@ -13,10 +13,14 @@ bool MultipleManipulatorsKinematics::configureFromFile(string config_filename)
   cout << "  " << config_filename << endl;
 
   YAML::Node config = YAML::LoadFile(config_filename);
-  // TODO: Napraviti ovo tako da se zadaje jedan transform za inverznu i u
-  // config fileu imaju transformacije od te tocke do prihvata za svaki alat.
-  // To ce olaksati racunanje inverzne kinematike kada netko posalje tocku
-  // izvana
+  // TODO: Za sada postoje ti grasp transforms koji mijenjaju prihvatnu
+  // transformaciju svakog manipulatora. E sad, posto se za svaki manipulator
+  // inverzna racuna iz baze, to vrlo vjerojatno nece raditi. Ono sto ce vrlo
+  // vjerojatno trebati napraviti je da se prima lista transformacija kao
+  // std::vector<Eigen::Affine3d>, ciji su clanovi prihvatne transformacije
+  // svakog manipulatora u njegovoj bazi. Time ce se vjerojatno moci izbaciti
+  // grasp transform iz ovog dijela koda, ali morat ce biti negdje drugdje ta
+  // konfiguracija.
 
   n_manipulators_ = config["kinematics"]["multiple_manipulators"].size();
   for (int i=0; i<n_manipulators_; i++){
@@ -25,11 +29,9 @@ bool MultipleManipulatorsKinematics::configureFromFile(string config_filename)
       robot_model_name = config["kinematics"]["multiple_manipulators"][i]["robot_model_name"].as<string>();
       joint_group_name = config["kinematics"]["multiple_manipulators"][i]["joint_group_name"].as<string>();
       dh_parameters_file = config["kinematics"]["multiple_manipulators"][i]["dh_parameters_file"].as<string>();
-      // TODO: This is built by cpp, but... I am unsure if it will cause
-      // problems because a shared pointer is created locally. It might
-      // work but if some weird issues come, using shared pointers in array
-      // and pushing them with locally created objects might be the culprit.
-      // Definitely check this!
+
+      // Load each wp manipulator as kinematics interface shared pointer and
+      // add it to the list of manipulators interfaces.
       shared_ptr<KinematicsInterface> man;
       man = make_shared<WpManipulatorKinematics>(robot_model_name,
         joint_group_name, dh_parameters_file);
@@ -65,7 +67,7 @@ bool MultipleManipulatorsKinematics::configureFromFile(string config_filename)
       * Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX());
       // Translate and rotate the transform
       temp_transform.translate(Eigen::Vector3d(x,y,z));
-      //temp_transform.rotate(temp_rotation);
+      temp_transform.rotate(temp_rotation);
       // Append to transform list
       grasp_transforms_.push_back(temp_transform);
     }
@@ -76,7 +78,7 @@ bool MultipleManipulatorsKinematics::configureFromFile(string config_filename)
       exit(0);
     }
   }
-  Eigen::VectorXd q(22);
+  /*Eigen::VectorXd q(22);
   //q << 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22;
   q << 1,2,3,4,5,6,1.38491,-0.945959,1.57,-2,-0.23384,12,13,14,15,16,17,0.787,0.787,0.787,-1.57,0.787;
   std::vector<Eigen::Affine3d> hm;
@@ -84,7 +86,7 @@ bool MultipleManipulatorsKinematics::configureFromFile(string config_filename)
   for (int i=0; i<hm.size(); i++){
     cout << hm[i].translation() << endl << hm[i].rotation() << endl << endl;
   }
-  exit(0);
+  
 
   Eigen::Affine3d hm2;
   hm2 = Eigen::Affine3d::Identity();
@@ -95,6 +97,7 @@ bool MultipleManipulatorsKinematics::configureFromFile(string config_filename)
   hm2.rotate(rotm);
   bool flag;
   cout << this->calculateInverseKinematics(hm2, flag) << endl;
+  */
 }
 
 std::vector<Eigen::Affine3d> MultipleManipulatorsKinematics::getJointPositions(
@@ -108,9 +111,6 @@ std::vector<Eigen::Affine3d> MultipleManipulatorsKinematics::getJointPositions(
     // Get joint values from the full q as a blok from start index row, column 0,
     // and size of n_dofs_[i], 1.
     current_manipulator_q = q.block(dofs_indexes_[i][0],0,n_dofs_[i],1);
-    //for (int j=0; j<n_dofs_[i]; j++){
-    //  current_manipulator_q(j) = q(dofs_indexes_[i][j]);
-    //}
 
     // Now that we have q, get transforms from each manipulator.
     std::vector<Eigen::Affine3d> current_transforms = 
@@ -124,6 +124,8 @@ std::vector<Eigen::Affine3d> MultipleManipulatorsKinematics::getJointPositions(
 Eigen::Affine3d MultipleManipulatorsKinematics::getEndEffectorTransform(
   Eigen::VectorXd q)
 {
+  // This is required by the interface. It's not pretty, but it must be
+  // implemented. It will probably be unused.
   return manipulators_[0]->getEndEffectorTransform(q);
 }
 
@@ -132,10 +134,14 @@ std::vector<Eigen::Affine3d> MultipleManipulatorsKinematics::getMultipleEndEffec
 {
   std::vector<Eigen::Affine3d> transforms;
 
+  // Go through all manipulators
   for (int i=0; i<n_manipulators_; i++){
+    // Create q for each manipulator and extract it from the full system state q.
     Eigen::VectorXd current_manipulator_q(n_dofs_[i]);
     current_manipulator_q = q.block(dofs_indexes_[i][0],0,n_dofs_[i],1);
-    transforms.push_back(manipulators_[i]->getEndEffectorTransform(current_manipulator_q));
+    // Add each transform to the return vector.
+    transforms.push_back(manipulators_[i]->getEndEffectorTransform(
+      current_manipulator_q));
   }
 
   return transforms;
@@ -145,22 +151,28 @@ Eigen::VectorXd MultipleManipulatorsKinematics::calculateInverseKinematics(
   Eigen::Affine3d transform, bool &found_ik)
 {
   Eigen::VectorXd joint_states;
-  cout << transform.translation() << endl << transform.rotation() << endl;
-  cout << joint_states.rows() << endl;
+  
+  // Final ik flag will be "and" of all manipulators' ik flags.
+  found_ik = true;
   bool multiple_found_ik = true;
+  // Start index of each manipulator q.
   int start_index = 0;
+
+  // Go through all manipulators.
   for (int i=0; i<n_manipulators_; i++){
     Eigen::VectorXd current_manipulator_state;
-    current_manipulator_state = 
-      manipulators_[i]->calculateInverseKinematics(transform, multiple_found_ik);
-    cout << "cms " << endl << current_manipulator_state << endl << endl;
+    // State of each manipulator is multiplied by grasp transform. This might
+    // have to be changed.
+    current_manipulator_state = manipulators_[i]->calculateInverseKinematics(
+      transform*grasp_transforms_[i], multiple_found_ik);
     found_ik &= multiple_found_ik;
+    // Append current manipulator state to the full merged state.
     joint_states.conservativeResize(joint_states.rows() + 
       current_manipulator_state.rows(), 1);
     joint_states.block(start_index, 0, current_manipulator_state.rows(), 1) = 
       current_manipulator_state;
+    // increase start index for the next manipulator.
     start_index += current_manipulator_state.rows();
-    cout << "Joint states" << endl << joint_states << endl << endl;
   }
 
   return joint_states;
