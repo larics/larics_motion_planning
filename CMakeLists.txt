@@ -79,7 +79,8 @@ target_link_libraries(kinematics ${catkin_LIBRARIES})
 set(STATE_VALIDITY_CHECKING_SOURCES src/StateValidityCheckerInterface.cpp 
   src/PointStateValidityChecker.cpp
   src/UavWpManipulatorStateValidityChecker.cpp
-  src/SimpleStateValidityCheckers.cpp)
+  src/SimpleStateValidityCheckers.cpp
+  src/MultipleManipulatorsStateValidityChecker.cpp)
 add_library(state_validity_checking ${STATE_VALIDITY_CHECKING_SOURCES})
 target_link_libraries(state_validity_checking map kinematics 
   ${catkin_LIBRARIES})
