@@ -18,6 +18,7 @@
 #include <larics_motion_planning/PointStateValidityChecker.h>
 #include <larics_motion_planning/SimpleStateValidityCheckers.h>
 #include <larics_motion_planning/UavWpManipulatorStateValidityChecker.h>
+#include <larics_motion_planning/MultipleManipulatorsStateValidityChecker.h>
 
 #include <eigen3/Eigen/Eigen>
 

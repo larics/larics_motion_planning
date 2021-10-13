@@ -63,7 +63,7 @@ bool GlobalPlanner::configureFromFile(string config_filename)
     // TODO: switch to multiple manipulators state validity checker.
     // TODO: neka svaki manipulator ima svoju bazu neke velicine, pa makar ta baza
     //  bila nepokretna.
-    state_validity_checker_interface_ = make_shared<UavWpManipulatorStateValidityChecker>(
+    state_validity_checker_interface_ = make_shared<MultipleManipulatorsStateValidityChecker>(
       config["global_planner"]["state_validity_checker_config_file"].as<string>(),
       map_interface_, kinematics_interface_);
     cout << "State validity checker type is: multiple_manipulators" << endl;

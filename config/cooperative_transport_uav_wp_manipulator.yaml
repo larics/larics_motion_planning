@@ -146,6 +146,39 @@ state_validity_checker:
       use_tool: true
       dimensions: [0.3453, 0.01, 0.01]
       direction: "x"
+  multiple_manipulators:
+    -
+      manipulator_link_dimensions: [[0.0340, 0.1225, 0.0285], [0.1365, 0.0340, 0.0285], [0.0755, 0.0285, 0.0340], [0.0725, 0.0285, 0.0340], [0.0453, 0.0285, 0.0340]]
+      manipulator_link_directions: ["y", "x", "x", "x", "x"]
+
+      uav_dimensions: [0.4, 0.4, 0.17]
+
+      uav_manipulator_transform: [0, 0, 0.075, 1.57079632679, 0, 3.14159265359]
+
+      checker_resolution:
+        manipulator: 0.01
+        uav: 0.03
+
+      tool:
+        use_tool: true
+        dimensions: [0.3453, 0.01, 0.01]
+        direction: "x"
+    -
+      manipulator_link_dimensions: [[0.0340, 0.1225, 0.0285], [0.1365, 0.0340, 0.0285], [0.0755, 0.0285, 0.0340], [0.0725, 0.0285, 0.0340], [0.0453, 0.0285, 0.0340]]
+      manipulator_link_directions: ["y", "x", "x", "x", "x"]
+
+      uav_dimensions: [0.4, 0.4, 0.17]
+
+      uav_manipulator_transform: [0, 0, 0.075, 1.57079632679, 0, 3.14159265359]
+
+      checker_resolution:
+        manipulator: 0.01
+        uav: 0.03
+
+      tool:
+        use_tool: true
+        dimensions: [0.3453, 0.01, 0.01]
+        direction: "x"
 
 # TODO: Dodati transformacije od centra prihvatnog objekta do end-effectora
 # svakog manipulatora.

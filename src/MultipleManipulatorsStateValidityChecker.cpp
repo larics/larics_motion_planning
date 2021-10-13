@@ -17,11 +17,25 @@ MultipleManipulatorsStateValidityChecker::MultipleManipulatorsStateValidityCheck
 bool MultipleManipulatorsStateValidityChecker::configureFromFile(
   string config_filename)
 {
-  cout << "Configuring state validity checker from file: " << endl;
+  cout << "Configuring multiple manipulators state validity checker from file: " << endl;
   cout << "  " << config_filename << endl;
 
   // Open yaml file with configuration
   YAML::Node config = YAML::LoadFile(config_filename);
+  
+  // Get the number of manipulators. This should be the same number as in 
+  // kinematics interface.
+  n_manipulators_ = config["state_validity_checker"]["multiple_manipulators"].size();
+  // Check if there is the same number of manipulators in both state validity
+  // checker and kinematics
+  if (n_manipulators_ != config["kinematics"]["multiple_manipulators"].size()){
+    cout << "  Number of manipulators is different in kinematics." << endl;
+    cout << "  Number of manipulators in state validity checker: " << n_manipulators_ << endl;
+    cout << "  Number of manipulators in kinematics: ";
+    cout << config["kinematics"]["multiple_manipulators"].size() << endl;
+    exit(0);
+  }
+  exit(0);
 
   // Load link dimensions and directions
   std::vector< std::vector<double> > link_dimensions_vector;

@@ -65,7 +65,7 @@ class MultipleManipulatorsStateValidityChecker : public StateValidityCheckerInte
     std::vector<string> link_directions_;
     Eigen::Vector3d uav_dimensions_;
     double uav_sampling_resolution_, manipulator_sampling_resolution_;
-    int num_joints_;
+    int num_joints_, n_manipulators_;
 
     Eigen::Affine3d t_uav_manipulator_;
 

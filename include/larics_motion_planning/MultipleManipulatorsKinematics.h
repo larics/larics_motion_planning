@@ -7,6 +7,7 @@
 #include <larics_motion_planning/MotionPlanningDatatypes.h>
 #include <larics_motion_planning/KinematicsInterface.h>
 #include <larics_motion_planning/WpManipulatorKinematics.h>
+#include <larics_motion_planning/MultipleManipulatorsKinematics.h>
 
 // Include for direct and inverse kinematics.
 #include <aerial_manipulators_control/ManipulatorControl.h>
@@ -71,7 +72,9 @@ class MultipleManipulatorsKinematics : public KinematicsInterface
     std::vector<int> n_dofs_;
     std::vector< std::vector<int> > dofs_indexes_;
 
-    // Grasp transforms
+    // Grasp transforms. The idea of this variable is to provide one
+    // end-effector transform and get all manipulators transforms by multiplying
+    // them with appropriate grasp transform.
     std::vector<Eigen::Affine3d> grasp_transforms_;
 };
 
