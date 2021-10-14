@@ -59,16 +59,31 @@ class MultipleManipulatorsStateValidityChecker : public StateValidityCheckerInte
     void testDirectKinematics();
 
   private:
+    // Map and kinematics
     shared_ptr<MapInterface> map_;
     shared_ptr<KinematicsInterface> kinematics_;
+
+    // Since there are multiple manipulators, everything will be stored in
+    // vectors
+    std::vector<Eigen::MatrixXd> link_dimensions_vector_;
     Eigen::MatrixXd link_dimensions_;
+    std::vector< std::vector<string> > link_directions_vector_;
     std::vector<string> link_directions_;
+
+    std::vector<Eigen::Vector3d> base_dimensions_;
     Eigen::Vector3d uav_dimensions_;
+
+    std::vector<double> base_sampling_resolutions_, 
+      manipulator_sampling_resolutions_;
     double uav_sampling_resolution_, manipulator_sampling_resolution_;
     int num_joints_, n_manipulators_;
 
+    std::vector<Eigen::Affine3d> t_uav_manipulator_vector_;
     Eigen::Affine3d t_uav_manipulator_;
 
+    std::vector<bool> use_tool_vector_;
+    std::vector<Eigen::Vector3d> tool_dimensions_vector_;
+    std::vector<string> tool_direction_vector_;
     bool use_tool_;
     Eigen::Vector3d tool_dimensions_;
     string tool_direction_;

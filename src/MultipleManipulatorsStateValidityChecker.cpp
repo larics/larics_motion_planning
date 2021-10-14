@@ -29,67 +29,96 @@ bool MultipleManipulatorsStateValidityChecker::configureFromFile(
   // Check if there is the same number of manipulators in both state validity
   // checker and kinematics
   if (n_manipulators_ != config["kinematics"]["multiple_manipulators"].size()){
-    cout << "  Number of manipulators is different in kinematics." << endl;
+    cout << "ERROR: Number of manipulators is different in kinematics." << endl;
+    cout << "  This occured in MultipleManipulatorsStateValidityChecker." << endl;
     cout << "  Number of manipulators in state validity checker: " << n_manipulators_ << endl;
     cout << "  Number of manipulators in kinematics: ";
     cout << config["kinematics"]["multiple_manipulators"].size() << endl;
     exit(0);
   }
-  exit(0);
 
-  // Load link dimensions and directions
-  std::vector< std::vector<double> > link_dimensions_vector;
-  link_dimensions_vector = config["state_validity_checker"]["uav_wp_manipulator"]["manipulator_link_dimensions"].as< std::vector< std::vector<double> > >();
-  link_directions_ = config["state_validity_checker"]["uav_wp_manipulator"]["manipulator_link_directions"].as< std::vector<string> >();
-  num_joints_ = link_dimensions_vector.size();
-  // Check sizes
-  if (link_directions_.size() != link_dimensions_vector.size()){
-    cout << "ERROR: Link directions and dimensions must have the same size." << endl;
-    cout << "  Size of link dimensions: " << link_dimensions_vector.size() << endl;
-    cout << "  Size of link directions: " << link_directions_.size() << endl;
-    exit(0);
-  }
-  link_dimensions_ = Eigen::MatrixXd(link_dimensions_vector.size(), link_dimensions_vector[0].size());
-  for (int i=0; i<link_dimensions_vector.size(); i++){
-    if (link_dimensions_vector[i].size() != 3){
-      cout << "ERROR: All links must have exactly 3 dimensions." << endl;
-      cout << "  Link " << i+1 << " has " << link_dimensions_vector[i].size() << " dimensions." << endl;
+  // Go through all manipulators and configure
+  for (int i=0; i<n_manipulators_; i++){
+    std::vector< std::vector<double> > current_dimensions_vector;
+    current_dimensions_vector = config["state_validity_checker"]["multiple_manipulators"][i]["manipulator_link_dimensions"].as< std::vector< std::vector<double> > >();
+    link_directions_ = config["state_validity_checker"]["multiple_manipulators"][i]["manipulator_link_directions"].as< std::vector<string> >();
+    // Check sizes
+    if (link_directions_.size() != current_dimensions_vector.size()){
+      cout << "ERROR: Link directions and dimensions must have the same size." << endl;
+      cout << "  This occured in MultipleManipulatorsStateValidityChecker." << endl;
+      cout << "  Size of manipulator " << i << " link dimensions: " << current_dimensions_vector.size() << endl;
+      cout << "  Size of manipulator " << i << " link directions: " << link_directions_.size() << endl;
       exit(0);
     }
-    else{
-      link_dimensions_(i, 0) = link_dimensions_vector[i][0];
-      link_dimensions_(i, 1) = link_dimensions_vector[i][1];
-      link_dimensions_(i, 2) = link_dimensions_vector[i][2];
+
+    // If sizes are okay, load data. First directions
+    link_directions_vector_.push_back(link_directions_);
+    // And next dimensions, which are matrices in vector.
+    Eigen::MatrixXd link_dimensions;
+    link_dimensions = Eigen::MatrixXd(current_dimensions_vector.size(), current_dimensions_vector[0].size());
+    for (int j=0; j<current_dimensions_vector.size(); j++){
+      if (current_dimensions_vector[j].size() != 3){
+        cout << "ERROR: All links must have exactly 3 dimensions." << endl;
+        cout << "  This occured in MultipleManipulatorsStateValidityChecker." << endl;
+        cout << "  Link " << j+1 << " of manipulator " << i << " has ";
+        cout << current_dimensions_vector[j].size() << " dimensions." << endl;
+        exit(0);
+      }
+      else{
+        link_dimensions(j, 0) = current_dimensions_vector[j][0];
+        link_dimensions(j, 1) = current_dimensions_vector[j][1];
+        link_dimensions(j, 2) = current_dimensions_vector[j][2];
+      }
     }
+    // Push dimensions into a vector
+    link_dimensions_vector_.push_back(link_dimensions);
+
+    // Base dimensions
+    std::vector<double> base_vector;
+    Eigen::Vector3d current_base_dimensions;
+    // Data from yaml is loaded as std vector
+    base_vector = config["state_validity_checker"]["multiple_manipulators"][i]["base_dimensions"].as< std::vector<double> >();
+    // And then it is converted into Eigen::Vector3d and pushed into vector
+    // of base transforms.
+    for (int j=0; j<3; j++){
+      current_base_dimensions(j) = base_vector[j];
+    }
+    base_dimensions_.push_back(current_base_dimensions);
+
+    // Get sampling resolutions
+    uav_sampling_resolution_ = config["state_validity_checker"]["multiple_manipulators"][i]["checker_resolution"]["base"].as<double>();
+    manipulator_sampling_resolution_ = config["state_validity_checker"]["multiple_manipulators"][i]["checker_resolution"]["manipulator"].as<double>();
+    base_sampling_resolutions_.push_back(uav_sampling_resolution_);
+    manipulator_sampling_resolutions_.push_back(manipulator_sampling_resolution_);
+
+    // Get fixed transform between UAV and manipulator. This is important
+    // because the inverse kinematics operates in coordinate system of the
+    // manipulator. It means each end-effector configuration in global system
+    // has to be transformed to the manipulator system.
+    std::vector<double> temp_transf;
+    temp_transf = config["state_validity_checker"]["multiple_manipulators"][i]["uav_manipulator_transform"].as< std::vector<double> >();
+    // Set up a fixed transform between UAV and manipulator
+    t_uav_manipulator_ = Eigen::Affine3d::Identity();
+    Eigen::Matrix3d rot_uav_manipulator;
+    rot_uav_manipulator = Eigen::AngleAxisd(temp_transf[5], Eigen::Vector3d::UnitZ())
+      * Eigen::AngleAxisd(temp_transf[4],  Eigen::Vector3d::UnitY())
+      * Eigen::AngleAxisd(temp_transf[3], Eigen::Vector3d::UnitX());
+    t_uav_manipulator_.translate(Eigen::Vector3d(temp_transf[0], temp_transf[1], temp_transf[2]));
+    t_uav_manipulator_.rotate(rot_uav_manipulator);
+    t_uav_manipulator_vector_.push_back(t_uav_manipulator_);
+
+    // Get tool data
+    use_tool_ = config["state_validity_checker"]["multiple_manipulators"][i]["tool"]["use_tool"].as<bool>();
+    std::vector<double> tool_dimensions;
+    tool_dimensions = config["state_validity_checker"]["multiple_manipulators"][i]["tool"]["dimensions"].as< std::vector<double> >();
+    for (int i=0; i<3; i++){
+      tool_dimensions_(i) = tool_dimensions[i];
+    }
+    tool_direction_ = config["state_validity_checker"]["multiple_manipulators"][i]["tool"]["direction"].as<string>();
+    use_tool_vector_.push_back(use_tool_);
+    tool_dimensions_vector_.push_back(tool_dimensions_);
+    tool_direction_vector_.push_back(tool_direction_);
   }
-
-  // Get UAV dimensions
-  std::vector<double> uav_dimensions;
-  uav_dimensions = config["state_validity_checker"]["uav_wp_manipulator"]["uav_dimensions"].as< std::vector<double> >();
-  for (int i=0; i<3; i++) uav_dimensions_(i) = uav_dimensions[i];
-
-  // Get resolutions for uav and manipulator state sampling.
-  uav_sampling_resolution_ = config["state_validity_checker"]["uav_wp_manipulator"]["checker_resolution"]["uav"].as<double>();
-  manipulator_sampling_resolution_ = config["state_validity_checker"]["uav_wp_manipulator"]["checker_resolution"]["manipulator"].as<double>();
-
-  // Get fixed transform between UAV and manipulator
-  std::vector<double> temp_transf;
-  temp_transf = config["state_validity_checker"]["uav_wp_manipulator"]["uav_manipulator_transform"].as< std::vector<double> >();
-  // Set up a fixed transform between UAV and manipulator
-  t_uav_manipulator_ = Eigen::Affine3d::Identity();
-  Eigen::Matrix3d rot_uav_manipulator;
-  rot_uav_manipulator = Eigen::AngleAxisd(temp_transf[5], Eigen::Vector3d::UnitZ())
-    * Eigen::AngleAxisd(temp_transf[4],  Eigen::Vector3d::UnitY())
-    * Eigen::AngleAxisd(temp_transf[3], Eigen::Vector3d::UnitX());
-  t_uav_manipulator_.translate(Eigen::Vector3d(temp_transf[0], temp_transf[1], temp_transf[2]));
-  t_uav_manipulator_.rotate(rot_uav_manipulator);
-
-  // Get tool data
-  use_tool_ = config["state_validity_checker"]["uav_wp_manipulator"]["tool"]["use_tool"].as<bool>();
-  std::vector<double> tool_dimensions;
-  tool_dimensions = config["state_validity_checker"]["uav_wp_manipulator"]["tool"]["dimensions"].as< std::vector<double> >();
-  for (int i=0; i<3; i++) tool_dimensions_(i) = tool_dimensions[i];
-  tool_direction_ = config["state_validity_checker"]["uav_wp_manipulator"]["tool"]["direction"].as<string>();
 }
 
 void MultipleManipulatorsStateValidityChecker::testDirectKinematics()
@@ -196,6 +225,10 @@ bool MultipleManipulatorsStateValidityChecker::isStateValid(Eigen::VectorXd stat
   return valid_flag;
 }
 
+// TODO: Mislim da ce trebati dodati koji se indeksi koriste za koji manipulator.
+// Iz toga sloziti state i onda pozvati ovu funkciju. Osim toga mislim da bi
+// bilo dobro napomenuti da je baza uvijek 6DoF i manipulator jos n DoF. S time
+// da baza ne mora nuzno biti pokretna.
 Eigen::MatrixXd MultipleManipulatorsStateValidityChecker::generateValidityPoints(
   Eigen::VectorXd state)
 {
