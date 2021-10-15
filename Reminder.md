@@ -104,3 +104,7 @@ plan_trajectory: true
 override_dynamic_constraints: false
 velocity_constraints: [0]
 acceleration_constraints: [0]"
+
+
+Multirobot
+[0,0,1,0,0,0,0.787, 0.787, 0.787, -1.57, 0.787,0,0,2,0,0,0,0.787, 0.787, 0.787, -1.57, 0.787]

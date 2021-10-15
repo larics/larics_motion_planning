@@ -5,7 +5,9 @@ MultipleManipulatorsStateValidityChecker::MultipleManipulatorsStateValidityCheck
   shared_ptr<KinematicsInterface> kinematics)
 {
   map_ = map;
-  kinematics_ = kinematics;
+  // Immediately cast into multiple manipulator kinematics. This is not pretty
+  // but it is necessary to get single manipulator joint positions.
+  kinematics_ = dynamic_pointer_cast<MultipleManipulatorsKinematics>(kinematics);
 
   string username = "/home/";
   username = username + getenv("USER") + "/";
@@ -96,7 +98,7 @@ bool MultipleManipulatorsStateValidityChecker::configureFromFile(
     // manipulator. It means each end-effector configuration in global system
     // has to be transformed to the manipulator system.
     std::vector<double> temp_transf;
-    temp_transf = config["state_validity_checker"]["multiple_manipulators"][i]["uav_manipulator_transform"].as< std::vector<double> >();
+    temp_transf = config["state_validity_checker"]["multiple_manipulators"][i]["base_manipulator_transform"].as< std::vector<double> >();
     // Set up a fixed transform between UAV and manipulator
     t_uav_manipulator_ = Eigen::Affine3d::Identity();
     Eigen::Matrix3d rot_uav_manipulator;
@@ -118,6 +120,18 @@ bool MultipleManipulatorsStateValidityChecker::configureFromFile(
     use_tool_vector_.push_back(use_tool_);
     tool_dimensions_vector_.push_back(tool_dimensions_);
     tool_direction_vector_.push_back(tool_direction_);
+
+    // Get the indexes of each manipulator.
+    int start, end;
+    start = config["state_validity_checker"]["multiple_manipulators"][i]["indexes"]["start"].as<int>();
+    end = config["state_validity_checker"]["multiple_manipulators"][i]["indexes"]["end"].as<int>();
+    start_indexes_.push_back(start);
+    end_indexes_.push_back(end);
+
+    // Get number of dof in base
+    int base_dof;
+    base_dof = config["state_validity_checker"]["multiple_manipulators"][i]["base_dof"].as<int>();
+    base_dof_.push_back(base_dof);
   }
 }
 
@@ -229,50 +243,52 @@ bool MultipleManipulatorsStateValidityChecker::isStateValid(Eigen::VectorXd stat
 // Iz toga sloziti state i onda pozvati ovu funkciju. Osim toga mislim da bi
 // bilo dobro napomenuti da je baza uvijek 6DoF i manipulator jos n DoF. S time
 // da baza ne mora nuzno biti pokretna.
-Eigen::MatrixXd MultipleManipulatorsStateValidityChecker::generateValidityPoints(
-  Eigen::VectorXd state)
+Eigen::MatrixXd MultipleManipulatorsStateValidityChecker::generateSingleManipulatorValidityPoints(
+  Eigen::VectorXd state, int id)
 {
-  // First create transformation of the UAV with respect to the world.
-  Eigen::Affine3d t_world_uav(Eigen::Affine3d::Identity());
-  t_world_uav.translate(Eigen::Vector3d(state(0), state(1), state(2)));
-  Eigen::Matrix3d rot_uav;
-  rot_uav = Eigen::AngleAxisd(state(5), Eigen::Vector3d::UnitZ())
+  Eigen::MatrixXd points(0,3);
+  // First create transformation of the base with respect to the world. This
+  // assumes 6DoF base and n DoF manipulator.
+  Eigen::Affine3d t_world_base(Eigen::Affine3d::Identity());
+  t_world_base.translate(Eigen::Vector3d(state(0), state(1), state(2)));
+  Eigen::Matrix3d rot_base;
+  rot_base = Eigen::AngleAxisd(state(5), Eigen::Vector3d::UnitZ())
     * Eigen::AngleAxisd(state(4),  Eigen::Vector3d::UnitY())
     * Eigen::AngleAxisd(state(3), Eigen::Vector3d::UnitX());
-  t_world_uav.rotate(rot_uav);
+  t_world_base.rotate(rot_base);
 
-  // Create transformation from world to manipulator. Here we have UAV in world
-  //  frame and we multiply it by fixed transformation of the manipulator in
-  //  UAV frame.
-  Eigen::Affine3d t_world_manipulator = t_world_uav*t_uav_manipulator_;
+  // Create transformation from world to manipulator. Here we have base in world
+  // frame and we multiply it by fixed transformation of the manipulator in
+  // base frame.
+  Eigen::Affine3d t_world_manipulator = t_world_base*t_uav_manipulator_vector_[id];
 
   // Extract joint references and get link positions.
   //cout << state << endl;
   //Eigen::VectorXd q(5);
   //q << state(4), state(5), state(6), state(7), state(8);
   
-  Eigen::VectorXd q(num_joints_);
-  for (int i=0; i<q.size(); i++) q(i) = state(i+6);
+  Eigen::VectorXd q(state.size()-base_dof_[id]);
+  for (int i=0; i<q.size(); i++) q(i) = state(i+base_dof_[id]);
 
   std::vector<Eigen::Affine3d> link_positions;
-  link_positions = kinematics_->getJointPositions(q);
+  link_positions = kinematics_->getSingleManipulatorJointPositions(q, id);
   //cout << "Doing links" << endl;
   // Get sampled points to be checked in octomap
-  points_ = Eigen::MatrixXd(0,3);
+  points = Eigen::MatrixXd(0,3);
   for (int i=0; i<q.size(); i++){
     Eigen::Affine3d t_world_link = t_world_manipulator*link_positions[i+2];
-    Eigen::MatrixXd points_link = generatePrism(link_dimensions_(i,0),
-      link_dimensions_(i,1), link_dimensions_(i,2),
-      manipulator_sampling_resolution_, link_directions_[i]);
-    //points_ = Eigen::MatrixXd(points_link.rows(), points_link.cols());
-    double points_size = points_.rows();
-    points_.conservativeResize(points_.rows() + points_link.rows(), 3);
+    Eigen::MatrixXd points_link = generatePrism(link_dimensions_vector_[id](i,0),
+      link_dimensions_vector_[id](i,1), link_dimensions_vector_[id](i,2),
+      manipulator_sampling_resolutions_[id], link_directions_vector_[id][i]);
+    //points = Eigen::MatrixXd(points_link.rows(), points_link.cols());
+    double points_size = points.rows();
+    points.conservativeResize(points.rows() + points_link.rows(), 3);
     for (int j=0; j<points_link.rows(); j++){
       Eigen::Affine3d current_point(Eigen::Affine3d::Identity());
       //cout << (points_link.row(i)).transpose() << endl;
       //exit(0);
       current_point.translate(Eigen::Vector3d((points_link.row(j)).transpose()));
-      points_.row(j+points_size) = ((t_world_link*current_point).translation()).transpose();
+      points.row(j+points_size) = ((t_world_link*current_point).translation()).transpose();
     }
   }
 
@@ -281,39 +297,66 @@ Eigen::MatrixXd MultipleManipulatorsStateValidityChecker::generateValidityPoints
   //cout << "Doing Tool" << endl;
   if (use_tool_ == true){
     Eigen::Affine3d t_world_link = t_world_manipulator*link_positions[q.size()+1];
-    Eigen::MatrixXd points_link = generatePrism(tool_dimensions_(0),
-      tool_dimensions_(1), tool_dimensions_(2),
-      manipulator_sampling_resolution_, tool_direction_);
-    //points_ = Eigen::MatrixXd(points_link.rows(), points_link.cols());
-    double points_size = points_.rows();
-    points_.conservativeResize(points_.rows() + points_link.rows(), 3);
+    Eigen::MatrixXd points_link = generatePrism(tool_dimensions_vector_[id](0),
+      tool_dimensions_vector_[id](1), tool_dimensions_vector_[id](2),
+      manipulator_sampling_resolutions_[id], tool_direction_vector_[id]);
+    //points = Eigen::MatrixXd(points_link.rows(), points_link.cols());
+    double points_size = points.rows();
+    points.conservativeResize(points.rows() + points_link.rows(), 3);
     for (int j=0; j<points_link.rows(); j++){
       Eigen::Affine3d current_point(Eigen::Affine3d::Identity());
       //cout << (points_link.row(i)).transpose() << endl;
       //exit(0);
       current_point.translate(Eigen::Vector3d((points_link.row(j)).transpose()));
-      points_.row(j+points_size) = ((t_world_link*current_point).translation()).transpose();
+      points.row(j+points_size) = ((t_world_link*current_point).translation()).transpose();
     }
   }
   //cout << "Tool done" << endl;
 
-  Eigen::Affine3d t_world_link = t_world_uav;
-  Eigen::MatrixXd points_link = generatePrism(uav_dimensions_(0),
-    uav_dimensions_(1), uav_dimensions_(2), uav_sampling_resolution_, "n");
-  //points_ = Eigen::MatrixXd(points_link.rows(), points_link.cols());
-  double points_size = points_.rows();
-  points_.conservativeResize(points_.rows() + points_link.rows(), 3);
+  Eigen::Affine3d t_world_link = t_world_base;
+  Eigen::MatrixXd points_link = generatePrism(base_dimensions_[id](0),
+    base_dimensions_[id](1), base_dimensions_[id](2), base_sampling_resolutions_[id], "n");
+  //points = Eigen::MatrixXd(points_link.rows(), points_link.cols());
+  double points_size = points.rows();
+  points.conservativeResize(points.rows() + points_link.rows(), 3);
   //cout << "Adding UAV" << endl;
   for (int j=0; j<points_link.rows(); j++){
     Eigen::Affine3d current_point(Eigen::Affine3d::Identity());
     //cout << (points_link.row(i)).transpose() << endl;
     //exit(0);
     current_point.translate(Eigen::Vector3d((points_link.row(j)).transpose()));
-    points_.row(j+points_size) = ((t_world_link*current_point).translation()).transpose();
+    points.row(j+points_size) = ((t_world_link*current_point).translation()).transpose();
   }
   //cout << "UAV done" << endl;
-  //cout << points_.rows() << " " << points_.cols() << endl;
+  //cout << points.rows() << " " << points.cols() << endl;
 
+  return points;
+}
+
+Eigen::MatrixXd MultipleManipulatorsStateValidityChecker::generateValidityPoints(
+  Eigen::VectorXd state)
+{
+  points_ = Eigen::MatrixXd(0,3);
+  cout << "init: " << points_.size() << endl;
+  for (int i=0; i<n_manipulators_; i++){
+    // Extract current manipulator state based on indexes provided in the
+    // config file.
+    Eigen::VectorXd current_state(end_indexes_[i]-start_indexes_[i]+1);
+    current_state = state.block(
+      start_indexes_[i], 0, end_indexes_[i]-start_indexes_[i]+1, 1);//end_indexes_[i]-start_indexes_[i]);
+
+    // Generate points based on the current manipulator state and concatenate
+    // them into all points.
+    Eigen::MatrixXd current_manipulator_points;
+    current_manipulator_points = 
+      this->generateSingleManipulatorValidityPoints(current_state, i);
+    cout << "cmp: " << current_manipulator_points.size() << endl;
+    points_.conservativeResize(
+      points_.rows() + current_manipulator_points.rows(), 3);
+    points_.block(points_.rows()-current_manipulator_points.rows(), 0, 
+      current_manipulator_points.rows() , 3) = current_manipulator_points;
+    cout << "man: " << points_.size() << endl;
+  }
   return points_;
 }
 

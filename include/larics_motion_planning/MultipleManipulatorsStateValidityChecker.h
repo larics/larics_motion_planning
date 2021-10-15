@@ -9,6 +9,7 @@
 #include <larics_motion_planning/StateValidityCheckerInterface.h>
 #include <larics_motion_planning/MapInterface.h>
 #include <larics_motion_planning/KinematicsInterface.h>
+#include <larics_motion_planning/MultipleManipulatorsKinematics.h>
 
 #include <iostream>
 #include <string>
@@ -49,11 +50,19 @@ class MultipleManipulatorsStateValidityChecker : public StateValidityCheckerInte
     //bool isStateValid(Eigen::VectorXd state, double roll=0.0, double pitch=0.0);
 
     /// \brief Generates points that are to be checked based on the state of
-    ///   the aerial manipulator.
-    /// \param state Robot state with (x, y, z, yaw, q(5))
-    /// \param roll UAV roll angle. Default is zero.
-    /// \param pitch UAV pitch angle. Default iz zero.
-    /// \return Matrix of points for collision checking.
+    ///   the manipulator with its base.
+    /// \param state Single manipulator state that has (x,y,z,roll,pitch,yaw)
+    ///   of the base and n DoF manipulator.
+    /// \param id Index of the manipulator for which the validity points are
+    ///   being generated.
+    /// \return Mx3 matrix of points to be checked for validity.
+    Eigen::MatrixXd generateSingleManipulatorValidityPoints(
+      Eigen::VectorXd state, int id);
+
+    /// \brief Generates validity points for all manipulators.
+    /// \param state Full state of the robot. This will be segmented through
+    ///   indexes parameter to get appropriate state.
+    /// \return Validity points of all robots.
     Eigen::MatrixXd generateValidityPoints(Eigen::VectorXd state);
 
     void testDirectKinematics();
@@ -61,7 +70,7 @@ class MultipleManipulatorsStateValidityChecker : public StateValidityCheckerInte
   private:
     // Map and kinematics
     shared_ptr<MapInterface> map_;
-    shared_ptr<KinematicsInterface> kinematics_;
+    shared_ptr<MultipleManipulatorsKinematics> kinematics_;
 
     // Since there are multiple manipulators, everything will be stored in
     // vectors
@@ -87,6 +96,10 @@ class MultipleManipulatorsStateValidityChecker : public StateValidityCheckerInte
     bool use_tool_;
     Eigen::Vector3d tool_dimensions_;
     string tool_direction_;
+
+    std::vector<int> start_indexes_;
+    std::vector<int> end_indexes_;
+    std::vector<int> base_dof_;
 
     Eigen::MatrixXd generatePrism(double x, double y, double z, 
       double resolution, string direction);

@@ -136,8 +136,8 @@ state_validity_checker:
       manipulator_link_directions: ["y", "x", "x", "x", "x"]
 
       base_dimensions: [0.4, 0.4, 0.17]
-
-      uav_manipulator_transform: [0, 0, 0.075, 1.57079632679, 0, 3.14159265359]
+      base_dof: 6
+      base_manipulator_transform: [0, 0, 0.075, 1.57079632679, 0, 3.14159265359]
 
       checker_resolution:
         manipulator: 0.01
@@ -147,13 +147,17 @@ state_validity_checker:
         use_tool: true
         dimensions: [0.3453, 0.01, 0.01]
         direction: "x"
+
+      indexes:
+        start: 0
+        end: 10
     -
       manipulator_link_dimensions: [[0.0340, 0.1225, 0.0285], [0.1365, 0.0340, 0.0285], [0.0755, 0.0285, 0.0340], [0.0725, 0.0285, 0.0340], [0.0453, 0.0285, 0.0340]]
       manipulator_link_directions: ["y", "x", "x", "x", "x"]
 
       base_dimensions: [0.4, 0.4, 0.17]
-
-      uav_manipulator_transform: [0, 0, 0.075, 1.57079632679, 0, 3.14159265359]
+      base_dof: 6
+      base_manipulator_transform: [0, 0, 0.075, 1.57079632679, 0, 3.14159265359]
 
       checker_resolution:
         manipulator: 0.01
@@ -164,8 +168,10 @@ state_validity_checker:
         dimensions: [0.3453, 0.01, 0.01]
         direction: "x"
 
-# TODO: Dodati transformacije od centra prihvatnog objekta do end-effectora
-# svakog manipulatora.
+      indexes:
+        start: 11
+        end: 21
+
 kinematics:
   multiple_manipulators:
     - 
