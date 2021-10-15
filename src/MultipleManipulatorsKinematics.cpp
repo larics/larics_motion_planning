@@ -121,6 +121,24 @@ std::vector<Eigen::Affine3d> MultipleManipulatorsKinematics::getJointPositions(
   return transforms;
 }
 
+std::vector<Eigen::Affine3d> MultipleManipulatorsKinematics::getSingleManipulatorJointPositions(
+  Eigen::VectorXd q, int id)
+{
+  std::vector<Eigen::Affine3d> transforms;
+
+  // Set up length of the current manipulator q.
+  Eigen::VectorXd current_manipulator_q(n_dofs_[id]);
+  current_manipulator_q = q;
+
+  // Now that we have q, get transforms from each manipulator.
+  std::vector<Eigen::Affine3d> current_transforms = 
+    manipulators_[id]->getJointPositions(current_manipulator_q);
+  transforms.insert(transforms.end(), current_transforms.begin(),
+    current_transforms.end());
+
+  return transforms;
+}
+
 Eigen::Affine3d MultipleManipulatorsKinematics::getEndEffectorTransform(
   Eigen::VectorXd q)
 {

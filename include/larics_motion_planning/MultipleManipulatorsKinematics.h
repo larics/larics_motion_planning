@@ -7,7 +7,6 @@
 #include <larics_motion_planning/MotionPlanningDatatypes.h>
 #include <larics_motion_planning/KinematicsInterface.h>
 #include <larics_motion_planning/WpManipulatorKinematics.h>
-#include <larics_motion_planning/MultipleManipulatorsKinematics.h>
 
 // Include for direct and inverse kinematics.
 #include <aerial_manipulators_control/ManipulatorControl.h>
@@ -38,6 +37,13 @@ class MultipleManipulatorsKinematics : public KinematicsInterface
     /// \param q Full system state vector.
     /// \return List of transformations to all joints of manipulators.
     std::vector<Eigen::Affine3d> getJointPositions(Eigen::VectorXd q);
+
+    /// \brief Function that returns all joint transforms of a single manipulator.
+    /// \param q Single manipulator q.
+    /// \param id Manipulator index.
+    /// \return List of transformations to all joints of manipulators.
+    std::vector<Eigen::Affine3d> getSingleManipulatorJointPositions(
+      Eigen::VectorXd q, int id);
 
     /// \brief Direct kinematics to end effector.
     /// \param q Manipulator joint state vector.
