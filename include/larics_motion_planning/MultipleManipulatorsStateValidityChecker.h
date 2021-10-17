@@ -22,8 +22,8 @@
 
 using namespace std;
 
-/// Uses direct and inverse kinematics of a UAV with wp manipulator to check
-/// if robot state is valid. It uses direct kinematics to get positions of 
+/// Uses direct and inverse kinematics of multiple manipulators to check
+/// if system state is valid. It uses direct kinematics to get positions of 
 /// all links and joints and approximates the manipulator with rectangular 
 /// shapes.
 class MultipleManipulatorsStateValidityChecker : public StateValidityCheckerInterface
@@ -65,40 +65,45 @@ class MultipleManipulatorsStateValidityChecker : public StateValidityCheckerInte
     /// \return Validity points of all robots.
     Eigen::MatrixXd generateValidityPoints(Eigen::VectorXd state);
 
-    void testDirectKinematics();
-
   private:
     // Map and kinematics
     shared_ptr<MapInterface> map_;
     shared_ptr<MultipleManipulatorsKinematics> kinematics_;
 
     // Since there are multiple manipulators, everything will be stored in
-    // vectors
+    // vectors. Number of manipulators is naturally integer.
+    int n_manipulators_;
+
+    // Link dimensions are needed to generate validity points for each link,
+    // and directions are required to know in which direction of its root
+    // joint is the link extending.
     std::vector<Eigen::MatrixXd> link_dimensions_vector_;
-    Eigen::MatrixXd link_dimensions_;
     std::vector< std::vector<string> > link_directions_vector_;
-    std::vector<string> link_directions_;
 
+    // Dimensions of the manipulator base. This is required even in the case
+    // the base is fixed.
     std::vector<Eigen::Vector3d> base_dimensions_;
-    Eigen::Vector3d uav_dimensions_;
 
+    // The base and links are discretized as prisms of some dimensions. The
+    // resolution can be set differently.
     std::vector<double> base_sampling_resolutions_, 
       manipulator_sampling_resolutions_;
-    double uav_sampling_resolution_, manipulator_sampling_resolution_;
-    int num_joints_, n_manipulators_;
 
-    std::vector<Eigen::Affine3d> t_uav_manipulator_vector_;
-    Eigen::Affine3d t_uav_manipulator_;
+    // Fixed transform between base and first joint of the manipulator.
+    std::vector<Eigen::Affine3d> t_base_manipulator_vector_;
 
+    // Tool configuration. Flag if tool is used, dimensions of the tool and
+    // direction the tool is set in. The tool will be considered as prism.
     std::vector<bool> use_tool_vector_;
     std::vector<Eigen::Vector3d> tool_dimensions_vector_;
     std::vector<string> tool_direction_vector_;
-    bool use_tool_;
-    Eigen::Vector3d tool_dimensions_;
-    string tool_direction_;
 
-    std::vector<int> start_indexes_;
-    std::vector<int> end_indexes_;
+    // The configuration vector will contain all manipulators' DoF. Start and
+    // end indexes define part of that vector that belongs to a single
+    // manipulator.
+    std::vector<int> start_indexes_, end_indexes_;
+    
+    // Number of degrees of freedom of the base.
     std::vector<int> base_dof_;
 
     Eigen::MatrixXd generatePrism(double x, double y, double z, 
