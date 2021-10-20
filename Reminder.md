@@ -118,3 +118,11 @@ rosservice call /planner/visualize_state "state:
       stride: 0
     data_offset: 0
   data: [0,0,1,0,0,0,0.787, 0.787, 0.787, -1.57, 0.787,0,0,2,0,0,0,0.787, 0.787, 0.787, -1.57, 0.787]" 
+
+
+rostopic pub /multiple_manipulators_joint_trajectory_handler/joint_trajectory_point_in trajectory_msgs/JointTrajectoryPoint "
+positions: [0,0,1,0,0,0,0.787, 0.787, 0.787, -1.57, 0.787,0,0,2,0,0,0,0.787, 0.787, 0.787, -1.57, 0.787]
+velocities: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+accelerations: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+effort: [0]
+time_from_start: {secs: 0, nsecs: 0}"

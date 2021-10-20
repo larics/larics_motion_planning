@@ -6,32 +6,47 @@ import rospy, math
 from std_msgs.msg import Int32
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 import copy
+import yaml
+from UavAndWpManipulatorHandler import *
 
-"""
-Napravit cemo tako da za svaki novi manipulator dodamo klasu koja ima
-publishere za taj manipulator. 
-
-Svaku od tih klasa ce trebati konfigurirati
-tako da joj se podese topici i namespace-ovi jer je sada planer u 
-/planner namespaceu. Takoder, treba dodati u neki config file (a mozda
-najbolje u onaj za planer) te stvari i koji se manipulatori koriste i
-koliko ih je. 
-
-Klasa za svaki manipulator neka ide u zaseban file pa cemo ih
-ovdje loadati. 
-
-Takoder, svaka od tih klasa ce primiti neki komad poruke i onda
-ga slati naokolo gdje vec treba. Rate za sve je isti jer ce jedna for petlja
-proci kroz sve klase i samo im setati ono sto trebaju publishati i onda ih
-natjerati da to publishaju.
-"""
 
 class MultipleManipulatorsJointTrajectoryHandler:
 
   def __init__(self):
     # Parameters
     self.rate = rospy.get_param('~rate', 100)
-
+    config_file = rospy.get_param('~config_file', 
+      '/home/antun-desktop/catkin_ws/src/larics_motion_planning/config/cooperative_transport_uav_wp_manipulator.yaml')
+    
+    # Open the config file and add all manipulators
+    s = open(config_file, "r")
+    config = yaml.safe_load(s)
+    self.n_manipulators = len(config["trajectory_handler"])
+    self.manipulators = []
+    self.start_indexes = []
+    self.end_indexes = []
+    self.total_dof = 0
+    for i in range(self.n_manipulators):
+      # Get the appropriate configuration and append trajectory handler
+      # accordingly
+      if config["trajectory_handler"][i]["type"] == "UavAndWpManipulatorHandler":
+        current_manipulator = UavAndWpManipulatorHandler(
+          config["trajectory_handler"][i])
+        self.manipulators.append(copy.copy(current_manipulator))
+      else:
+        # If there are no trajectory handlers, simply exit.
+        print("multiple_manipulators_joint_trajectory_handler.py")
+        ss = "  No such trajectory handler type: " + \
+          config["trajectory_handler"][i]["type"]
+        print(ss)
+        quit()
+      # Load start and end indexes
+      self.start_indexes.append(
+        config["trajectory_handler"][i]["indexes"]["start"])
+      self.end_indexes.append(
+        config["trajectory_handler"][i]["indexes"]["end"])
+      self.total_dof = self.total_dof + self.end_indexes[i] \
+        - self.start_indexes[i] + 1
 
 
     # Subscriber for joint trajectory point with all degrees of freedom
@@ -41,12 +56,47 @@ class MultipleManipulatorsJointTrajectoryHandler:
       JointTrajectoryPoint, self.jointTrajectoryPointCallback, queue_size=1)
 
   def run(self):
-    rate = rospy.Rate(self.rate)
-    while not rospy.is_shutdown():
-      rate.sleep()
+    #rate = rospy.Rate(self.rate)
+    #while not rospy.is_shutdown():
+    #  rate.sleep()
+    rospy.spin()
+
 
   def jointTrajectoryPointCallback(self, msg):
+    # Get the trajectory point and publish it.
     self.current_trajectory_point = msg
+    self.publishAll()
+
+  def publishAll(self):
+    # Go through all manipulators and based on start and end indexes extract
+    # values for each manipulator accordingly. If the number of dofs here is
+    # not as the one from config file, throw an error.
+    current_dof = len(self.current_trajectory_point.positions)
+    if self.total_dof == current_dof:
+      for i in range(self.n_manipulators):
+        current_point = segmentJointTrajectoryPoint(self.current_trajectory_point, 
+          self.start_indexes[i], self.end_indexes[i])
+        # After segmentation, publish all 
+        self.manipulators[i].publish(current_point)
+    else:
+      # If the received point's DoF differs from total dof, print error and
+      # don't publish
+      print("multiple_manipulators_joint_trajectory_handler.py")
+      ss = "  Rejecting publish. There are " + str(current_dof) + \
+        " degrees of freedom in received point. \n  Required number is: " + \
+        str(self.total_dof)  
+      print(ss)
+
+
+def segmentJointTrajectoryPoint(joint, start, end):
+  segmented_point = JointTrajectoryPoint()
+  # Go from start to end and append values to segmented point.
+  for i in range(start, end+1):
+    segmented_point.positions.append(joint.positions[i])
+    segmented_point.velocities.append(joint.velocities[i])
+    segmented_point.accelerations.append(joint.accelerations[i])
+
+  return segmented_point
 
 
 if __name__ == '__main__':
