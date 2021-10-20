@@ -108,3 +108,13 @@ acceleration_constraints: [0]"
 
 Multirobot
 [0,0,1,0,0,0,0.787, 0.787, 0.787, -1.57, 0.787,0,0,2,0,0,0,0.787, 0.787, 0.787, -1.57, 0.787]
+
+
+rosservice call /planner/visualize_state "state:
+  layout:
+    dim:
+    - label: ''
+      size: 0
+      stride: 0
+    data_offset: 0
+  data: [0,0,1,0,0,0,0.787, 0.787, 0.787, -1.57, 0.787,0,0,2,0,0,0,0.787, 0.787, 0.787, -1.57, 0.787]" 
