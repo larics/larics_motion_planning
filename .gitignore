@@ -1,3 +1,4 @@
 doc/*
 *.slxc
 *slprj*
+*.pyc
