@@ -17,7 +17,7 @@ windows:
         - >
           waitForSimulation; 
           sleep 2; 
-          roslaunch mmuav_gazebo uav_attitude_position.launch start_gazebo:=false collision_bitmask:=1 name:="uav1" manipulator_type:="wp_manipulator" z:=0.5
+          roslaunch mmuav_gazebo uav_attitude_position.launch start_gazebo:=false collision_bitmask:=1 name:="uav1" manipulator_type:="wp_manipulator" z:=0.5 manipulator_tool:="rod"
         - >
           waitForSimulation; 
           sleep 4; 
@@ -25,7 +25,7 @@ windows:
         - >
           waitForSimulation; 
           sleep 6; 
-          roslaunch mmuav_gazebo uav_attitude_position.launch start_gazebo:=false collision_bitmask:=2 name:="model_uav1" manipulator_type:="wp_manipulator" z:=0.5
+          roslaunch mmuav_gazebo uav_attitude_position.launch start_gazebo:=false collision_bitmask:=2 name:="model_uav1" manipulator_type:="wp_manipulator" z:=0.5 manipulator_tool:="rod"
         - >
           waitForSimulation; 
           sleep 8; 

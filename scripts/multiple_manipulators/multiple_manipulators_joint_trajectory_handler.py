@@ -14,9 +14,9 @@ class MultipleManipulatorsJointTrajectoryHandler:
 
   def __init__(self):
     # Parameters
-    self.rate = rospy.get_param('~rate', 100)
+    #self.rate = rospy.get_param('~rate', 100)
     config_file = rospy.get_param('~config_file', 
-      '/home/antun-desktop/catkin_ws/src/larics_motion_planning/config/cooperative_transport_uav_wp_manipulator.yaml')
+      'config/multiple_manipulators/two_uavs_and_wp_manipulator.yaml')
     
     # Open the config file and add all manipulators
     s = open(config_file, "r")

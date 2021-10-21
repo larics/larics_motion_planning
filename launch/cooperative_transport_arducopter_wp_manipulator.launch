@@ -18,8 +18,6 @@
       <param name="state_scale" value="0.05" />
       <param name="waypoints_scale" value="0.5" />
     </node>
-  </group>
-  <group if="0">
 
     <!-- Simple tracker that receives trajectory and sends it to the UAV. It also publishes current vehicle state.-->
     <node name="joint_trajectory_reference_tracker" pkg="larics_motion_planning" type="joint_trajectory_reference_tracker.py" output="screen">
@@ -35,12 +33,19 @@
     </node>
 
     <!-- Trajectory decomposition to two UAVs -->
-    <node name="cooperative_transport_two_uavs_handler" pkg="larics_motion_planning" type="cooperative_transport_two_uavs_handler.py" output="screen">
+    <!--node name="cooperative_transport_two_uavs_handler" pkg="larics_motion_planning" type="cooperative_transport_two_uavs_handler.py" output="screen">
       <param name="first_uav_namespace" value="/uav1" />
       <param name="second_uav_namespace" value="/uav2" />
       <param name="manipulator_dof" value="5" />
 
       <remap from="cooperative_transport_two_uavs_trajectory_handler/joint_trajectory_point_in" to="reference_tracker/joint_trajectory_point" />
+    </node-->
+
+    <!-- Trajectory decomposition to multiple manipulators -->
+    <node name="multiple_manipulators_joint_trajectory_handler" pkg="larics_motion_planning" type="multiple_manipulators_joint_trajectory_handler.py" output="screen">
+      <param name="config_file" value="$(find larics_motion_planning)/config/multiple_manipulators/two_uavs_and_wp_manipulators.yaml" />
+
+      <remap from="multiple_manipulators_joint_trajectory_handler/joint_trajectory_point_in" to="reference_tracker/joint_trajectory_point" />
     </node>
 
     <node name="generate_toppra_trajectory" pkg="topp_ros" type="generate_toppra_trajectory.py" output="screen" />
@@ -54,7 +59,7 @@
   </group>
 
   <!-- This is the part where we get corrections based on model -->
-  <group ns="$(arg model_namespace)" if="0">
+  <group ns="$(arg model_namespace)">
     <node name="global_planner" pkg="larics_motion_planning" type="global_planner_node" output="screen">
       <param name="rate" value="$(arg planner_rate)" />
       <param name="global_planner_config_file" value="$(find larics_motion_planning)/config/cooperative_transport_uav_wp_manipulator.yaml" />
@@ -76,13 +81,11 @@
       <remap from="go_to/current_state" to="reference_tracker/current_reference" />
     </node>
 
-    <!-- Trajectory decomposition to two UAVs -->
-    <node name="cooperative_transport_two_uavs_handler" pkg="larics_motion_planning" type="cooperative_transport_two_uavs_handler.py" output="screen">
-      <param name="first_uav_namespace" value="/model_uav1" />
-      <param name="second_uav_namespace" value="/model_uav2" />
-      <param name="manipulator_dof" value="5" />
+    <!-- Trajectory decomposition to multiple manipulators -->
+    <node name="multiple_manipulators_joint_trajectory_handler" pkg="larics_motion_planning" type="multiple_manipulators_joint_trajectory_handler.py" output="screen">
+      <param name="config_file" value="$(find larics_motion_planning)/config/multiple_manipulators/model_two_uavs_and_wp_manipulators.yaml" />
 
-      <remap from="cooperative_transport_two_uavs_trajectory_handler/joint_trajectory_point_in" to="reference_tracker/joint_trajectory_point" />
+      <remap from="multiple_manipulators_joint_trajectory_handler/joint_trajectory_point_in" to="reference_tracker/joint_trajectory_point" />
     </node>
 
     <node name="generate_toppra_trajectory" pkg="topp_ros" type="generate_toppra_trajectory.py" output="screen" />
