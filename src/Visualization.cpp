@@ -130,6 +130,7 @@ nav_msgs::Path Visualization::eigenMatrixXdToNavMsgsPath(
   int n_dofs = eigen_path.cols();
 
   geometry_msgs::PoseStamped current_pose;
+  current_pose.header.frame_id = "world";
 
   // If number of degrees of freedom is 2 then project path to z=0 plane.
   if(projection == true || n_dofs <= 2){
@@ -137,6 +138,7 @@ nav_msgs::Path Visualization::eigenMatrixXdToNavMsgsPath(
       current_pose.pose.position.x = eigen_path(i,0);
       current_pose.pose.position.y = eigen_path(i,1);
       current_pose.pose.position.z = 0.0;
+      current_pose.pose.orientation.w = 1.0;
       path.poses.push_back(current_pose);
     }
   }
@@ -145,6 +147,7 @@ nav_msgs::Path Visualization::eigenMatrixXdToNavMsgsPath(
       current_pose.pose.position.x = eigen_path(i,0);
       current_pose.pose.position.y = eigen_path(i,1);
       current_pose.pose.position.z = eigen_path(i,2);
+      current_pose.pose.orientation.w = 1.0;
       path.poses.push_back(current_pose);
     }
   }
@@ -184,6 +187,8 @@ visualization_msgs::Marker Visualization::navMsgsPathToVisualizationMsgsMarker(
     marker.points.push_back(current_point);
     marker.colors.push_back(point_color);
   }
+
+  marker.pose.orientation.w = 1.0;
 
   return marker;
 }
