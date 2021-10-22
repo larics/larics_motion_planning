@@ -44,6 +44,11 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
   model_correction_service_server_ = nh_.advertiseService(
     "model_correction_trajectory",
     &GlobalPlannerRosInterface::modelCorrectedTrajectoryCallback, this);
+  // Service for multiple manipulators model correction trajectory.
+  multiple_manipulators_model_correction_service_server_ = nh_.advertiseService(
+    "multiple_manipulators_model_correction_trajectory",
+    &GlobalPlannerRosInterface::multipleManipulatorsModelCorrectedTrajectoryCallback,
+    this);
   // Service client for executing model trajectory and recording it.
   execute_trajectory_client_ = 
     nh_.serviceClient<larics_motion_planning::MultiDofTrajectory>(
@@ -326,6 +331,81 @@ bool GlobalPlannerRosInterface::modelCorrectedTrajectoryCallback(
     //cartesian_path_pub_.publish(res.path);
   }
   
+
+  return true;
+}
+
+bool GlobalPlannerRosInterface::multipleManipulatorsModelCorrectedTrajectoryCallback(
+  larics_motion_planning::MultiDofTrajectory::Request &req, 
+  larics_motion_planning::MultiDofTrajectory::Response &res)
+{
+  cout << "Starting the multiple manipulators model based trajectory generation." << endl;
+
+  // First plan the initial trajectory by calling the multiDofTrajectoryCallback
+  // This is probably not the best way to do it, but it will work.
+  bool success = false;
+
+  // Also, don't publish the trajectory, just plan it.
+  bool publish_trajectory_temp = req.publish_trajectory;
+  req.publish_trajectory = false;
+  success = this->multiDofTrajectoryCallback(req, res);
+  req.publish_trajectory = publish_trajectory_temp;
+
+  Trajectory trajectory;
+  if (success == true){
+
+    trajectory = global_planner_->getTrajectory();
+
+    cout << "Cols: " << trajectory.position.cols() << " Rows: " << trajectory.position.rows() << endl;
+    cout << "Animating initial trajectory" << endl;
+    for (int i=0; i<trajectory.position.rows(); i++){
+      trajectory.position(i, 3) = -0*trajectory.acceleration(i, 1)/9.81;
+      trajectory.position(i, 4) = 0*trajectory.acceleration(i, 0)/9.81;
+      visualization_.setStatePoints(
+        global_planner_->getRobotStatePoints((trajectory.position.row(i)).transpose()));
+      visualization_.publishStatePoints();
+      usleep(model_animation_dt_);
+    }
+    string tempstr;
+    cout << "Animated uncompensated trajectory with roll and pitch estimated from compensation." << endl;
+    //getline(cin, tempstr);
+    //joint_trajectory_pub_.publish(trajectoryToJointTrajectory(trajectory));
+    usleep(1000000);
+  }
+  else {
+    cout << "Something went wrong, model corrections not applied!" << endl;
+  }
+
+  cout << "Model correction trajectory planned!" << endl;
+  // Service result. Override response trajectory before we plan a new
+  // trajectory.
+  res.success = success;
+  res.trajectory = trajectoryToJointTrajectory(trajectory);
+
+  // TODO: Check this!!
+  // Append last planned point to resulting trajectory and set velocities and
+  // accelerations to zero.
+  res.trajectory.points.push_back(
+    req.waypoints.points[req.waypoints.points.size()-1]);
+  int dof = res.trajectory.points.size()-1;
+  res.trajectory.points[dof].velocities = res.trajectory.points[dof].positions;
+  res.trajectory.points[dof].accelerations = res.trajectory.points[dof].positions;
+  for (int i=0; i<res.trajectory.points[dof].positions.size(); i++){
+    res.trajectory.points[dof].velocities[i] = 0;
+    res.trajectory.points[dof].accelerations[i] = 0;
+  }
+
+  // Publish path and trajectory if requested.
+  if (req.publish_trajectory){
+    cout << "Press enter to publish compensated trajectory" << endl;
+    string tempstr;
+    getline(cin, tempstr);
+    joint_trajectory_pub_.publish(res.trajectory);
+  }
+  if (req.publish_path){
+    // Don't publish path for now
+    //cartesian_path_pub_.publish(res.path);
+  }
 
   return true;
 }
