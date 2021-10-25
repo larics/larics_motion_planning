@@ -80,7 +80,7 @@ class ModelTrajectoryToImpedance:
         self.executing_trajectory_in_other_node = msg.data
 
     def executeTrajectoryCallback(self, req):
-        if len(req.waypoints.points) < 0:
+        if len(req.waypoints.points) <= 1:
             print("0 points in trajectory.")
             response = MultiDofTrajectoryResponse()
             response.path_length = -1.0
