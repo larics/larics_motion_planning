@@ -14,9 +14,15 @@ class MultipleManipulatorsJointTrajectoryHandler:
 
   def __init__(self):
     # Parameters
-    #self.rate = rospy.get_param('~rate', 100)
+    self.rate = rospy.get_param('~rate', 100)
     config_file = rospy.get_param('~config_file', 
       'config/multiple_manipulators/two_uavs_and_wp_manipulator.yaml')
+
+    # State publisher of all manipulators combined.
+    self.full_state = JointTrajectoryPoint()
+    self.full_state_pub = rospy.Publisher(
+      'multiple_manipulators_joint_trajectory_handler/full_state',
+      JointTrajectoryPoint, queue_size=1)
     
     # Open the config file and add all manipulators
     s = open(config_file, "r")
@@ -48,6 +54,9 @@ class MultipleManipulatorsJointTrajectoryHandler:
       self.total_dof = self.total_dof + self.end_indexes[i] \
         - self.start_indexes[i] + 1
 
+    # Based on total dof, create full manipulator state.
+    for i in range(self.total_dof):
+      self.full_state.positions.append(0.0)
 
     # Subscriber for joint trajectory point with all degrees of freedom
     self.current_trajectory_point = JointTrajectoryPoint()
@@ -56,10 +65,18 @@ class MultipleManipulatorsJointTrajectoryHandler:
       JointTrajectoryPoint, self.jointTrajectoryPointCallback, queue_size=1)
 
   def run(self):
-    #rate = rospy.Rate(self.rate)
-    #while not rospy.is_shutdown():
-    #  rate.sleep()
-    rospy.spin()
+    rate = rospy.Rate(self.rate)
+    while not rospy.is_shutdown():
+      rate.sleep()
+
+      # Create full state based on each manipulator state
+      for i in range(self.n_manipulators):
+        current_state = self.manipulators[i].getCurrentState()
+        for j in range(self.start_indexes[i], self.end_indexes[i]+1):
+          self.full_state.positions[j] = current_state.positions[j-self.end_indexes[i]-1]
+      self.full_state_pub.publish(self.full_state)
+
+    #rospy.spin()
 
 
   def jointTrajectoryPointCallback(self, msg):

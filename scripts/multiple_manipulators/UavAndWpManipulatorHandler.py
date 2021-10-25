@@ -53,7 +53,7 @@ class UavAndWpManipulatorHandler:
     self.current_uav_pose.orientation = msg.pose.pose.orientation    
 
   def getCurrentState(self):
-    self.state = Float64MultiArray()
+    self.state = JointTrajectoryPoint()
 
     # Get roll, pitch and yaw from current pose
     q0 = self.current_uav_pose.orientation.w
@@ -65,15 +65,15 @@ class UavAndWpManipulatorHandler:
     yaw = math.atan2(2.0*(q0*q3 + q1*q2), 1.0-2.0*(q2*q2+q3*q3))
 
     # Add UAV to state
-    self.state.data.append(self.current_uav_pose.position.x)
-    self.state.data.append(self.current_uav_pose.position.y)
-    self.state.data.append(self.current_uav_pose.position.z)
-    self.state.data.append(roll)
-    self.state.data.append(pitch)
-    self.state.data.append(yaw)
+    self.state.positions.append(self.current_uav_pose.position.x)
+    self.state.positions.append(self.current_uav_pose.position.y)
+    self.state.positions.append(self.current_uav_pose.position.z)
+    self.state.positions.append(roll)
+    self.state.positions.append(pitch)
+    self.state.positions.append(yaw)
     # Add manipulator self.state to
     for i in range(self.manipulator_dof):
-      self.state.data.append(self.manipulator_dofs[i].getJointState().data)
+      self.state.positions.append(self.manipulator_dofs[i].getJointState().data)
 
     return self.state
 
