@@ -191,13 +191,13 @@ rosservice call /model_planner/execute_trajectory "waypoints:
   joint_names: ['']
   points:
   - positions: [0, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 1.0, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0]
-    velocities: [0]
-    accelerations: [0]
+    velocities: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    accelerations: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     effort: [0]
     time_from_start: {secs: 0, nsecs: 0}
-  - positions: [0,0,1,0,0,0,0.787, 0.787, 0.787, -1.57, 0.787,1.0,0,2,0,0,0,0.787, 0.787, 0.787, -1.57, 0.787]
-    velocities: [0]
-    accelerations: [0]
+  - positions: [0, 0, 1.5, 0, 0, 0, 0, 0, 0, 0, 0, 1.0, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0]
+    velocities: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    accelerations: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     effort: [0]
     time_from_start: {secs: 0, nsecs: 0}
 publish_path: false

@@ -50,6 +50,9 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
     &GlobalPlannerRosInterface::multipleManipulatorsModelCorrectedTrajectoryCallback,
     this);
   // Service client for executing model trajectory and recording it.
+  if (model_uav_namespace.at(0) != '/'){
+    model_uav_namespace = "/" + model_uav_namespace;
+  }
   execute_trajectory_client_ = 
     nh_.serviceClient<larics_motion_planning::MultiDofTrajectory>(
     model_uav_namespace + "/execute_trajectory"); // /simulate_arducopter
@@ -351,18 +354,19 @@ bool GlobalPlannerRosInterface::multipleManipulatorsModelCorrectedTrajectoryCall
   success = this->multiDofTrajectoryCallback(req, res);
   req.publish_trajectory = publish_trajectory_temp;
 
-  Trajectory trajectory;
+  Trajectory initial_trajectory;
+  Trajectory corrected_trajectory;
   if (success == true){
 
-    trajectory = global_planner_->getTrajectory();
+    initial_trajectory = global_planner_->getTrajectory();
 
-    cout << "Cols: " << trajectory.position.cols() << " Rows: " << trajectory.position.rows() << endl;
+    cout << "Cols: " << initial_trajectory.position.cols() << " Rows: " << initial_trajectory.position.rows() << endl;
     cout << "Animating initial trajectory" << endl;
-    for (int i=0; i<trajectory.position.rows(); i++){
-      trajectory.position(i, 3) = -0*trajectory.acceleration(i, 1)/9.81;
-      trajectory.position(i, 4) = 0*trajectory.acceleration(i, 0)/9.81;
+    for (int i=0; i<initial_trajectory.position.rows(); i++){
+      initial_trajectory.position(i, 3) = -0*initial_trajectory.acceleration(i, 1)/9.81;
+      initial_trajectory.position(i, 4) = 0*initial_trajectory.acceleration(i, 0)/9.81;
       visualization_.setStatePoints(
-        global_planner_->getRobotStatePoints((trajectory.position.row(i)).transpose()));
+        global_planner_->getRobotStatePoints((initial_trajectory.position.row(i)).transpose()));
       visualization_.publishStatePoints();
       usleep(model_animation_dt_);
     }
@@ -371,6 +375,34 @@ bool GlobalPlannerRosInterface::multipleManipulatorsModelCorrectedTrajectoryCall
     //getline(cin, tempstr);
     //joint_trajectory_pub_.publish(trajectoryToJointTrajectory(trajectory));
     usleep(1000000);
+
+    // Send this trajectory to Gazebo simulation and collect information about
+    // the executed trajectory.
+    larics_motion_planning::MultiDofTrajectory service;
+    service.request.waypoints = trajectoryToJointTrajectory(initial_trajectory);
+    bool execute_trajectory_success;
+    execute_trajectory_success = execute_trajectory_client_.call(service);
+    cout << "Service call was: " << execute_trajectory_success << endl;
+
+    // Fill the 
+    trajectory_msgs::JointTrajectory extended_initial_trajectory = service.request.waypoints;
+    for (int i=0; i<service.response.executed_trajectory.points.size(); i++){
+      if (i >= service.request.waypoints.points.size()){
+        extended_initial_trajectory.points.push_back(service.request.waypoints.points[
+          service.request.waypoints.points.size()-1]);
+      }
+      //cout << service.response.pitch[i] << endl;
+    }
+    //trajectory = jointTrajectoryToTrajectory(rp_trajectory);
+    cout << "Initial trajectory rows before service call: " << initial_trajectory.position.rows() << endl;
+    //initial_trajectory = jointTrajectoryToTrajectory(service.response.trajectory);
+    cout << "Extended trajectory rows: " << extended_initial_trajectory.points.size() << endl;
+    cout << "Points in executed trajectory inresponse: " << service.response.executed_trajectory.points.size() << endl;
+    
+    // Correcting the end-effector trajectory.
+    corrected_trajectory = global_planner_->modelCorrectedTrajectory(
+      jointTrajectoryToTrajectory(extended_initial_trajectory),
+      jointTrajectoryToTrajectory(service.response.executed_trajectory));
   }
   else {
     cout << "Something went wrong, model corrections not applied!" << endl;
@@ -380,7 +412,7 @@ bool GlobalPlannerRosInterface::multipleManipulatorsModelCorrectedTrajectoryCall
   // Service result. Override response trajectory before we plan a new
   // trajectory.
   res.success = success;
-  res.trajectory = trajectoryToJointTrajectory(trajectory);
+  res.trajectory = trajectoryToJointTrajectory(corrected_trajectory);
 
   // TODO: Check this!!
   // Append last planned point to resulting trajectory and set velocities and

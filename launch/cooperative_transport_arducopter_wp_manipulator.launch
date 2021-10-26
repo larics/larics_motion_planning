@@ -88,6 +88,11 @@
       <remap from="multiple_manipulators_joint_trajectory_handler/joint_trajectory_point_in" to="reference_tracker/joint_trajectory_point" />
     </node>
 
+    <!-- Node for executing model trajectory and returning the executed trajectory through service -->
+    <node name="multiple_manipulators_model_trajectory_handler" pkg="larics_motion_planning" type="multiple_manipulators_model_trajectory_handler.py" output="screen">
+      <remap from="multiple_manipulators_model_trajectory_handler/joint_trajectory_point" to="reference_tracker/joint_trajectory_point" />
+    </node>
+
     <node name="generate_toppra_trajectory" pkg="topp_ros" type="generate_toppra_trajectory.py" output="screen" />
 
   </group>
