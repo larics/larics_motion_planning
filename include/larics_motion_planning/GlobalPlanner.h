@@ -20,6 +20,9 @@
 #include <larics_motion_planning/UavWpManipulatorStateValidityChecker.h>
 #include <larics_motion_planning/MultipleManipulatorsStateValidityChecker.h>
 
+#include <larics_motion_planning/ModelCorrectionInterface.h>
+#include <larics_motion_planning/MultipleManipulatorsModelCorrection.h>
+
 #include <eigen3/Eigen/Eigen>
 
 #include "yaml-cpp/yaml.h"
@@ -71,6 +74,16 @@ class GlobalPlanner
     ///   if path is not collision free.
     bool planPathAndTrajectory(Eigen::MatrixXd waypoints);
 
+    /// \brief Based on the planned and executed trajectory, the output is the
+    ///   model corrected trajectory so the end-effector follows planned
+    ///   trajectory.
+    /// \param planned_trajectory Initially planned trajectory.
+    /// \param executed_trajectory Trajectory executed through model.
+    /// \return Trajectory with corrected end-effector configuration which
+    //    is achieved by recalculating some or all degrees of freedom.
+    Trajectory modelCorrectedTrajectory(
+      Trajectory planned_trajectory, Trajectory executed_trajectory);
+
     /// \brief Returns planned path.
     /// \return Planned path as Eigen matrix.
     Eigen::MatrixXd getPath();
@@ -105,6 +118,7 @@ class GlobalPlanner
     shared_ptr<StateValidityCheckerInterface> state_validity_checker_interface_;
     shared_ptr<PathPlanningInterface> path_planner_interface_;
     shared_ptr<KinematicsInterface> kinematics_interface_;
+    shared_ptr<ModelCorrectionInterface> model_correction_interface_;
 
     string state_validity_checker_type_, config_filename_;
 

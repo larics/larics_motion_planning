@@ -73,6 +73,25 @@ bool GlobalPlanner::configureFromFile(string config_filename)
     cout << "  This type is not supported!" << endl;
     exit(0);
   }
+
+  // Set up model correction interface
+  YAML::Node model_config = YAML::LoadFile(username + config["global_planner"]["model_correction_file"].as<string>());
+  string model_correction_type = state_config["model_correction"]["type"].as<string>();
+  if (model_correction_type == "multiple_manipulators"){
+    // Kinematics interface has been set up for state validity checker. 
+    // It is same here so we do not need to initialize it.
+    // Set up model corrections interface
+    model_correction_interface_ = make_shared<MultipleManipulatorsModelCorrection>(
+      config["global_planner"]["model_correction_file"].as<string>(),
+      kinematics_interface_);
+    cout << "Model correction type is: multiple manipulators." << endl;
+  }
+  else{
+    cout << "Model correction type is: " << model_correction_type << endl;
+    cout << "  This type is not supported!" << endl;
+    exit(0);
+  }
+
   // Set up path planning interface
   path_planner_interface_ = make_shared<RrtPathPlanner>(
     config["global_planner"]["path_planner_config_file"].as<string>(),
@@ -182,6 +201,14 @@ bool GlobalPlanner::planPathAndTrajectory(Eigen::MatrixXd waypoints)
   }
 
   return success;
+}
+
+Trajectory GlobalPlanner::modelCorrectedTrajectory(
+  Trajectory planned_trajectory, Trajectory executed_trajectory)
+{
+  cout << "Hello from model corrections in global planner." << endl;
+  return model_correction_interface_->modelCorrectedTrajectory(
+    planned_trajectory, executed_trajectory);
 }
 
 Eigen::MatrixXd GlobalPlanner::getPath()
