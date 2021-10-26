@@ -76,6 +76,10 @@ set(KINEMATICS_SOURCES src/KinematicsInterface.cpp
 add_library(kinematics ${KINEMATICS_SOURCES})
 target_link_libraries(kinematics ${catkin_LIBRARIES})
 
+set(MODEL_CORRECTION_SOURCES src/MultipleManipulatorsModelCorrection.cpp)
+add_library(model_correction ${MODEL_CORRECTION_SOURCES})
+target_link_libraries(model_correction kinematics ${catkin_LIBRARIES})
+
 set(STATE_VALIDITY_CHECKING_SOURCES src/StateValidityCheckerInterface.cpp 
   src/PointStateValidityChecker.cpp
   src/UavWpManipulatorStateValidityChecker.cpp
@@ -99,7 +103,7 @@ set(GLOBAL_PLANNER_SOURCES src/GlobalPlanner.cpp
   src/GlobalPlannerRosInterface.cpp src/ParabolicAirdropPlanner.cpp)
 add_library(global_planner ${GLOBAL_PLANNER_SOURCES})
 target_link_libraries(global_planner trajectory map path_planning 
-  kinematics ${catkin_LIBRARIES} ${Eigen_LIBRARIES})
+  kinematics model_correction ${catkin_LIBRARIES} ${Eigen_LIBRARIES})
 
 set(LOCAL_PLANNER_SOURCES src/LocalPlanner.cpp)
 add_library(local_planner ${LOCAL_PLANNER_SOURCES})
