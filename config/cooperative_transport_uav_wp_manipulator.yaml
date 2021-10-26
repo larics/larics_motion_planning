@@ -4,6 +4,7 @@ global_planner:
   path_planner_config_file: "catkin_ws/src/larics_motion_planning/config/cooperative_transport_uav_wp_manipulator.yaml"
   state_validity_checker_config_file: "catkin_ws/src/larics_motion_planning/config/cooperative_transport_uav_wp_manipulator.yaml"
   kinematics_config_file: "catkin_ws/src/larics_motion_planning/config/cooperative_transport_uav_wp_manipulator.yaml"
+  model_correction_file: "catkin_ws/src/larics_motion_planning/config/cooperative_transport_uav_wp_manipulator.yaml"
 
   trajectory:
     restarts: 5
@@ -194,3 +195,7 @@ kinematics:
       robot_model_name: "wp_manipulator"
       joint_group_name: "wp_manipulator_arm"
       dh_parameters_file: "catkin_ws/src/aerial_manipulators/aerial_manipulators_control/config/wp_manipulator_dh_parameters.yaml"
+
+
+model_correction:
+  type: "multiple_manipulators"

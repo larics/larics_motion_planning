@@ -4,6 +4,7 @@ global_planner:
   path_planner_config_file: "catkin_ws/src/larics_motion_planning/config/uav_wp_manipulator_5r_husky_schunk.yaml"
   state_validity_checker_config_file: "catkin_ws/src/larics_motion_planning/config/uav_wp_manipulator_5r_husky_schunk.yaml"
   kinematics_config_file: "catkin_ws/src/larics_motion_planning/config/uav_wp_manipulator_5r_husky_schunk.yaml"
+  model_correction_file: "catkin_ws/src/larics_motion_planning/config/model_correction_config_example.yaml"
 
   trajectory:
     restarts: 5

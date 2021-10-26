@@ -1,0 +1,2 @@
+model_correction:
+  type: "multiple_manipulators"

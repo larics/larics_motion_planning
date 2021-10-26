@@ -4,7 +4,8 @@ global_planner:
   path_planner_config_file: "catkin_ws/src/larics_motion_planning/config/red_parabolic_airdrop.yaml"
   state_validity_checker_config_file: "catkin_ws/src/larics_motion_planning/config/red_parabolic_airdrop.yaml"
   kinematics_config_file: "catkin_ws/src/larics_motion_planning/config/red_parabolic_airdrop.yaml"
-
+  model_correction_file: "catkin_ws/src/larics_motion_planning/config/model_correction_config_example.yaml"
+  
   # If planning for trajectory only, global planner will try to plan several
   # times if previous attempts fail. In case all attempts fail, empty trajectory
   # is returned
