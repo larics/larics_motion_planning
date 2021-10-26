@@ -75,6 +75,10 @@ class UavAndWpManipulatorHandler:
     for i in range(self.manipulator_dof):
       self.state.positions.append(self.manipulator_dofs[i].getJointState().data)
 
+    # Add velocity and acceleration as zeros as they are not measured.
+    self.state.velocities.extend([0]*len(self.state.positions))
+    self.state.accelerations.extend([0]*len(self.state.positions))
+
     return self.state
 
 def createMultiDofJointTrajectoryPoint(joint):

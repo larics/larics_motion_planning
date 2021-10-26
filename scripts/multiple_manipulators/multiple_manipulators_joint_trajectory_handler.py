@@ -57,6 +57,8 @@ class MultipleManipulatorsJointTrajectoryHandler:
     # Based on total dof, create full manipulator state.
     for i in range(self.total_dof):
       self.full_state.positions.append(0.0)
+      self.full_state.velocities.append(0.0)
+      self.full_state.accelerations.append(0.0)
 
     # Subscriber for joint trajectory point with all degrees of freedom
     self.current_trajectory_point = JointTrajectoryPoint()
@@ -74,6 +76,8 @@ class MultipleManipulatorsJointTrajectoryHandler:
         current_state = self.manipulators[i].getCurrentState()
         for j in range(self.start_indexes[i], self.end_indexes[i]+1):
           self.full_state.positions[j] = current_state.positions[j-self.end_indexes[i]-1]
+          self.full_state.velocities[j] = current_state.velocities[j-self.end_indexes[i]-1]
+          self.full_state.accelerations[j] = current_state.accelerations[j-self.end_indexes[i]-1]
       self.full_state_pub.publish(self.full_state)
 
     #rospy.spin()
