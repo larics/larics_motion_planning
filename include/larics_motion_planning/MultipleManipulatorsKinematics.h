@@ -59,12 +59,30 @@ class MultipleManipulatorsKinematics : public KinematicsInterface
       Eigen::Affine3d transform, bool &found_ik);
 
     /// \brief Direct kinematics for multiple manipulators.
-    /// \param q 
+    /// \param q Joint values of the manipulator.
     /// \return Eigen::Affine3d transform of the manipulator
     ///   end-effector. This is further transformed by grasp_transform of
     ///   each manipulator to obtain each end-effector configuration.
     std::vector<Eigen::Affine3d> getMultipleEndEffectorTransforms(
       Eigen::VectorXd q);
+
+    /// \brief Direct kinematics for single manipulator.
+    /// \param q Joint values of the manipulator.
+    /// \param id Manipulator index.
+    /// \return Eigen::Affine3d transform of the manipulator
+    ///   end-effector. This is further transformed by grasp_transform of
+    ///   each manipulator to obtain each end-effector configuration.
+    Eigen::Affine3d getSingleManipulatorEndEffectorTransform(
+      Eigen::VectorXd q, int id);
+
+    /// \brief Inverse kinematics for a single manipulator
+    /// \param transform Eigen::Affine3d transform of the manipulator
+    ///   end-effector. This is for now multiplied by grasp transform
+    /// \param id Manipulator index.
+    /// \param found_ik Flag determining if inverse solution was found.
+    /// Return Joint states to satisfy provided transform.
+    Eigen::VectorXd calculateSingleManipulatorInverseKinematics(
+      Eigen::Affine3d transform, int id, bool &found_ik);
 
   private:
     //ManipulatorControl manipulator_;

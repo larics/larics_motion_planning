@@ -165,6 +165,12 @@ std::vector<Eigen::Affine3d> MultipleManipulatorsKinematics::getMultipleEndEffec
   return transforms;
 }
 
+Eigen::Affine3d MultipleManipulatorsKinematics::getSingleManipulatorEndEffectorTransform(
+  Eigen::VectorXd q, int id)
+{
+  return manipulators_[id]->getEndEffectorTransform(q);
+}
+
 Eigen::VectorXd MultipleManipulatorsKinematics::calculateInverseKinematics(
   Eigen::Affine3d transform, bool &found_ik)
 {
@@ -194,4 +200,12 @@ Eigen::VectorXd MultipleManipulatorsKinematics::calculateInverseKinematics(
   }
 
   return joint_states;
+}
+
+
+Eigen::VectorXd MultipleManipulatorsKinematics::calculateSingleManipulatorInverseKinematics(
+  Eigen::Affine3d transform, int id, bool &found_ik)
+{
+  return manipulators_[id]->calculateInverseKinematics(
+    transform*grasp_transforms_[id], found_ik);
 }
