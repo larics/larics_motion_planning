@@ -8,6 +8,7 @@
 #include <larics_motion_planning/KinematicsInterface.h>
 #include <larics_motion_planning/MultipleManipulatorsKinematics.h>
 #include <larics_motion_planning/ModelCorrectionInterface.h>
+#include <larics_motion_planning/UavWpManipulatorModelCorrection.h>
 
 #include <iostream>
 #include <string>
@@ -58,6 +59,15 @@ class MultipleManipulatorsModelCorrection : public ModelCorrectionInterface
     // Since there are multiple manipulators, everything will be stored in
     // vectors. Number of manipulators is naturally integer.
     int n_manipulators_;
+
+    // Container for multiple manipulators model corrections
+    // Container of multiple manipulators
+    std::vector<shared_ptr<ModelCorrectionInterface> > manipulators_;
+
+    // The configuration vector will contain all manipulators' DoF. Start and
+    // end indexes define part of that vector that belongs to a single
+    // manipulator.
+    std::vector<int> start_indexes_, end_indexes_;
 };
 
 #endif // MULTIPLE_MANIPULATORS_MODEL_CORRECTION

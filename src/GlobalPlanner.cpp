@@ -206,7 +206,6 @@ bool GlobalPlanner::planPathAndTrajectory(Eigen::MatrixXd waypoints)
 Trajectory GlobalPlanner::modelCorrectedTrajectory(
   Trajectory planned_trajectory, Trajectory executed_trajectory)
 {
-  cout << "Hello from model corrections in global planner." << endl;
   return model_correction_interface_->modelCorrectedTrajectory(
     planned_trajectory, executed_trajectory);
 }
