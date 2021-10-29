@@ -207,5 +207,5 @@ Eigen::VectorXd MultipleManipulatorsKinematics::calculateSingleManipulatorInvers
   Eigen::Affine3d transform, int id, bool &found_ik)
 {
   return manipulators_[id]->calculateInverseKinematics(
-    transform*grasp_transforms_[id], found_ik);
+    transform/*grasp_transforms_[id]*/, found_ik);
 }

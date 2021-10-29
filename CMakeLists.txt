@@ -76,7 +76,8 @@ set(KINEMATICS_SOURCES src/KinematicsInterface.cpp
 add_library(kinematics ${KINEMATICS_SOURCES})
 target_link_libraries(kinematics ${catkin_LIBRARIES})
 
-set(MODEL_CORRECTION_SOURCES src/MultipleManipulatorsModelCorrection.cpp)
+set(MODEL_CORRECTION_SOURCES src/MultipleManipulatorsModelCorrection.cpp
+  src/UavWpManipulatorModelCorrection.cpp)
 add_library(model_correction ${MODEL_CORRECTION_SOURCES})
 target_link_libraries(model_correction kinematics ${catkin_LIBRARIES})
 
