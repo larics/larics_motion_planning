@@ -90,6 +90,7 @@
 
     <!-- Node for executing model trajectory and returning the executed trajectory through service -->
     <node name="multiple_manipulators_model_trajectory_handler" pkg="larics_motion_planning" type="multiple_manipulators_model_trajectory_handler.py" output="screen">
+      <param name="record_termination/timer" value="2.0" />
       <remap from="multiple_manipulators_model_trajectory_handler/joint_trajectory_point" to="reference_tracker/joint_trajectory_point" />
     </node>
 
