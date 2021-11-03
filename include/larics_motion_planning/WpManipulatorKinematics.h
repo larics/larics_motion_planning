@@ -55,9 +55,14 @@ class WpManipulatorKinematics : public KinematicsInterface
     /// \param transform Eigen::Affine3d transform of the manipulator
     ///   end-effector
     /// \param found_ik Flag determining if inverse solution was found.
-    /// return Joint states for provided transform.
+    /// \return Joint states for provided transform.
     Eigen::VectorXd calculateInverseKinematics(
       Eigen::Affine3d transform, bool &found_ik);
+
+    /// \brief Sets joint positions so inverse kinematics optimization can
+    ///   start from that point.
+    /// \param joint_positions Manipulator configuration.
+    void setJointPositions(Eigen::VectorXd joint_positions);
 
   private:
     ManipulatorControl manipulator_;

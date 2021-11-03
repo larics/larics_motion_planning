@@ -57,3 +57,9 @@ Eigen::VectorXd WpManipulatorKinematics::calculateInverseKinematics(
 {
   return manipulator_.calculateJointSetpoints(transform, found_ik);
 }
+
+void WpManipulatorKinematics::setJointPositions(
+  Eigen::VectorXd joint_positions)
+{
+  manipulator_.setJointPositions(joint_positions);
+}

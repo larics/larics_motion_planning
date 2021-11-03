@@ -129,6 +129,14 @@ Trajectory UavWpManipulatorModelCorrection::modelCorrectedTrajectory(
     bool found_ik;
     Eigen::VectorXd ik_solution;
     if (id_ != -1){
+      if (i == 0){
+        mm_kinematics_->setSingleManipulatorJointPositions(
+          (planned_trajectory.position.block(i, 6, 1, manipulator_dof_)).transpose(), id_);
+      }
+      else{
+        mm_kinematics_->setSingleManipulatorJointPositions(
+          (corrected_trajectory.position.block(i-1, 6, 1, manipulator_dof_)).transpose(), id_);
+      }
       ik_solution = mm_kinematics_->calculateSingleManipulatorInverseKinematics(
         t_l0_ee, id_, found_ik);
     }

@@ -29,6 +29,7 @@ class KinematicsInterface
       vec.push_back(this->getEndEffectorTransform(q));
       return vec;
     }
+    virtual void setJointPositions(Eigen::VectorXd q){}
 };
 
 #endif // KINEMATICS_INTERFACE_H

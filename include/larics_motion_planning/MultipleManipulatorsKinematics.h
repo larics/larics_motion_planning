@@ -84,6 +84,11 @@ class MultipleManipulatorsKinematics : public KinematicsInterface
     Eigen::VectorXd calculateSingleManipulatorInverseKinematics(
       Eigen::Affine3d transform, int id, bool &found_ik);
 
+    /// \brief Sets single manipulator joint positions.
+    /// \param joint_positions Manipulator configuration to be set.
+    /// \param id Manipulator index.
+    void setSingleManipulatorJointPositions(Eigen::VectorXd q, int id);
+
   private:
     //ManipulatorControl manipulator_;
     // Container of multiple manipulators
