@@ -403,6 +403,16 @@ bool GlobalPlannerRosInterface::multipleManipulatorsModelCorrectedTrajectoryCall
     corrected_trajectory = global_planner_->modelCorrectedTrajectory(
       jointTrajectoryToTrajectory(extended_initial_trajectory),
       jointTrajectoryToTrajectory(service.response.executed_trajectory));
+
+    cout << "Animating corrected trajectory." << endl;
+    for (int i=0; i<corrected_trajectory.position.rows(); i++){
+      visualization_.setStatePoints(
+        global_planner_->getRobotStatePoints((corrected_trajectory.position.row(i)).transpose()));
+      visualization_.publishStatePoints();
+      usleep(model_animation_dt_);
+    }
+    cout << "Animated uncompensated trajectory with roll and pitch estimated from compensation." << endl;
+
   }
   else {
     cout << "Something went wrong, model corrections not applied!" << endl;
@@ -427,6 +437,14 @@ bool GlobalPlannerRosInterface::multipleManipulatorsModelCorrectedTrajectoryCall
     res.trajectory.points[dof].accelerations[i] = 0;
   }
 
+  // Set effort because it is required for plot
+  for (int i=0; i<res.trajectory.points.size(); i++){
+    for (int j=0; j<res.trajectory.points[i].positions.size(); j++){
+      res.trajectory.points[i].effort.push_back(0);
+    }
+  }
+
+  
   // Publish path and trajectory if requested.
   if (req.publish_trajectory){
     cout << "Press enter to publish compensated trajectory" << endl;

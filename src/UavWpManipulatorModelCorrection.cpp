@@ -71,6 +71,11 @@ Trajectory UavWpManipulatorModelCorrection::modelCorrectedTrajectory(
   }
 
   for (int i=0; i<planned_trajectory.position.rows(); i++){
+    // Planned trajectory does not have roll and pitch so put them into the
+    // corrected trajectory.
+    corrected_trajectory.position(i,3) = executed_trajectory.position(i,3);
+    corrected_trajectory.position(i,4) = executed_trajectory.position(i,4);
+
     // Get transform of uav in world frame
     Eigen::Affine3d t_w_b_planned = Eigen::Affine3d::Identity();
     t_w_b_planned.translate(Eigen::Vector3d(planned_trajectory.position(i, 0), 
