@@ -119,7 +119,7 @@ bool MultipleManipulatorsStateValidityChecker::configureFromFile(
     Eigen::Vector3d tool_dimensions;
     tool_dimensions_config = config["state_validity_checker"]["multiple_manipulators"][i]["tool"]["dimensions"].as< std::vector<double> >();
     for (int i=0; i<3; i++){
-      tool_dimensions(i) = tool_dimensions[i];
+      tool_dimensions(i) = tool_dimensions_config[i];
     }
     string tool_direction;
     tool_direction = config["state_validity_checker"]["multiple_manipulators"][i]["tool"]["direction"].as<string>();
