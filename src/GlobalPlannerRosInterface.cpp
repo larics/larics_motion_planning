@@ -370,10 +370,7 @@ bool GlobalPlannerRosInterface::multipleManipulatorsModelCorrectedTrajectoryCall
       visualization_.publishStatePoints();
       usleep(model_animation_dt_);
     }
-    string tempstr;
     cout << "Animated uncompensated trajectory with roll and pitch estimated from compensation." << endl;
-    //getline(cin, tempstr);
-    //joint_trajectory_pub_.publish(trajectoryToJointTrajectory(trajectory));
     usleep(1000000);
 
     // Send this trajectory to Gazebo simulation and collect information about
@@ -384,7 +381,9 @@ bool GlobalPlannerRosInterface::multipleManipulatorsModelCorrectedTrajectoryCall
     execute_trajectory_success = execute_trajectory_client_.call(service);
     cout << "Service call was: " << execute_trajectory_success << endl;
 
-    // Fill the 
+    // Fill the extended initial trajectory with the last point of the
+    // initial trajectory to have data points that correspond to all points in
+    // the executed trajectory.
     trajectory_msgs::JointTrajectory extended_initial_trajectory = service.request.waypoints;
     for (int i=0; i<service.response.executed_trajectory.points.size(); i++){
       if (i >= service.request.waypoints.points.size()){
@@ -397,12 +396,40 @@ bool GlobalPlannerRosInterface::multipleManipulatorsModelCorrectedTrajectoryCall
     cout << "Initial trajectory rows before service call: " << initial_trajectory.position.rows() << endl;
     //initial_trajectory = jointTrajectoryToTrajectory(service.response.trajectory);
     cout << "Extended trajectory rows: " << extended_initial_trajectory.points.size() << endl;
-    cout << "Points in executed trajectory inresponse: " << service.response.executed_trajectory.points.size() << endl;
+    cout << "Points in executed trajectory response: " << service.response.executed_trajectory.points.size() << endl;
     
     // Correcting the end-effector trajectory.
     corrected_trajectory = global_planner_->modelCorrectedTrajectory(
       jointTrajectoryToTrajectory(extended_initial_trajectory),
       jointTrajectoryToTrajectory(service.response.executed_trajectory));
+
+    // Try to do this iteratively. Start from i=1 because the first iteration
+    // has already been done above.
+    int max_iter = 10;
+    for (int i=1; i<max_iter; i++){
+      cout << "Starting iteration: " << i << endl;
+
+      // Create new service request from the current corrected trajectory
+      service.request.waypoints = trajectoryToJointTrajectory(corrected_trajectory);
+      execute_trajectory_success = execute_trajectory_client_.call(service);
+      cout << "Service call was: " << execute_trajectory_success << endl;
+
+      cout << "Initial trajectory rows before service call: " << initial_trajectory.position.rows() << endl;
+      //initial_trajectory = jointTrajectoryToTrajectory(service.response.trajectory);
+      cout << "Extended trajectory rows: " << extended_initial_trajectory.points.size() << endl;
+      cout << "Points in executed trajectory response: " << service.response.executed_trajectory.points.size() << endl;
+
+      // Correcting the end-effector trajectory. Even though extended and
+      // executed trajectories are different in size, the output will be
+      // the same size as extended_initial_trajectory. This is because the
+      // correction method only takes size of the first trajectory into
+      // account.
+      corrected_trajectory = global_planner_->modelCorrectedTrajectory(
+        jointTrajectoryToTrajectory(extended_initial_trajectory),
+        jointTrajectoryToTrajectory(service.response.executed_trajectory));
+
+      cout << "Corrected trajectory rows: " << corrected_trajectory.position.rows() << endl;
+    }
 
     cout << "Animating corrected trajectory." << endl;
     for (int i=0; i<corrected_trajectory.position.rows(); i++){

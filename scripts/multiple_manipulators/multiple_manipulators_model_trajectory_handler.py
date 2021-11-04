@@ -93,15 +93,16 @@ class MultipleManipulatorsModelTrajectoryHandler:
 
     # Send the model UAV to the initial point
     self.trajectory_go_to_pub.publish(req.waypoints.points[0])
+    rospy.sleep(0.5)
     start_time = rospy.Time.now().to_sec()
     initial_timer = 0.0
-    temp_rate = rospy.Rate(self.rate)
+    temp_rate = rospy.Rate(self.rate*2)
     # First loop waits for 2s to see if trajectory started. If it has not
     # started that means the model UAV is already at the right spot so we
     # can move directly to executing the trajectory
     trajectory_started_flag = True
     while (not rospy.is_shutdown()) and (initial_timer < 2.0):
-      if (self.executing_trajectory_in_other_node_previous == 0) and \
+      if (self.executing_trajectory_in_other_node_previous == 1) or \
         (self.executing_trajectory_in_other_node == 1):
         trajectory_started_flag = False
       initial_timer = rospy.Time.now().to_sec() - start_time
@@ -118,7 +119,7 @@ class MultipleManipulatorsModelTrajectoryHandler:
       trajectory_end_flag = False
       while (not rospy.is_shutdown()) and ((initial_timer < 2.0) or \
         (trajectory_end_flag == False)):
-        if (self.executing_trajectory_in_other_node_previous == 1) and \
+        if (self.executing_trajectory_in_other_node_previous == 0) and \
           (self.executing_trajectory_in_other_node == 0):
           trajectory_end_flag = True
         initial_timer = rospy.Time.now().to_sec() - start_time
