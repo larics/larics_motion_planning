@@ -51,13 +51,13 @@ windows:
         - |
           waitForSimulation; sleep 25; 
           rostopic pub -1 /planner/go_to/reference/joint_trajectory_point trajectory_msgs/JointTrajectoryPoint "
-          positions: [0,0,1,0,0,0,0.787, 0.787, 0.787, -1.57, 0.787,1.045,0,1,0,0,3.141592654,0.787, 0.787, 0.787, -1.57, 0.787]
+          positions: [0,0,1,0,0,0,0.785398, 0.785398, 0.785398, -1.5707963, 0.785398,1.045,0,1,0,0,3.141592654,0.785398, 0.785398, 0.785398, -1.5707963, 0.785398]
           velocities: [0]
           accelerations: [0]
           effort: [0]
           time_from_start: {secs: 0, nsecs: 0}";
           rostopic pub -1 /model_planner/go_to/reference/joint_trajectory_point trajectory_msgs/JointTrajectoryPoint "
-          positions: [0,0,1,0,0,0,0.787, 0.787, 0.787, -1.57, 0.787,1.045,0,1,0,0,3.141592654,0.787, 0.787, 0.787, -1.57, 0.787]
+          positions: [0,0,1,0,0,0,0.785398, 0.785398, 0.785398, -1.5707963, 0.785398,1.045,0,1,0,0,3.141592654,0.785398, 0.785398, 0.785398, -1.5707963, 0.785398]
           velocities: [0]
           accelerations: [0]
           effort: [0]
@@ -71,4 +71,4 @@ windows:
             mkdir $HOME/bags/model_corrections;
           fi;
           cd ~/bags/model_corrections;
-          history -s "rosbag record -a -x \"/(.*)(gazebo|camera|bias|joint_states|parameter_descriptions|parameter_updates)(.*)\" -o model_corrections"
+          history -s "rosbag record -a --chunksize=64 -x \"/(.*)(gazebo|camera|bias|joint_states|parameter_descriptions|parameter_updates)(.*)\" -o model_corrections"
