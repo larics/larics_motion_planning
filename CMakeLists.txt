@@ -127,5 +127,8 @@ target_link_libraries(global_planner_node larics_motion_planning)
 add_executable(local_planner_node src/local_planner_node)
 target_link_libraries(local_planner_node larics_motion_planning)
 
+add_executable(end_effector_configuration_node src/end_effector_configuration_node)
+target_link_libraries(end_effector_configuration_node larics_motion_planning)
+
 add_executable(binvox2bt src/binvox2bt.cpp)
 target_link_libraries(binvox2bt larics_motion_planning)
