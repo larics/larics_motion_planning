@@ -35,6 +35,7 @@
     <!-- End effector configuration publisher -->
     <node name="end_effector_configuration_node" pkg="larics_motion_planning" type="end_effector_configuration_node" output="screen">
       <param name="global_planner_config_file" value="$(find larics_motion_planning)/config/cooperative_transport_uav_wp_manipulator.yaml" />
+      <param name="trajectory_handler_config_file" value="$(find larics_motion_planning)/config/multiple_manipulators/two_uavs_and_wp_manipulators.yaml" />
 
       <remap from="end_effector_configuration/state" to="multiple_manipulators_joint_trajectory_handler/full_state" />
       <remap from="end_effector_configuration/reference" to="reference_tracker/current_reference" />
@@ -77,6 +78,7 @@
     <!-- End effector configuration publisher -->
     <node name="end_effector_configuration_node" pkg="larics_motion_planning" type="end_effector_configuration_node" output="screen">
       <param name="global_planner_config_file" value="$(find larics_motion_planning)/config/cooperative_transport_uav_wp_manipulator.yaml" />
+      <param name="trajectory_handler_config_file" value="$(find larics_motion_planning)/config/multiple_manipulators/model_two_uavs_and_wp_manipulators.yaml" />
 
       <remap from="end_effector_configuration/state" to="multiple_manipulators_joint_trajectory_handler/full_state" />
       <remap from="end_effector_configuration/reference" to="reference_tracker/current_reference" />

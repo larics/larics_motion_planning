@@ -18,13 +18,43 @@ class EndEffectorConfiguration
 public:
   EndEffectorConfiguration()
   {
+    // Strings for loading files
+    string username = "/home/";
+    username = username + getenv("USER") + "/";
+
+    // Init node and get params
     ros::NodeHandle nh_private = ros::NodeHandle("~");
     nh_private.param("rate", rate_, int(100));
 
-    ee_state_pub_ = nh_.advertise<nav_msgs::Path>(
-      "end_effector_configuration/end_effector/states", 1);
-    ee_reference_pub_ = nh_.advertise<nav_msgs::Path>(
-      "end_effector_configuration/end_effector/references", 1);
+    // Get namespaces from the trajectory handler files
+    string trajectory_handler_filename;
+    nh_private.param("trajectory_handler_config_file", trajectory_handler_filename, 
+      string("catkin_ws/src/larics_motion_planning/config/multiple_manipulators/two_uavs_and_wp_manipulators.yaml"));
+    size_t found = trajectory_handler_filename.find(username);
+    if (found == string::npos){
+      trajectory_handler_filename = username + trajectory_handler_filename;
+    }
+    YAML::Node trajectory_handler_config = YAML::LoadFile(trajectory_handler_filename);
+    n_manipulators_ = trajectory_handler_config["trajectory_handler"].size();
+    // Get namespaces and create topics
+    for (int i=0; i<n_manipulators_; i++){
+      string ns = trajectory_handler_config["trajectory_handler"][i]["namespace"].as<string>();
+      string state_topic_name = "/" + ns + "/end_effector_configuration/end_effector/state";
+      string reference_topic_name = "/" + ns + "/end_effector_configuration/end_effector/reference";
+      ros::Publisher temp_state_pub, temp_reference_pub;
+      temp_state_pub = nh_.advertise<geometry_msgs::PoseStamped>(
+        state_topic_name, 1);
+      temp_reference_pub = nh_.advertise<geometry_msgs::PoseStamped>(
+        reference_topic_name, 1);
+      ee_state_pubs_.push_back(temp_state_pub);
+      ee_reference_pubs_.push_back(temp_reference_pub);
+    }
+
+
+    //ee_state_pub_ = nh_.advertise<nav_msgs::Path>(
+    //  "end_effector_configuration/end_effector/states", 1);
+    //ee_reference_pub_ = nh_.advertise<nav_msgs::Path>(
+    //  "end_effector_configuration/end_effector/references", 1);
 
     // Load kinematics interface from yaml file
     string config_filename;
@@ -38,10 +68,15 @@ public:
       config["global_planner"]["kinematics_config_file"].as<string>());
 
     // Open the config file that contains kinematics configuration
-    string username = "/home/";
-    username = username + getenv("USER") + "/";
     YAML::Node state_validity_config = YAML::LoadFile(username +
       config["global_planner"]["state_validity_checker_config_file"].as<string>());
+    if (n_manipulators_ != state_validity_config["state_validity_checker"]["multiple_manipulators"].size()){
+      cout << "ERROR: Number of manipulators in trajectory_handler not same as in state validity checker!" << endl;
+      cout << "  This occured in end_effector_configuration_node.cpp" << endl;
+      cout << "  Num manipulators in trajectory handler: " << n_manipulators_ << endl;
+      cout << "  Num manipulators in validity checker: " << state_validity_config["state_validity_checker"]["multiple_manipulators"].size() << endl;
+      exit(0);
+    }
     n_manipulators_ = state_validity_config["state_validity_checker"]["multiple_manipulators"].size();
     // Get the total dof of the system
     total_dof_ = 0;
@@ -114,12 +149,15 @@ public:
           t_w_ee_state);
         ee_references_.poses[i] = this->eigenAffine3dToGeometryMsgsPoseStamped(
           t_w_ee_reference);
+
+        ee_state_pubs_[i].publish(ee_states_.poses[i]);
+        ee_reference_pubs_[i].publish(ee_references_.poses[i]);
       }
 
-      ee_states_.header.stamp = ros::Time::now();
-      ee_references_.header.stamp = ros::Time::now();
-      ee_state_pub_.publish(ee_states_);
-      ee_reference_pub_.publish(ee_references_);
+      //ee_states_.header.stamp = ros::Time::now();
+      //ee_references_.header.stamp = ros::Time::now();
+      //ee_state_pub_.publish(ee_states_);
+      //ee_reference_pub_.publish(ee_references_);
       loop_rate.sleep();
     }
   }
@@ -181,9 +219,10 @@ public:
   }
 
 private:
-  ros::Publisher ee_state_pub_, ee_reference_pub_;
+  //ros::Publisher ee_state_pub_, ee_reference_pub_;
   ros::Subscriber state_sub_, reference_sub_;
   ros::NodeHandle nh_;
+  std::vector<ros::Publisher> ee_state_pubs_, ee_reference_pubs_;
 
   int rate_, total_dof_, n_manipulators_;
   std::vector<int> start_indexes_, end_indexes_;
