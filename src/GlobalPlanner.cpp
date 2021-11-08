@@ -76,7 +76,7 @@ bool GlobalPlanner::configureFromFile(string config_filename)
 
   // Set up model correction interface
   YAML::Node model_config = YAML::LoadFile(username + config["global_planner"]["model_correction_file"].as<string>());
-  string model_correction_type = state_config["model_correction"]["type"].as<string>();
+  string model_correction_type = model_config["model_correction"]["type"].as<string>();
   if (model_correction_type == "multiple_manipulators"){
     // Kinematics interface has been set up for state validity checker. 
     // It is same here so we do not need to initialize it.
