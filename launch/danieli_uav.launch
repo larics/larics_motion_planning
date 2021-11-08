@@ -1,0 +1,36 @@
+<launch>
+  <arg name="global_planner_rate" default="10" />
+  <arg name="namespace" default="uav" />
+
+  <group ns="$(arg namespace)">
+    <!-- TOPP-RA for trajectory planning -->
+    <node name="generate_toppra_trajectory" pkg="topp_ros" type="generate_toppra_trajectory.py" output="screen" />
+
+    <!-- Global planner for the UAV -->
+    <node name="global_planner" pkg="larics_motion_planning" type="global_planner_node" output="screen">
+      <param name="rate" value="$(arg global_planner_rate)" />
+      <param name="global_planner_config_file" value="$(find larics_motion_planning)/config/danieli_uav_config.yaml" />
+
+      <param name="state_scale" value="0.05" />
+      <param name="waypoints_scale" value="0.5" />
+
+      <remap from="octomap_binary" to="/octomap_binary" />
+    </node>
+
+    <!-- This is required by the simulation. Remove at will. -->
+    <node name="joint_trajectory_to_multi_dof_trajectory_point" pkg="larics_motion_planning" type="joint_trajectory_to_multi_dof_trajectory_point.py" output="screen">
+      <param name="airdrop" value="true"/>
+    </node>
+
+    <!-- This is useful node for getting around. It bypasses planning in map. Remove at will. -->
+    <node name="uav_trajectory_go_to" pkg="larics_motion_planning" type="uav_trajectory_go_to.py" output="screen">
+      <param name="uav_type" value="arducopter_sim" />
+    </node>
+
+  </group>
+
+  <!-- Octomap server node. The global planner will subscribe to octomap provided from this node. -->
+  <node name="octomap_server_node" pkg="octomap_server" type="octomap_server_node" args="$(find larics_gazebo_worlds)/models/camellia_city/camellia_city_building.binvox.bt" output="screen">
+    <param name="frame_id" value="world" />
+  </node>
+</launch>

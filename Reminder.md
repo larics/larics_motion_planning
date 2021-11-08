@@ -255,3 +255,41 @@ plan_trajectory: false
 override_dynamic_constraints: false
 velocity_constraints: [0]
 acceleration_constraints: [0]"
+
+
+
+rosservice call /uav/multi_dof_trajectory "uav_pose:
+  position: {x: -30.0, y: -100.0, z: 2.0}
+  orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}
+target_pose:
+  position: {x: 2.946, y: 20.0, z: 6.9}
+  orientation: {x: 0.0, y: 0.0, z: 0.0, w: 0.0}
+publish_path: true
+publish_trajectory: true
+plan_path: true
+plan_trajectory: true
+
+rosservice call /uav/multi_dof_trajectory "waypoints:
+  header:
+    seq: 0
+    stamp: {secs: 0, nsecs: 0}
+    frame_id: ''
+  joint_names: ['']
+  points:
+  - positions: [-30, -100, 2, 0]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [-3, 20, 7, 0]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+publish_path: true
+publish_trajectory: true
+plan_path: true
+plan_trajectory: true
+override_dynamic_constraints: false
+velocity_constraints: [0]
+acceleration_constraints: [0]"
