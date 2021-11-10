@@ -64,6 +64,11 @@ class WpManipulatorKinematics : public KinematicsInterface
     /// \param joint_positions Manipulator configuration.
     void setJointPositions(Eigen::VectorXd joint_positions);
 
+    /// \brief Returns the jacobian matrix.
+    /// \param q Manipulator joint values.
+    /// \return Jacobian matrix.
+    Eigen::MatrixXd getJacobian(Eigen::VectorXd q);
+
   private:
     ManipulatorControl manipulator_;
 };

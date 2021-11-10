@@ -30,6 +30,11 @@ class KinematicsInterface
       return vec;
     }
     virtual void setJointPositions(Eigen::VectorXd q){}
+    virtual Eigen::MatrixXd getJacobian(Eigen::VectorXd q)
+    {
+      Eigen::MatrixXd jacobian;
+      return jacobian;
+    }
 };
 
 #endif // KINEMATICS_INTERFACE_H

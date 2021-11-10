@@ -54,7 +54,7 @@ class MultipleManipulatorsKinematics : public KinematicsInterface
     /// \param transform Eigen::Affine3d transform of the manipulator
     ///   end-effector
     /// \param found_ik Flag determining if inverse solution was found.
-    /// return Joint states for provided transform.
+    /// \return Joint states for provided transform.
     Eigen::VectorXd calculateInverseKinematics(
       Eigen::Affine3d transform, bool &found_ik);
 
@@ -80,9 +80,15 @@ class MultipleManipulatorsKinematics : public KinematicsInterface
     ///   end-effector. This is for now multiplied by grasp transform
     /// \param id Manipulator index.
     /// \param found_ik Flag determining if inverse solution was found.
-    /// Return Joint states to satisfy provided transform.
+    /// \return Joint states to satisfy provided transform.
     Eigen::VectorXd calculateSingleManipulatorInverseKinematics(
       Eigen::Affine3d transform, int id, bool &found_ik);
+
+    /// \brief Get jacobian matrix for single manipulator
+    /// \param q Joint positions.
+    /// \param id Manipulator index.
+    /// \return Jacobian of manipulator id.
+    Eigen::MatrixXd getSingleManipulatorJacobian(Eigen::VectorXd q, int id);
 
     /// \brief Sets single manipulator joint positions.
     /// \param joint_positions Manipulator configuration to be set.

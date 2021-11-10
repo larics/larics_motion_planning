@@ -63,3 +63,8 @@ void WpManipulatorKinematics::setJointPositions(
 {
   manipulator_.setJointPositions(joint_positions);
 }
+
+Eigen::MatrixXd WpManipulatorKinematics::getJacobian(Eigen::VectorXd q)
+{
+  return manipulator_.getJacobian(q);
+}

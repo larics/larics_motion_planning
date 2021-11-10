@@ -210,6 +210,11 @@ Eigen::VectorXd MultipleManipulatorsKinematics::calculateSingleManipulatorInvers
     transform/*grasp_transforms_[id]*/, found_ik);
 }
 
+Eigen::MatrixXd MultipleManipulatorsKinematics::getSingleManipulatorJacobian(
+  Eigen::VectorXd q, int id)
+{
+  return manipulators_[id]->getJacobian(q);
+}
 
 void MultipleManipulatorsKinematics::setSingleManipulatorJointPositions(
   Eigen::VectorXd q, int id)
