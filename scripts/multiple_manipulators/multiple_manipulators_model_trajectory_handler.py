@@ -18,6 +18,8 @@ class MultipleManipulatorsModelTrajectoryHandler:
     self.ros_rate = rospy.Rate(self.rate)
 
     # UAV publishers for trajectory
+    self.executing_trajectory_indicator = Int32()
+    self.executing_trajectory_indicator.data = 0
     self.executing_trajectory_pub = rospy.Publisher(
       'multiple_manipulators_model_trajectory_handler/executing_model_trajectory', 
       Int32, queue_size=1)
@@ -40,8 +42,6 @@ class MultipleManipulatorsModelTrajectoryHandler:
     # trajectory point has been sent.
     self.termination_timer = rospy.get_param('~record_termination/timer', 2.0)
     
-    # Indication trajectory is executing
-    self.executing_trajectory_flag = False
     # Trajectory and current trajectory point to be sent to the multiple
     # manipulators trajectory handler
     self.trajectory = JointTrajectory()
@@ -70,6 +70,7 @@ class MultipleManipulatorsModelTrajectoryHandler:
     rate = rospy.Rate(self.rate)
     while not rospy.is_shutdown():
       rate.sleep()
+      self.executing_trajectory_pub.publish(self.executing_trajectory_indicator)
 
   def executingTrajectoryInOtherNodeCallback(self, msg):
     self.executing_trajectory_in_other_node_previous = \
@@ -138,6 +139,7 @@ class MultipleManipulatorsModelTrajectoryHandler:
     print("  Starting to execute trajectory. Length: ", len(req.waypoints.points))
     # Go through all points and execute the trajectory point by point
     rate = rospy.Rate(self.rate)
+    self.executing_trajectory_indicator.data = 1
     for i in range(len(req.waypoints.points)):
       self.current_trajectory_point = req.waypoints.points[i]
       self.publishAll()
@@ -147,6 +149,7 @@ class MultipleManipulatorsModelTrajectoryHandler:
         self.current_full_state))
 
       rate.sleep()
+    self.executing_trajectory_indicator.data = 0
 
     # Since the UAV 'lags' when executing the trajectory we want to
     # prolong the roll and pitch recording until the UAV gets to the steady
@@ -177,7 +180,7 @@ class MultipleManipulatorsModelTrajectoryHandler:
   def publishAll(self):
     self.joint_trajectory_point_pub.publish(self.current_trajectory_point)
     self.set_reference_tracker_point_pub.publish(self.current_trajectory_point)
-
+    self.executing_trajectory_pub.publish(self.executing_trajectory_indicator)
 
 if __name__ == '__main__':
   rospy.init_node('multiple_manipulators_model_trajectory_handler')
