@@ -77,6 +77,9 @@ class UavWpManipulatorModelCorrection : public ModelCorrectionInterface
 
     // Manipulator and uav degrees of freedom
     int manipulator_dof_, uav_dof_;
+
+    // End-effector q is calculated with some weighing factor alpha
+    double alpha_;
 };
 
 #endif // UAV_WP_MANIPULATOR_MODEL_CORRECTION

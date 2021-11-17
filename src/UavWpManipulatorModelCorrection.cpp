@@ -44,6 +44,9 @@ UavWpManipulatorModelCorrection::UavWpManipulatorModelCorrection(
   // Get manipulator dof
   manipulator_dof_ = config["manipulator_dof"].as<int>();
   uav_dof_ = 6;
+
+  // Get alpha
+  alpha_ = config["alpha"].as<double>();
 }
 
 bool UavWpManipulatorModelCorrection::configureFromFile(string config_filename)
@@ -56,9 +59,6 @@ Trajectory UavWpManipulatorModelCorrection::modelCorrectedTrajectory(
 {
   // Initialize corrected trajectory that will be returned.
   Trajectory corrected_trajectory = planned_trajectory;
-  cout << "Correcting manipulator " << id_ << endl;
-  cout << "  Corrected trajectory rows: " << corrected_trajectory.position.rows() << endl;
-  cout << "  Corrected trajectory cols: " << corrected_trajectory.position.cols() << endl;
 
   // Check if received manipulator dof is the same as in config file.
   if (manipulator_dof_ != (corrected_trajectory.position.cols()-uav_dof_)){
@@ -69,6 +69,11 @@ Trajectory UavWpManipulatorModelCorrection::modelCorrectedTrajectory(
     cout << "  Returning planned trajectory!" << endl;
     return planned_trajectory;
   }
+
+  cout << "Correcting manipulator " << id_ << endl;
+  cout << "  Corrected trajectory rows: " << corrected_trajectory.position.rows() << endl;
+  cout << "  Corrected trajectory cols: " << corrected_trajectory.position.cols() << endl;
+  cout << "  Alpha: " << alpha_ << endl;
 
   for (int i=0; i<planned_trajectory.position.rows(); i++){
     // Planned trajectory does not have roll and pitch so put them into the
@@ -128,7 +133,11 @@ Trajectory UavWpManipulatorModelCorrection::modelCorrectedTrajectory(
     // t_l0_ee.
     bool found_ik;
     Eigen::VectorXd ik_solution;
+    Eigen::VectorXd q_planned;
+    Eigen::VectorXd q_executed = 
+      (executed_trajectory.position.block(i, 6, 1, manipulator_dof_)).transpose();
     if (id_ != -1){
+      q_planned = (planned_trajectory.position.block(i, 6, 1, manipulator_dof_)).transpose();
       if (i == 0){
         mm_kinematics_->setSingleManipulatorJointPositions(
           (planned_trajectory.position.block(i, 6, 1, manipulator_dof_)).transpose(), id_);
@@ -137,10 +146,16 @@ Trajectory UavWpManipulatorModelCorrection::modelCorrectedTrajectory(
         mm_kinematics_->setSingleManipulatorJointPositions(
           (corrected_trajectory.position.block(i-1, 6, 1, manipulator_dof_)).transpose(), id_);
       }
+      // Get jacobian
+      //Eigen::VectorXd q_executed;
+      //q_executed = (executed_trajectory.position.block(i, 6, 1, manipulator_dof_)).transpose();
+      //Eigen::MatrixXd jacobian = mm_kinematics_->getSingleManipulatorJacobian(
+      //  q_executed, id_);
       ik_solution = mm_kinematics_->calculateSingleManipulatorInverseKinematics(
         t_l0_ee, id_, found_ik);
     }
     else{
+      q_planned = (planned_trajectory.position.block(0, 6, 1, manipulator_dof_)).transpose();
       ik_solution = kinematics_->calculateInverseKinematics(t_l0_ee, found_ik);
     }
 
@@ -148,7 +163,8 @@ Trajectory UavWpManipulatorModelCorrection::modelCorrectedTrajectory(
       cout << "  Inverse solution not found for iteration: " << i << endl;
     }
     else{
-      corrected_trajectory.position.block(i, 6, 1, manipulator_dof_) = ik_solution.transpose();
+      Eigen::VectorXd q = q_executed + alpha_*(ik_solution - q_executed);
+      corrected_trajectory.position.block(i, 6, 1, manipulator_dof_) = q.transpose();
     }
   }
 

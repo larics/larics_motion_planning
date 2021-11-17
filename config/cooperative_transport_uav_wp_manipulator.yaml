@@ -209,6 +209,7 @@ model_correction:
         translation: [0, 0, 0.075]
         rotation: [1.57079632679, 0, 3.14159265359]
       manipulator_dof: 5
+      alpha: 0.2
     - 
       type: "UavWpManipulator"
       indexes:
@@ -218,3 +219,4 @@ model_correction:
         translation: [0, 0, 0.075]
         rotation: [1.57079632679, 0, 3.14159265359]
       manipulator_dof: 5
+      alpha: 0.2
