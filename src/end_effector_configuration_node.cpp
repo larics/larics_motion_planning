@@ -254,8 +254,9 @@ private:
       reference_ = jointTrajectoryPointToEigenVectorXd(msg);
     }
     else{
-      cout << "Reference not full! Reference size: ";
-      cout << msg.positions.size() << " Required size: " << total_dof_ << endl;
+      ROS_DEBUG_STREAM_DELAYED_THROTTLE(10, "Reference not full! Reference size: ");
+      ROS_DEBUG_STREAM_DELAYED_THROTTLE(
+        10, msg.positions.size() << " Required size: " << total_dof_ << endl);
     }
   }
 };
