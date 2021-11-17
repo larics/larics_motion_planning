@@ -399,13 +399,24 @@ bool GlobalPlannerRosInterface::multipleManipulatorsModelCorrectedTrajectoryCall
     cout << "Points in executed trajectory response: " << service.response.executed_trajectory.points.size() << endl;
     
     // Correcting the end-effector trajectory.
+    Trajectory executed_trajectory;
+    Trajectory ext_init;
+    executed_trajectory = jointTrajectoryToTrajectory(service.response.executed_trajectory);
+    ext_init = jointTrajectoryToTrajectory(extended_initial_trajectory);
+    for (int j=0; j<ext_init.position.rows(); j++){
+      executed_trajectory.position.block(j,6,1,5) = ext_init.position.block(
+        j,6,1,5);
+      executed_trajectory.position.block(j,6+11,1,5) = ext_init.position.block(
+        j,6+11,1,5);
+    }
     corrected_trajectory = global_planner_->modelCorrectedTrajectory(
-      jointTrajectoryToTrajectory(extended_initial_trajectory),
-      jointTrajectoryToTrajectory(service.response.executed_trajectory));
+      /*jointTrajectoryToTrajectory(extended_initial_trajectory),
+      jointTrajectoryToTrajectory(service.response.executed_trajectory)*/
+      ext_init, executed_trajectory);
 
     // Try to do this iteratively. Start from i=1 because the first iteration
     // has already been done above.
-    int max_iter = 10;
+    int max_iter = 20;
     for (int i=1; i<max_iter; i++){
       cout << "Starting iteration: " << i << endl;
 
@@ -424,9 +435,17 @@ bool GlobalPlannerRosInterface::multipleManipulatorsModelCorrectedTrajectoryCall
       // the same size as extended_initial_trajectory. This is because the
       // correction method only takes size of the first trajectory into
       // account.
+      executed_trajectory = jointTrajectoryToTrajectory(service.response.executed_trajectory);
+      for (int j=0; j<corrected_trajectory.position.rows(); j++){
+        executed_trajectory.position.block(j,6,1,5) = corrected_trajectory.position.block(
+          j,6,1,5);
+        executed_trajectory.position.block(j,6+11,1,5) = corrected_trajectory.position.block(
+          j,6+11,1,5);
+      }
       corrected_trajectory = global_planner_->modelCorrectedTrajectory(
         jointTrajectoryToTrajectory(extended_initial_trajectory),
-        jointTrajectoryToTrajectory(service.response.executed_trajectory));
+        /*jointTrajectoryToTrajectory(service.response.executed_trajectory)*/
+        executed_trajectory);
 
       cout << "Corrected trajectory rows: " << corrected_trajectory.position.rows() << endl;
     }
