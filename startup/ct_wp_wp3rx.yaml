@@ -1,0 +1,81 @@
+# Cooperative transport
+# First manipulator: Uav and wp manipulator
+# Second manipulator: Uav and wp manipulator 3rx
+name: ct_wp_wp3rx
+root: ./
+startup_window: roscore
+pre_window: cd ~/; export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:$HOME/uav_ws/src/larics_gazebo_worlds/models
+windows:
+  - roscore_gazebo:
+      layout: tiled
+      panes:
+        - roscore
+        - waitForRos; roslaunch gazebo_ros empty_world.launch use_sim_time:=true paused:=false
+        # Optional world elements
+        - >
+          waitForSimulation;
+  - uavs:
+      layout: tiled
+      panes:
+        - >
+          waitForSimulation; 
+          sleep 3; 
+          roslaunch mmuav_gazebo uav_attitude_position.launch start_gazebo:=false collision_bitmask:=1 name:="uav1" manipulator_type:="wp_manipulator" z:=0.5 manipulator_tool:="rod"
+        - >
+          waitForSimulation; 
+          sleep 6; 
+          roslaunch mmuav_gazebo uav_attitude_position.launch start_gazebo:=false collision_bitmask:=1 name:="uav2" manipulator_type:="wp_manipulator_3rx" x:=1.0 z:=0.5
+        - >
+          waitForSimulation; 
+          sleep 9; 
+          roslaunch mmuav_gazebo uav_attitude_position.launch start_gazebo:=false collision_bitmask:=2 name:="model_uav1" manipulator_type:="wp_manipulator" z:=0.5 manipulator_tool:="rod"
+        - >
+          waitForSimulation; 
+          sleep 12; 
+          roslaunch mmuav_gazebo uav_attitude_position.launch start_gazebo:=false collision_bitmask:=4 name:="model_uav2" manipulator_type:="wp_manipulator_3rx" x:=1.0 z:=0.5
+  - planning:
+      layout: tiled
+      panes:
+        - |
+          waitForRos; 
+          roslaunch wp_manipulator planning_context.launch; 
+          roslaunch wp_manipulator_3rx planning_context.launch
+          roslaunch larics_motion_planning multiple_manipulators_uavwpman_uavwpman3rx.launch
+        - |
+          waitForRos; sleep 8; rostopic pub -1 /planner/reference_tracker/set_current_trajectory_point trajectory_msgs/JointTrajectoryPoint "
+          positions: [0, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 1.0, 0, 0.5, 0, 0, 0, 0, 0, 0]
+          velocities: [0]
+          accelerations: [0]
+          effort: [0]
+          time_from_start: {secs: 0, nsecs: 0}"
+        - |
+          waitForRos; sleep 8; rostopic pub -1 /model_planner/reference_tracker/set_current_trajectory_point trajectory_msgs/JointTrajectoryPoint "
+          positions: [0, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 1.0, 0, 0.5, 0, 0, 0, 0, 0, 0]
+          velocities: [0]
+          accelerations: [0]
+          effort: [0]
+          time_from_start: {secs: 0, nsecs: 0}"
+        - |
+          waitForSimulation; sleep 25; 
+          rostopic pub -1 /planner/go_to/reference/joint_trajectory_point trajectory_msgs/JointTrajectoryPoint "
+          positions: [0,0,1,0,0,0,0.785398, 0.785398, 0.785398, 1.5707963, 0.785398,1.045,0,1,0,0,3.141592654,0.785398, -1.5707963, 0.785398]
+          velocities: [0]
+          accelerations: [0]
+          effort: [0]
+          time_from_start: {secs: 0, nsecs: 0}";
+          rostopic pub -1 /model_planner/go_to/reference/joint_trajectory_point trajectory_msgs/JointTrajectoryPoint "
+          positions: [0,0,1,0,0,0,0.785398, 0.785398, 0.785398, 1.5707963, 0.785398,1.045,0,1,0,0,3.141592654,0.785398, -1.5707963, 0.785398]
+          velocities: [0]
+          accelerations: [0]
+          effort: [0]
+          time_from_start: {secs: 0, nsecs: 0}";
+  - logging:
+      layout: tiled
+      panes:
+        - |
+          if [ ! -d "$HOME/bags/model_corrections" ];
+          then
+            mkdir $HOME/bags/model_corrections;
+          fi;
+          cd ~/bags/model_corrections;
+          history -s "rosbag record -a --chunksize=64 -x \"/(.*)(gazebo|camera|bias|joint_states|parameter_descriptions|parameter_updates)(.*)\" -o model_corrections"
