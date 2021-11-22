@@ -178,6 +178,8 @@ bool RrtPathPlanner::configureFromFile(string config_filename)
   planner_configuration_.smooth_bspline_max_steps =
     config["path_planner"]["path_simplifier"]["smooth_b_spline"]["max_steps"].as<double>();
   //printRrtStarConfig(planner_configuration_);
+
+  return true;
 }
 
 bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)

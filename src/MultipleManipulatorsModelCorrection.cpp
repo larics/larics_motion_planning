@@ -51,6 +51,7 @@ bool MultipleManipulatorsModelCorrection::configureFromFile(
     start_indexes_.push_back(start);
     end_indexes_.push_back(end);
   }
+  return true;
 }
 
 

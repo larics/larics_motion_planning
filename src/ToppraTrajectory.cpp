@@ -64,12 +64,14 @@ bool ToppraTrajectory::configureFromFile(string config_filename)
 
     // Set up sampling frequency
     sampling_frequency_ = config["trajectory_planner"]["toppra_trajectory"]["sampling_frequency"].as<double>();
+
   }
   else{
     cout << "Error in config: Velocity and acceleration constraints must have ";
     cout << "the same number of elements." << endl;
     exit(0);
   }
+  return true;
 }
 
 bool ToppraTrajectory::generateTrajectory(Eigen::MatrixXd positions)
