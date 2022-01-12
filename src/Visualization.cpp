@@ -5,6 +5,7 @@ Visualization::Visualization()
   ros::NodeHandle nh_private = ros::NodeHandle("~");
   nh_private.param("state_scale", state_scale_, double(0.1));
   nh_private.param("waypoints_scale", waypoints_scale_, double(0.2));
+  nh_private.param("frame_id", frame_id_, std::string {"world"});
 
   path_publisher_ = nh_.advertise<nav_msgs::Path>("visualization/path", 1);
   trajectory_publisher_ = nh_.advertise<nav_msgs::Path>(
@@ -130,7 +131,7 @@ nav_msgs::Path Visualization::eigenMatrixXdToNavMsgsPath(
   int n_dofs = eigen_path.cols();
 
   geometry_msgs::PoseStamped current_pose;
-  current_pose.header.frame_id = "world";
+  current_pose.header.frame_id = frame_id_;
 
   // If number of degrees of freedom is 2 then project path to z=0 plane.
   if(projection == true || n_dofs <= 2){
@@ -152,7 +153,7 @@ nav_msgs::Path Visualization::eigenMatrixXdToNavMsgsPath(
     }
   }
   path.header.stamp = ros::Time::now();
-  path.header.frame_id = "world";
+  path.header.frame_id = frame_id_;
   return path;
 }
 
@@ -163,7 +164,7 @@ visualization_msgs::Marker Visualization::navMsgsPathToVisualizationMsgsMarker(
 
   // Setup how marker looks.
   marker.header.stamp = ros::Time::now();
-  marker.header.frame_id = "world";
+  marker.header.frame_id = frame_id_;
   marker.ns = "waypoints";
   marker.id = 0;
   marker.type = visualization_msgs::Marker::SPHERE_LIST;
