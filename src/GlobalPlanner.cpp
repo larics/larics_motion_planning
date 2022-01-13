@@ -127,6 +127,23 @@ bool GlobalPlanner::collisionCheck(Eigen::MatrixXd path)
   return success;
 }
 
+std::tuple<bool, std::vector<int>> GlobalPlanner::collisionCheckWithIndices(Eigen::MatrixXd path)
+{
+  bool success = true;
+  std::vector<int> failed_indices;
+
+  // Go through all points along path and check is state valid on map. This
+  // also works for trajectory.positions
+  for (int i=0; i<path.rows(); i++){
+    success &= state_validity_checker_interface_->isStateValid((path.row(i)).transpose());
+    if (!success) {
+      failed_indices.push_back(i);
+    }
+  }
+
+  return std::make_tuple(success, failed_indices);
+}
+
 bool GlobalPlanner::planPath(Eigen::MatrixXd waypoints)
 {
   bool success = true;

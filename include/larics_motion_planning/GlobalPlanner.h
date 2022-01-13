@@ -51,6 +51,7 @@ class GlobalPlanner
     /// \param path Matrix of points that need to be collision checked.
     /// \return True if path is collision free, false otherwise.
     bool collisionCheck(Eigen::MatrixXd path);
+    std::tuple<bool, std::vector<int>> collisionCheckWithIndices(Eigen::MatrixXd path);
 
     /// \brief Plans collision free path through two or more waypoints.
     /// \param waypoints Multiple n-dimensional waypoints that are subject to
@@ -111,7 +112,7 @@ class GlobalPlanner
     /// \brief Returns trajectory interface used in planner.
     /// \return Shared pointer to trajectory interface.
     shared_ptr<TrajectoryInterface> getTrajectoryInterface();
-
+    
   protected:
     shared_ptr<MapInterface> map_interface_;
     shared_ptr<TrajectoryInterface> trajectory_interface_;

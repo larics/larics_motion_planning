@@ -40,6 +40,7 @@
 #include <larics_motion_planning/VisualizeState.h>
 #include <larics_motion_planning/ParabolicAirdropTrajectory.h>
 #include <larics_motion_planning/SaveOctomap.h>
+#include <larics_motion_planning/CheckStateValidity.h>
 
 #include <iostream>
 using namespace std;
@@ -112,6 +113,12 @@ class GlobalPlannerRosInterface
     bool visualizeStateCallback(
       larics_motion_planning::VisualizeState::Request &req, 
       larics_motion_planning::VisualizeState::Response &res);
+
+    // Validity checker service
+    ros::ServiceServer validity_checker_server_;
+    bool validityCheckerCallback(
+      larics_motion_planning::CheckStateValidity::Request &req, 
+      larics_motion_planning::CheckStateValidity::Response &res);
 
     // Parabolic airdrop trajectory service
     ros::ServiceServer parabolic_airdrop_trajectory_server_;

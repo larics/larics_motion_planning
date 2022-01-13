@@ -36,6 +36,7 @@ add_service_files(
   ParabolicAirdropTrajectory.srv
   SaveOctomap.srv
   GetPlantBoxInspectionPoints.srv
+  CheckStateValidity.srv
 )
 
 ## Generate added messages and services with any dependencies listed here

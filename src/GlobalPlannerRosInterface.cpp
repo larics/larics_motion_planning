@@ -65,6 +65,8 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
   // Service for visualizing arbitrary robot state
   visualize_state_server_ = nh_.advertiseService("visualize_state", 
     &GlobalPlannerRosInterface::visualizeStateCallback, this);
+  validity_checker_server_ = nh_.advertiseService("validity_checker", 
+    &GlobalPlannerRosInterface::validityCheckerCallback, this);
   // Service for parabolic airdrop trajectory planning.
   parabolic_airdrop_trajectory_server_ = nh_.advertiseService(
     "parabolic_airdrop_trajectory",
@@ -575,6 +577,8 @@ bool GlobalPlannerRosInterface::multiDofTrajectoryCallback(
     return true;
   }
 
+  cout << req << "\n";
+
   // Check if user overrides trajectory dynamic constraints set through
   // config file
   if (req.override_dynamic_constraints == true){
@@ -806,6 +810,18 @@ bool GlobalPlannerRosInterface::saveOctomapCallback(
 
   res.success = octomapmap_.get()->saveOctomap(file_path+filename);
 
+  return true;
+}
+
+bool GlobalPlannerRosInterface::validityCheckerCallback(
+  larics_motion_planning::CheckStateValidity::Request &req, 
+  larics_motion_planning::CheckStateValidity::Response &res)
+{
+  Trajectory temp_trajectory;
+  temp_trajectory = jointTrajectoryToTrajectory(req.points);
+  auto [success, invalid_indices] = global_planner_->collisionCheckWithIndices(temp_trajectory.position);
+  res.valid = success;
+  res.invalid_indices = invalid_indices;
   return true;
 }
 
