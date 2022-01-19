@@ -1072,6 +1072,16 @@ Trajectory GlobalPlannerRosInterface::jointTrajectoryToTrajectory(
       eigen_trajectory.acceleration(i,j) = joint_trajectory.points[i].accelerations[j];
     }
 
+    if (joint_trajectory_point.velocities.size() != joint_trajectory_point.positions.size() ||
+      joint_trajectory_point.accelerations.size() != joint_trajectory_point.positions.size())
+    {
+      ROS_WARN_THROTTLE(2.0, "[GlobalPlannerRosInterface::jointTrajectoryToTrajectory] "
+                             "fields are not the same size! Pos: %d, Vel: %d, Acc: %d.",
+                             joint_trajectory_point.positions.size(), 
+                             joint_trajectory_point.velocities.size(),
+                             joint_trajectory_point.accelerations.size());
+    }
+    
     eigen_trajectory.time(i) = joint_trajectory.points[i].time_from_start.toSec();
   }
 
