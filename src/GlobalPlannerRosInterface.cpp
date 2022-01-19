@@ -817,8 +817,7 @@ bool GlobalPlannerRosInterface::validityCheckerCallback(
   larics_motion_planning::CheckStateValidity::Request &req, 
   larics_motion_planning::CheckStateValidity::Response &res)
 {
-  Trajectory temp_trajectory;
-  temp_trajectory = jointTrajectoryToTrajectory(req.points);
+  auto temp_trajectory = jointTrajectoryToTrajectory(req.points);
   auto [success, invalid_indices] = global_planner_->collisionCheckWithIndices(temp_trajectory.position);
   res.valid = success;
   res.invalid_indices = invalid_indices;
@@ -1055,11 +1054,24 @@ Trajectory GlobalPlannerRosInterface::jointTrajectoryToTrajectory(
 
   // Go through the whole path and set it to
   for (int i=0; i<joint_trajectory.points.size(); i++){
-    for (int j=0; j<joint_trajectory.points[0].positions.size(); j++){
+    const auto& joint_trajectory_point = joint_trajectory.points[i];
+
+    for (int j=0; j<joint_trajectory_point.positions.size(); j++){
       eigen_trajectory.position(i,j) = joint_trajectory.points[i].positions[j];
+    }
+
+    // Separate appending velocities in case velocity vector size is different
+    for (int j=0; j<joint_trajectory_point.velocities.size(); j++)
+    {
       eigen_trajectory.velocity(i,j) = joint_trajectory.points[i].velocities[j];
+    }
+
+    // Separate appending accelerations in case velocity vector size is different
+    for (int j=0; j<joint_trajectory_point.accelerations.size(); j++)
+    {
       eigen_trajectory.acceleration(i,j) = joint_trajectory.points[i].accelerations[j];
     }
+
     eigen_trajectory.time(i) = joint_trajectory.points[i].time_from_start.toSec();
   }
 
