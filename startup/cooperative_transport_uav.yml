@@ -72,4 +72,4 @@ windows:
           fi;
           cd ~/bags/model_corrections;
           history -s "rosbag record -a --chunksize=64 -x \"/(.*)(gazebo|camera|bias|joint_states|parameter_descriptions|parameter_updates)(.*)\" -o model_corrections";
-          history -s "rosbag record --chunksize=8  -e \"(.*)(go_to|end_effector_configuration|executing_trajectory|controller|reference_tracker|full_state|executing_model_trajectory)(.*)\" -x \"/(.*)(gazebo|camera|bias|joint_states|parameter_descriptions|parameter_updates)(.*)\" -o model_corrections"
+          history -s "rosbag record --chunksize=1  -e \"(.*)(go_to|end_effector_configuration|executing_trajectory|controller|reference_tracker|full_state|executing_model_trajectory)(.*)\" -x \"/(.*)(gazebo|camera|bias|joint_states|parameter_descriptions|parameter_updates)(.*)\" -o model_corrections"
