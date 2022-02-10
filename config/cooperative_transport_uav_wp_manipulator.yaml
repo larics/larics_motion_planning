@@ -118,8 +118,8 @@ trajectory_planner:
     axes_index_list: []
     velocity_constraints: []
   toppra_trajectory:
-    velocities: [1.5, 1.5, 0.5, 100, 100, 0.3, 1.0, 1.0, 1.0, 1.0, 1.0, 1.5, 1.5, 0.5, 100, 100, 0.3, 1.0, 1.0, 1.0, 1.0, 1.0]
-    accelerations: [0.6, 0.6, 0.4, 100, 100, 0.3, 1.2, 1.2, 1.2, 1.2, 1.2, 0.6, 0.6, 0.4, 100, 100, 0.3, 1.2, 1.2, 1.2, 1.2, 1.2]
+    velocities: [0.8, 0.8, 0.5, 100, 100, 1.0, 5.0, 5.0, 5.0, 5.0, 5.0, 0.8, 0.8, 0.5, 100, 100, 1.0, 5.0, 5.0, 5.0, 5.0, 5.0]
+    accelerations: [0.4, 0.4, 0.4, 100, 100, 1.0, 75.0, 75.0, 75.0, 75.0, 75.0, 0.4, 0.4, 0.4, 100, 100, 1.0, 75.0, 75.0, 75.0, 75.0, 75.0]
     # This flag is important because it preconditiones angular values before 
     # sending them to toppra trajectory. The problem is that toppra does not know
     # for discontinuities at half circle (PI) and the planned trajectory will

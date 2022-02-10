@@ -75,7 +75,15 @@ Trajectory UavWpManipulatorModelCorrection::modelCorrectedTrajectory(
   cout << "  Corrected trajectory cols: " << corrected_trajectory.position.cols() << endl;
   cout << "  Alpha: " << alpha_ << endl;
 
-  for (int i=0; i<planned_trajectory.position.rows(); i++){
+  int i = 0;
+  int step = 1;
+  std::vector<int> indexes;
+  //for (int i=0; i<planned_trajectory.position.rows(); i++){
+  while (true){
+    if (i >= (planned_trajectory.position.rows()-1)){
+      i = planned_trajectory.position.rows()-1;
+    }
+    indexes.push_back(i);
     // Planned trajectory does not have roll and pitch so put them into the
     // corrected trajectory.
     corrected_trajectory.position(i,3) = executed_trajectory.position(i,3);
@@ -112,13 +120,13 @@ Trajectory UavWpManipulatorModelCorrection::modelCorrectedTrajectory(
     // pitch now.
     Eigen::Affine3d t_w_b;
     t_w_b = Eigen::Affine3d::Identity();
-    t_w_b.translate(Eigen::Vector3d(planned_trajectory.position(i, 0), 
-      planned_trajectory.position(i, 1), planned_trajectory.position(i, 2)));
+    t_w_b.translate(Eigen::Vector3d(executed_trajectory.position(i, 0), 
+      executed_trajectory.position(i, 1), executed_trajectory.position(i, 2)));
     // In the rotation we use planned yaw since it is controllable degree of
     // freedom. Roll and pitch are taken out of executed trajectory since
     // these are the by product of the underactuated nature of the multirotor.
     Eigen::Matrix3d r_w_b;
-    r_w_b = Eigen::AngleAxisd(planned_trajectory.position(i, 5), Eigen::Vector3d::UnitZ())
+    r_w_b = Eigen::AngleAxisd(executed_trajectory.position(i, 5), Eigen::Vector3d::UnitZ())
       * Eigen::AngleAxisd(executed_trajectory.position(i, 4), Eigen::Vector3d::UnitY())
       * Eigen::AngleAxisd(executed_trajectory.position(i, 3), Eigen::Vector3d::UnitX());
     t_w_b.rotate(r_w_b);
@@ -166,7 +174,37 @@ Trajectory UavWpManipulatorModelCorrection::modelCorrectedTrajectory(
       Eigen::VectorXd q = q_executed + alpha_*(ik_solution - q_executed);
       corrected_trajectory.position.block(i, 6, 1, manipulator_dof_) = q.transpose();
     }
+
+    if (i == (planned_trajectory.position.rows()-1)){
+      break;
+    }
+
+    i += step;
   }
+
+  cout << "  Manipulator corrected at each " << step << "th point." << endl;
+  cout << "  Linearly interpolating in between." << endl;
+
+  // Starting from index 1 
+  for (int i=1; (i<indexes.size()) && (step > 1); i++){
+    double delta_i = double(indexes[i] - indexes[i-1]);
+    //cout << "  i = " << i << " delta_i = " << delta_i;
+    //cout << " indexes = [" << indexes[i-1] << ", " << indexes[i] << "]" << endl;
+
+    Eigen::RowVectorXd q0 = 
+      corrected_trajectory.position.block(indexes[i-1], 6, 1, manipulator_dof_);
+    Eigen::RowVectorXd q1 = 
+      corrected_trajectory.position.block(indexes[i], 6, 1, manipulator_dof_);
+    Eigen::RowVectorXd delta_q = (q1-q0)/delta_i;
+    //cout << delta_q << endl;
+
+    for (int j=(indexes[i-1]+1); j<=(indexes[i]-1); j++){
+      corrected_trajectory.position.block(j, 6, 1, manipulator_dof_) = 
+        q0 + double(j-indexes[i-1])*delta_q;
+    }
+  }
+
+  cout << "  Linear interpolation done." << endl;
 
   return corrected_trajectory;
 }
