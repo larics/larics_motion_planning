@@ -418,9 +418,25 @@ bool GlobalPlannerRosInterface::multipleManipulatorsModelCorrectedTrajectoryCall
 
     // Try to do this iteratively. Start from i=1 because the first iteration
     // has already been done above.
-    int max_iter = 20;
+    int max_iter = 10;
     for (int i=1; i<max_iter; i++){
       cout << "Starting iteration: " << i << endl;
+
+      // Try planning a new toppra trajectory through corrected trajectory.
+      cout << "Replanning TOPP-RA trajectory with corrected trajectory." << endl;
+      publish_trajectory_temp = req.publish_trajectory;
+      larics_motion_planning::MultiDofTrajectory::Request& iterative_req = req;
+      larics_motion_planning::MultiDofTrajectory::Response& iterative_res = res;
+      iterative_req.waypoints = trajectoryToJointTrajectory(corrected_trajectory);
+      cout << "Corrected trajectory rows: " << corrected_trajectory.position.rows() << endl;
+      cout << "Waypoints size: " << iterative_req.waypoints.points.size() << endl;
+      iterative_req.publish_trajectory = false;
+      success = this->multiDofTrajectoryCallback(iterative_req, iterative_res);
+      cout << "Replanned trajectory success: " << success << endl;
+      cout << "Replanned trajectory number of points: ";
+      cout << iterative_res.trajectory.points.size() << endl;
+      req.publish_trajectory = publish_trajectory_temp;
+      
 
       // Create new service request from the current corrected trajectory
       service.request.waypoints = trajectoryToJointTrajectory(corrected_trajectory);
