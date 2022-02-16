@@ -16,8 +16,9 @@ class PlanMultipleParabolicAirdrops:
 
   def __init__(self):
     self.start_pose = Pose()
-    self.start_pose.position.x = -9
-    self.start_pose.position.z = 4.5
+    self.start_pose.position.x = rospy.get_param('start/pos/x', -9.0)
+    self.start_pose.position.y = rospy.get_param('start/pos/y', 0.0)
+    self.start_pose.position.z = rospy.get_param('start/pos/z', 4.5)
     self.start_pose.orientation.w = 1.0
 
     # AirdropService
