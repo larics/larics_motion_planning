@@ -13,6 +13,9 @@
 #include <iostream>
 using namespace std;
 
+// Time measurements
+#include <chrono>
+
 /// \brief This class inherits GlobalPlanner for it's full functionality and
 ///   adds polynomial segment at the end for parabolic load airdrop. The
 ///   returned trajectory will have time instance of the airdrop.

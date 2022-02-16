@@ -123,11 +123,16 @@ void ParabolicAirdropPlanner::setMapInterface(shared_ptr<MapInterface> map)
 bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
   Eigen::VectorXd uav_pose, Eigen::VectorXd target_pose, bool plan_path)
 {
+  // Create time measurement variables
+  auto begin = chrono::steady_clock::now();
+  auto end = chrono::steady_clock::now();
+
   parabola_set_points_ = Eigen::MatrixXd(0,3);
   double g=9.81;
   //for (double dx=1.0; dx<=8.0; dx+=0.5){
     //for (double v=0.5; v<=6.0; v+=0.5){
       //for (double alpha=0.0; alpha<=deg2rad(45.0); alpha+=deg2rad(5.0)){
+  auto begin_algorithm = chrono::steady_clock::now();
   for (int i=0; i<dx_.size(); i++){
     double dx = dx_[i];
     for (int j=0; j<v_.size(); j++){
@@ -221,6 +226,7 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
               transformed_parabola(0, 0), transformed_parabola(0, 1), 
               transformed_parabola(0, 2)+payload_z_offset_, psi;
             // Plan trajectory
+            begin = chrono::steady_clock::now();
             if (plan_path == true) {
               if (this->planPathAndTrajectory(waypoints) == false) continue;
             }
@@ -228,6 +234,8 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
               if (this->planTrajectory(waypoints) == false) continue;
             }
             Trajectory trajectory = trajectory_interface_->getTrajectory();
+            end = chrono::steady_clock::now();
+            double t_path_trajectory = double(chrono::duration_cast<chrono::nanoseconds>(end - begin).count())*1e-9;
 
             // Plan dropoff spline
             Trajectory dropoff_trajectory;
@@ -268,14 +276,19 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
             cout << "  z = " << dz << endl << "  t = " << t << endl;
 
             // Fill out information vector
-            info_vector_.conservativeResize(16);
+            end = chrono::steady_clock::now();
+            double t_algorithm = double(chrono::duration_cast<chrono::nanoseconds>(end - begin_algorithm).count())*1e-9;
+            cout << "Total algorithm time: " << t_algorithm << endl;
+            cout << "Path and trajectory time: " << t_path_trajectory << endl;
+            info_vector_.conservativeResize(18);
             info_vector_ << dx, dz, v, alpha, psi, t,
               double(airdrop_trajectory_.position.rows())*spline_sampling_time_,
               double(dropoff_trajectory.position.rows())*spline_sampling_time_,
               double(stopping_trajectory.position.rows())*spline_sampling_time_,
               target_pose(0), target_pose(1), target_pose(2),
               transformed_parabola(0, 0), transformed_parabola(0, 1), 
-              transformed_parabola(0, 2)+payload_z_offset_, yaw;
+              transformed_parabola(0, 2)+payload_z_offset_, yaw, 
+              t_algorithm, t_path_trajectory;
 
 
             return true;
@@ -330,6 +343,11 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
   Eigen::VectorXd uav_pose, Eigen::VectorXd target_pose, bool plan_path, 
   Eigen::VectorXd parabola_params)
 {
+  // Create time measurement variables
+  auto begin_algorithm = chrono::steady_clock::now();
+  auto begin = chrono::steady_clock::now();
+  auto end = chrono::steady_clock::now();
+
   parabola_set_points_ = Eigen::MatrixXd(0,3);
   double g=9.81;
   
@@ -410,6 +428,8 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
     //uav_pose(0), uav_pose(1), transformed_parabola(0, 2)+payload_z_offset_, yaw, 
     transformed_parabola(0, 0), transformed_parabola(0, 1), 
     transformed_parabola(0, 2)+payload_z_offset_, psi;
+
+  begin = chrono::steady_clock::now();
   // Plan trajectory
   if (plan_path == true) {
     this->planPathAndTrajectory(waypoints);
@@ -418,6 +438,9 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
     this->planTrajectory(waypoints);
   }
   Trajectory trajectory = trajectory_interface_->getTrajectory();
+  end = chrono::steady_clock::now();
+  double t_path_trajectory = double(chrono::duration_cast<chrono::nanoseconds>(end - begin).count())*1e-9;
+
   // Plan dropoff spline
   Trajectory dropoff_trajectory;
   int dropoff_index = 0;
@@ -452,14 +475,19 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
   cout << "  z = " << dz << endl << "  t = " << t << endl;
 
   // Fill out information vector
-  info_vector_.conservativeResize(16);
+  end = chrono::steady_clock::now();
+  double t_algorithm = double(chrono::duration_cast<chrono::nanoseconds>(end - begin_algorithm).count())*1e-9;
+  cout << "Total algorithm time: " << t_algorithm << endl;
+  cout << "Path and trajectory time: " << t_path_trajectory << endl;
+  info_vector_.conservativeResize(18);
   info_vector_ << dx, dz, v, alpha, psi, t,
     double(airdrop_trajectory_.position.rows())*spline_sampling_time_,
     double(dropoff_trajectory.position.rows())*spline_sampling_time_,
     double(stopping_trajectory.position.rows())*spline_sampling_time_,
     target_pose(0), target_pose(1), target_pose(2),
     transformed_parabola(0, 0), transformed_parabola(0, 1), 
-    transformed_parabola(0, 2)+payload_z_offset_, yaw;
+    transformed_parabola(0, 2)+payload_z_offset_, yaw, 
+    t_algorithm, t_path_trajectory;
 
   return true;
 }
