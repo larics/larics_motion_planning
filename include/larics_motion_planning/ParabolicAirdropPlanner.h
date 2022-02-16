@@ -121,6 +121,9 @@ class ParabolicAirdropPlanner : public GlobalPlanner
 
 inline double deg2rad(double deg);
 
+inline double chrono2duration(chrono::steady_clock::time_point begin,
+  chrono::steady_clock::time_point end);
 
+inline chrono::steady_clock::time_point tick();
 
 #endif //PARABOLIC_AIRDROP_PLANNER
