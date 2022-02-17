@@ -116,7 +116,7 @@ class PlanMultipleParabolicAirdrops:
             self.airdrop_request.custom_psi_params[0] = psi_min
             self.airdrop_request.custom_psi_params[1] = psi_inc
             self.airdrop_request.custom_psi_params[2] = psi_max
-            print self.airdrop_request
+            #print self.airdrop_request
             res = self.airdrop_service(self.airdrop_request)
             duration = len(res.trajectory.points)/100.0
 
