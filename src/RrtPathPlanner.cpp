@@ -501,7 +501,7 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   path_length_ = path_geom.length();
   //cout << "Planning successful" << endl;
 
-  return true;
+  return pdef->hasExactSolution();
 }
 
 inline void RrtPathPlanner::convertOmplPathToEigenMatrix(og::PathGeometric path)
