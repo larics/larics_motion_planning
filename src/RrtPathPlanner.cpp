@@ -469,8 +469,8 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   }
 
   ob::PathPtr path = pdef->getSolutionPath();
-  og::PathGeometric path_geom(dynamic_cast<const og::PathGeometric&>(
-    *pdef->getSolutionPath()));
+  if (!path) return false;
+  og::PathGeometric path_geom(dynamic_cast<const og::PathGeometric&>(*path));
 
   // Try to simplify path
   og::PathSimplifier path_simplifier(si);
