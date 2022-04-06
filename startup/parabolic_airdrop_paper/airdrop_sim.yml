@@ -187,31 +187,6 @@ windows:
           fi
         - |
           history -s "rostopic pub -1 /uav/execute_multiple_aridrops/start std_msgs/Bool \"data: true\""
-  - time_measurement:
-      layout: tiled
-      panes:
-        - |
-          if [ "$AIRDROP_TYPE" == "office" ]
-          then
-            roscd larics_motion_planning/config/airdrop_configs/office_rooms_separated
-            history -s "rosrun larics_motion_planning plan_multiple_parabolic_airdrops_to_different_targets.py _configs_file:=\"all_rooms.csv\" _drops_per_config:=20 _environment_type:=\"office\" __ns:=uav"
-          elif [ "$AIRDROP_TYPE" == "camellia" ]
-          then
-            roscd larics_motion_planning/config/airdrop_configs
-            history -s "rosrun larics_motion_planning plan_multiple_parabolic_airdrops_to_different_targets.py _configs_file:=\"camellia_city_building.csv\" _drops_per_config:=100 _environment_type:=\"camellia\" __ns:=uav"
-          else
-            roscd larics_motion_planning/config/airdrop_configs/repeatability_separated;
-            history -s "rosrun larics_motion_planning plan_multiple_parabolic_airdrops_from_file.py _drops_per_config:=10 _configs_file:=\"repAll.csv\" __ns:=uav"
-          fi
-        - |
-          history -s "rostopic pub -1 /uav/plan_multiple_aridrops/start std_msgs/Bool \"data: true\""
-        - |
-          if [ ! -d "$HOME/bags/parabolic_airdrop" ];
-          then
-            mkdir $HOME/bags/parabolic_airdrop;
-          fi;
-          cd ~/bags/parabolic_airdrop;
-          history -s "rosbag record /uav/parabolic_airdrop/info_vector -o parabolic_airdrop_time_measurement"
   - logging:
       layout: tiled
       panes:
