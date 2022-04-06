@@ -22,7 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Eigen3 REQUIRED NO_MODULE)
 find_package(octomap REQUIRED)
-find_package(OMPL REQUIRED)
+find_package(OMPL)
 
 #add_message_files(
 #  FILES
