@@ -1,0 +1,32 @@
+# Simulation for asap manipulator
+name: asap_manipulator_sim
+root: ./
+startup_window: roscore
+pre_window: cd ~/; export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:$HOME/uav_ws/src/larics_gazebo_worlds/models
+windows:
+  - roscore_gazebo:
+      layout: tiled
+      panes:
+        - roscore
+        - waitForRos; roslaunch gazebo_ros empty_world.launch use_sim_time:=true paused:=false
+        # Optional world elements
+        - >
+          waitForRos; 
+          waitForSimulation; 
+          roslaunch asap_manipulator_4r planning_context.launch;
+          roslaunch aerial_manipulators_description spawn_asap_manipulator_4r.launch
+  - uavs:
+      layout: tiled
+      panes:
+        - waitForRos; waitForSimulation; sleep 5;
+          roslaunch aerial_manipulators_control asap_manipulator_4r_gazebo_control.launch
+  - logging:
+      layout: tiled
+      panes:
+        - |
+          if [ ! -d "$HOME/bags/asap_manipulator_sim" ];
+          then
+            mkdir $HOME/bags/asap_manipulator_sim;
+          fi;
+          cd ~/bags/asap_manipulator_sim;
+          history -s "rosbag record -a --chunksize=64 -x \"/(.*)(gazebo|camera|bias|joint_states|parameter_descriptions|parameter_updates)(.*)\" -o model_corrections"
