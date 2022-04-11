@@ -8,18 +8,33 @@ windows:
       layout: tiled
       panes:
         - roscore
-        - waitForRos; roslaunch gazebo_ros empty_world.launch use_sim_time:=true paused:=false
+        - waitForRos; 
+          roslaunch gazebo_ros empty_world.launch 
+          use_sim_time:=true paused:=false
         # Optional world elements
-        - >
+        - 
           waitForRos; 
           waitForSimulation; 
-          roslaunch asap_manipulator_4r planning_context.launch;
-          roslaunch aerial_manipulators_description spawn_asap_manipulator_4r.launch
+          roslaunch asap_manipulator_4r planning_context.launch
   - uavs:
       layout: tiled
       panes:
-        - waitForRos; waitForSimulation; sleep 5;
-          roslaunch aerial_manipulators_control asap_manipulator_4r_gazebo_control.launch
+        - 
+          waitForSimulation; 
+          sleep 8; 
+          roslaunch mmuav_gazebo uav_attitude_position.launch 
+            start_gazebo:=false 
+            manipulator_type:="asap_manipulator_4r" z:=1 
+            manipulator_tool:="rod" name:="uav"
+            collision_bitmask:=1
+        - 
+          waitForSimulation; 
+          sleep 8; 
+          roslaunch mmuav_gazebo uav_attitude_position.launch 
+            start_gazebo:=false 
+            manipulator_type:="asap_manipulator_4r" z:=1 
+            manipulator_tool:="rod" name:="model_uav"
+            collision_bitmask:=2
   - logging:
       layout: tiled
       panes:
@@ -29,4 +44,4 @@ windows:
             mkdir $HOME/bags/asap_manipulator_sim;
           fi;
           cd ~/bags/asap_manipulator_sim;
-          history -s "rosbag record -a --chunksize=64 -x \"/(.*)(gazebo|camera|bias|joint_states|parameter_descriptions|parameter_updates)(.*)\" -o model_corrections"
+          history -s "rosbag record -a --chunksize=64 -x \"/(.*)(gazebo|camera|bias|joint_states|parameter_descriptions|parameter_updates)(.*)\" -o asap_manipulator_sim"
