@@ -15,7 +15,8 @@ windows:
         - 
           waitForRos; 
           waitForSimulation; 
-          roslaunch asap_manipulator_4r planning_context.launch
+          roslaunch asap_manipulator_4r planning_context.launch;
+          roslaunch larics_gazebo_worlds spawn_takeoff_pad.launch
   - uavs:
       layout: tiled
       panes:
@@ -33,8 +34,30 @@ windows:
           roslaunch mmuav_gazebo uav_attitude_position.launch 
             start_gazebo:=false 
             manipulator_type:="asap_manipulator_4r" z:=1 
-            manipulator_tool:="rod" name:="model_uav"
+            manipulator_tool:="rod" name:="model_uav" 
             collision_bitmask:=2
+        - >
+          waitForSimulation; 
+          sleep 16; 
+          rosservice call /gazebo/delete_model "model_name: "takeoff_pad""
+  - motion_planning:
+      layout: tiled
+      panes:
+        - waitForSimulation; sleep 5; roslaunch larics_motion_planning arducopter_asap_manipulator_4r.launch
+        - |
+          waitForSimulation; sleep 8; rostopic pub -1 /model_uav/reference_tracker/set_current_trajectory_point trajectory_msgs/JointTrajectoryPoint "
+          positions: [0, 0, 1.0, 0.0, 0.0, 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+          velocities: [0]
+          accelerations: [0]
+          effort: [0]
+          time_from_start: {secs: 0, nsecs: 0}"
+        - |
+          waitForSimulation; sleep 8; rostopic pub -1 /uav/reference_tracker/set_current_trajectory_point trajectory_msgs/JointTrajectoryPoint "
+          positions: [0, 0, 1.0, 0.0, 0.0, 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+          velocities: [0]
+          accelerations: [0]
+          effort: [0]
+          time_from_start: {secs: 0, nsecs: 0}"
   - logging:
       layout: tiled
       panes:
