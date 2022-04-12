@@ -1,9 +1,9 @@
 global_planner:
-  map_config_file: "catkin_ws/src/larics_motion_planning/config/arducopter_asap_manipulator_4r.yaml"
-  trajectory_config_file: "catkin_ws/src/larics_motion_planning/config/arducopter_asap_manipulator_4r.yaml"
-  path_planner_config_file: "catkin_ws/src/larics_motion_planning/config/arducopter_asap_manipulator_4r.yaml"
-  state_validity_checker_config_file: "catkin_ws/src/larics_motion_planning/config/arducopter_asap_manipulator_4r.yaml"
-  kinematics_config_file: "catkin_ws/src/larics_motion_planning/config/arducopter_asap_manipulator_4r.yaml"
+  map_config_file: "catkin_ws/src/larics_motion_planning/config/asap/arducopter_asap_manipulator_4r.yaml"
+  trajectory_config_file: "catkin_ws/src/larics_motion_planning/config/asap/arducopter_asap_manipulator_4r.yaml"
+  path_planner_config_file: "catkin_ws/src/larics_motion_planning/config/asap/arducopter_asap_manipulator_4r.yaml"
+  state_validity_checker_config_file: "catkin_ws/src/larics_motion_planning/config/asap/arducopter_asap_manipulator_4r.yaml"
+  kinematics_config_file: "catkin_ws/src/larics_motion_planning/config/asap/arducopter_asap_manipulator_4r.yaml"
   model_correction_file: "catkin_ws/src/larics_motion_planning/config/model_correction_config_example.yaml"
   
   trajectory:
@@ -130,20 +130,20 @@ trajectory_planner:
     # for discontinuities at half circle (PI) and the planned trajectory will
     # turn around the circle instead through discontinuity. This flag solves it
     # by adding and subtracting k*2PI around the discontinuity.
-    is_angular: [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    is_angular: [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     sampling_frequency: 100.0
 
 state_validity_checker:
   type: "uav_and_wp_manipulator"
   uav_wp_manipulator:
     #                                 a3                        a4                        d5
-    manipulator_link_dimensions: [[0.0755, 0.0285, 0.0340], [0.0725, 0.0285, 0.0340], [0.0453, 0.0285, 0.0340]]
-    manipulator_link_directions: ["x", "x", "x"]
+    manipulator_link_dimensions: [[0.17955, 0.0285, 0.0340], [0.1015, 0.0285, 0.0340], [0.151, 0.0285, 0.0340], [0.048, 0.0285, 0.0340]]
+    manipulator_link_directions: ["y", "x", "x", "x"]
 
     uav_dimensions: [0.4, 0.4, 0.17]
 
     #uav_manipulator_transform: [0, 0, 0.2, 1.57079632679, 0, 0]
-    uav_manipulator_transform: [0, 0, -0.2, 1.57079632679, 0, 0]
+    uav_manipulator_transform: [0, 0, -0.2, 0, 0, 0]
 
     checker_resolution:
       manipulator: 0.01
