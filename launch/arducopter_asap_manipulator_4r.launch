@@ -12,7 +12,8 @@
       <param name="rate" value="$(arg planner_rate)" />
       <param name="global_planner_config_file" value="$(find larics_motion_planning)/config/asap/arducopter_asap_manipulator_4r.yaml" />
       <param name="model_uav_namespace" value="/model_uav" />
-      <param name="model_animation_dt_us" value="10000" />
+      <param name="model_animation_dt_us" value="10" />
+      <param name="model_uav_namespace" value="/$(arg model_namespace)" />
 
       <!-- visualization parameters -->
       <param name="state_scale" value="0.05" />
@@ -85,13 +86,18 @@
 
     <node name="generate_toppra_trajectory" pkg="topp_ros" type="generate_toppra_trajectory.py" output="screen" />
 
+    <group if="false">
     <node name="model_trajectory_to_impedance" pkg="larics_motion_planning" type="model_trajectory_to_impedance.py" output="screen">
       <!--remap from="model_trajectory/joint_trajectory_point" to="aerial_manipulator_control/trajectory_ref_input"/-->
-      <remap from="model_trajectory/joint_trajectory_point" to="reference_tracker/joint_trajectory_point"/>
+      <remap from="model_trajectory/joint_trajectory_point" to="joint_trajectory_point"/>
 
       <param name="record_termination/roll" value="0.1" />
       <param name="record_termination/pitch" value="0.1" />
       <param name="record_termination/timer" value="2.0" />
+    </node>
+    </group>
+
+    <node name="joint_trajectory_to_uav_and_asap_manipulator_4r_through_service" pkg="larics_motion_planning" type="joint_trajectory_to_uav_and_asap_manipulator_4r_through_service.py" output="screen">
     </node>
 
   </group>
