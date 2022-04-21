@@ -2,6 +2,7 @@
   <arg name="planner_rate" default="10" />
   <arg name="namespace" default="uav" />
   <arg name="model_namespace" default="model_uav" />
+  <arg name="use_impedance" default="false" />
 
   <!-- Before launching this file you need to launch planning context-->
   <!-- roslaunch asap_manipulator_4r planning_context.launch -->
@@ -27,7 +28,7 @@
     </node>
 
     <!-- A helper node for delaying some parts of the trajectory. In this case it delays force because the UAV lags behind the referent trajectory due to the impedance filter.-->
-    <group if="false">
+    <group if="$(arg use_impedance)">
     <node name="impedance_joint_trajectory_handler" pkg="larics_motion_planning" type="impedance_joint_trajectory_handler.py" output="screen">
       <remap from="impedance_joint_trajectory_handler/joint_trajectory_point_in" to="reference_tracker/joint_trajectory_point" />
       <remap from="impedance_joint_trajectory_handler/joint_trajectory_point_out" to="aerial_manipulator_control/trajectory_ref_input" />
@@ -69,7 +70,7 @@
       <remap from="reference_tracker/joint_trajectory" to="joint_trajectory" />
     </node>
 
-    <group if="false">
+    <group if="$(arg use_impedance)">
     <node name="impedance_joint_trajectory_handler" pkg="larics_motion_planning" type="impedance_joint_trajectory_handler.py" output="screen">
       <remap from="impedance_joint_trajectory_handler/joint_trajectory_point_in" to="reference_tracker/joint_trajectory_point" />
       <remap from="impedance_joint_trajectory_handler/joint_trajectory_point_out" to="aerial_manipulator_control/trajectory_ref_input" />
@@ -86,7 +87,7 @@
 
     <node name="generate_toppra_trajectory" pkg="topp_ros" type="generate_toppra_trajectory.py" output="screen" />
 
-    <group if="false">
+    <group if="$(arg use_impedance)">
     <node name="model_trajectory_to_impedance" pkg="larics_motion_planning" type="model_trajectory_to_impedance.py" output="screen">
       <!--remap from="model_trajectory/joint_trajectory_point" to="aerial_manipulator_control/trajectory_ref_input"/-->
       <remap from="model_trajectory/joint_trajectory_point" to="joint_trajectory_point"/>
@@ -97,8 +98,10 @@
     </node>
     </group>
 
+    <group unless="$(arg use_impedance)">
     <node name="joint_trajectory_to_uav_and_asap_manipulator_4r_through_service" pkg="larics_motion_planning" type="joint_trajectory_to_uav_and_asap_manipulator_4r_through_service.py" output="screen">
     </node>
+    </group>
 
   </group>
 

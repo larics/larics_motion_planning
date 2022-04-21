@@ -2,7 +2,22 @@
 name: asap_manipulator_sim
 root: ./
 startup_window: roscore
-pre_window: cd ~/; export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:$HOME/uav_ws/src/larics_gazebo_worlds/models
+pre_window: |
+  cd ~/; 
+  export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:$HOME/uav_ws/src/larics_gazebo_worlds/models;
+  export USE_IMPEDANCE=<%= @settings["use_impedance"]%>;
+  if [[ -z "${USE_IMPEDANCE}" ]]
+  then 
+    export USE_IMPEDANCE="false"
+  fi;
+  if [ "$USE_IMPEDANCE" == "false" ]
+  then
+    START_TRAJECTORY_DEQUEUE="true"
+    REFERENCE_DELAY=12
+  else
+    START_TRAJECTORY_DEQUEUE="false"
+    REFERENCE_DELAY=35
+  fi;
 windows:
   - roscore_gazebo:
       layout: tiled
@@ -28,6 +43,7 @@ windows:
             manipulator_type:="asap_manipulator_4r" z:=1 
             manipulator_tool:="rod" name:="uav"
             collision_bitmask:=1
+            start_trajectory_dequeue:=$START_TRAJECTORY_DEQUEUE
         - 
           waitForSimulation; 
           sleep 8; 
@@ -36,6 +52,7 @@ windows:
             manipulator_type:="asap_manipulator_4r" z:=1 
             manipulator_tool:="rod" name:="model_uav" 
             collision_bitmask:=2
+            start_trajectory_dequeue:=$START_TRAJECTORY_DEQUEUE
         - >
           waitForSimulation; 
           sleep 16; 
@@ -44,9 +61,11 @@ windows:
   - motion_planning:
       layout: tiled
       panes:
-        - waitForSimulation; sleep 5; roslaunch larics_motion_planning arducopter_asap_manipulator_4r.launch
+        - waitForSimulation; sleep 5; 
+          roslaunch larics_motion_planning arducopter_asap_manipulator_4r.launch
+          use_impedance:=$USE_IMPEDANCE
         - |
-          waitForSimulation; sleep 12; rostopic pub -1 /model_uav/reference_tracker/set_current_trajectory_point trajectory_msgs/JointTrajectoryPoint "
+          waitForSimulation; sleep $REFERENCE_DELAY; rostopic pub -1 /model_uav/reference_tracker/set_current_trajectory_point trajectory_msgs/JointTrajectoryPoint "
           positions: [0, 0, 1.0, 0.0, 0.0, 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
           velocities: [0]
           accelerations: [0]
@@ -59,7 +78,7 @@ windows:
           effort: [0]
           time_from_start: {secs: 0, nsecs: 0}"
         - |
-          waitForSimulation; sleep 12; rostopic pub -1 /uav/reference_tracker/set_current_trajectory_point trajectory_msgs/JointTrajectoryPoint "
+          waitForSimulation; sleep $REFERENCE_DELAY; rostopic pub -1 /uav/reference_tracker/set_current_trajectory_point trajectory_msgs/JointTrajectoryPoint "
           positions: [0, 0, 1.0, 0.0, 0.0, 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
           velocities: [0]
           accelerations: [0]
@@ -75,19 +94,35 @@ windows:
       layout: tiled
       panes:
         - |
+          if [ "$USE_IMPEDANCE" == "false" ] 
+          then 
+            exit
+          fi;
           waitForSimulation; sleep 22;
           roslaunch asap_manipulator_4r planning_context.launch;
           roslaunch impedance_control impedance_control_asap_4r.launch namespace:="uav"
         - |
+          if [ "$USE_IMPEDANCE" == "false" ] 
+          then 
+            exit
+          fi;
           waitForSimulation; sleep 22;
           roslaunch asap_manipulator_4r planning_context.launch;
           roslaunch impedance_control impedance_control_asap_4r.launch namespace:="model_uav"
         - |
+          if [ "$USE_IMPEDANCE" == "false" ] 
+          then 
+            exit
+          fi;
           waitForSimulation; sleep 30;
           rosservice call /uav/force_filter/zero_all "{}";
           rosservice call /uav/aerial_manipulator_control/start "data: true";
           exit;
         - |
+          if [ "$USE_IMPEDANCE" == "false" ] 
+          then 
+            exit
+          fi;
           waitForSimulation; sleep 30;
           rosservice call /model_uav/force_filter/zero_all "{}";
           rosservice call /model_uav/aerial_manipulator_control/start "data: true";
