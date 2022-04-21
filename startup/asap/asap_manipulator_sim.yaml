@@ -71,6 +71,27 @@ windows:
           accelerations: [0]
           effort: [0]
           time_from_start: {secs: 0, nsecs: 0}"
+  - impedance_control:
+      layout: tiled
+      panes:
+        - |
+          waitForSimulation; sleep 22;
+          roslaunch asap_manipulator_4r planning_context.launch;
+          roslaunch impedance_control impedance_control_asap_4r.launch namespace:="uav"
+        - |
+          waitForSimulation; sleep 22;
+          roslaunch asap_manipulator_4r planning_context.launch;
+          roslaunch impedance_control impedance_control_asap_4r.launch namespace:="model_uav"
+        - |
+          waitForSimulation; sleep 30;
+          rosservice call /uav/force_filter/zero_all "{}";
+          rosservice call /uav/aerial_manipulator_control/start "data: true";
+          exit;
+        - |
+          waitForSimulation; sleep 30;
+          rosservice call /model_uav/force_filter/zero_all "{}";
+          rosservice call /model_uav/aerial_manipulator_control/start "data: true";
+          exit;
   - logging:
       layout: tiled
       panes:
