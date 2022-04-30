@@ -14,8 +14,9 @@ class JointPositionControllerHandler:
 
         # Subscriber for state
         self.joint_state = Float64()
-        self.sub = rospy.Subscriber(sub_topic, JointControllerState, self.jointStateCallback,
-            queue_size=1)
+        if sub_topic != "none":
+            self.sub = rospy.Subscriber(sub_topic, JointControllerState, self.jointStateCallback,
+                queue_size=1)
 
     def publish(self, value):
         self.pub.publish(Float64(value))
