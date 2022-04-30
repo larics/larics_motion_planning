@@ -107,7 +107,7 @@ bool GlobalPlannerRosInterface::modelCorrectedTrajectoryCallback(
   req.publish_trajectory = false;
   success = this->multiDofTrajectoryCallback(req, res);
   req.publish_trajectory = publish_trajectory_temp;
-  int total_dof = res.trajectory.points.size()-1;
+  int initial_trajectory_size = res.trajectory.points.size()-1;
   int man_dof = 4;
 
   Trajectory trajectory;
@@ -320,16 +320,17 @@ bool GlobalPlannerRosInterface::modelCorrectedTrajectoryCallback(
   cout << "Reverse trajectory ervice call was: " << reverse_trajectory_success << endl;
   */
 
-  // TODO: Check this!!
   // Append last planned point to resulting trajectory and set velocities and
   // accelerations to zero.
   res.trajectory.points.push_back(
     req.waypoints.points[req.waypoints.points.size()-1]);
-  res.trajectory.points[total_dof].velocities = res.trajectory.points[total_dof].positions;
-  res.trajectory.points[total_dof].accelerations = res.trajectory.points[total_dof].positions;
-  for (int i=0; i<res.trajectory.points[total_dof].positions.size(); i++){
-    res.trajectory.points[total_dof].velocities[i] = 0;
-    res.trajectory.points[total_dof].accelerations[i] = 0;
+  res.trajectory.points[res.trajectory.points.size()-1].velocities = 
+    res.trajectory.points[initial_trajectory_size].positions;
+  res.trajectory.points[res.trajectory.points.size()-1].accelerations = 
+    res.trajectory.points[initial_trajectory_size].positions;
+  for (int i=0; i<res.trajectory.points[initial_trajectory_size].positions.size(); i++){
+    res.trajectory.points[res.trajectory.points.size()-1].velocities[i] = 0;
+    res.trajectory.points[res.trajectory.points.size()-1].accelerations[i] = 0;
   }
 
   // Publish path and trajectory if requested.
