@@ -36,10 +36,10 @@ class JointTrajectoryToKopterworxAndManipulator:
     # joint feedback. If none is sent, it does not subscribe.
     self.manipulator_dofs = []
     for i in range(self.manipulator_n_dof):
-      current_pub_topic = "joint" + str(i+1) + "_position_controller/command"
+      current_pub_topic = "joint" + str(i+1)# + "_position_controller/command"
       current_sub_topic = "none"
       current_handler = JointPositionControllerHandler(current_pub_topic,
-        current_sub_topic)
+        current_sub_topic, 32) # 32 is Float32 as message type.
       self.manipulator_dofs.append(copy.copy(current_handler))
 
     # Publisher for the UAV trajectory point
