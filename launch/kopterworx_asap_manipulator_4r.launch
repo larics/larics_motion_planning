@@ -43,10 +43,11 @@
       <remap from="go_to/current_state" to="reference_tracker/current_reference" />
     </node>
 
-    <node name="joint_trajectory_point_to_kopterworx_and_manipulator" pkg="larics_motion_planning" type="joint_trajectory_point_to_kopterworx_and_manipulator.py" output="screen">
+    <!-- This node will run on the nuc. -->
+    <!--node name="joint_trajectory_point_to_kopterworx_and_manipulator" pkg="larics_motion_planning" type="joint_trajectory_point_to_kopterworx_and_manipulator.py" output="screen">
       <remap from="joint_trajectory_to_kopterworx_and_manipulator/joint_trajectory_point_in" to="reference_tracker/joint_trajectory_point" />
       <remap from="joint_trajectory_to_kopterworx_and_manipulator/multi_dof_trajectory_point_out" to="position_hold/trajectory" />
-    </node>
+    </node-->
 
     <node name="generate_toppra_trajectory" pkg="topp_ros" type="generate_toppra_trajectory.py" output="screen" />
 
