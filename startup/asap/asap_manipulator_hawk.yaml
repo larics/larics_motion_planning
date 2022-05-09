@@ -24,7 +24,7 @@ windows:
       panes:
         - waitForRos; 
           roslaunch gazebo_ros empty_world.launch 
-          use_sim_time:=true paused:=false
+          use_sim_time:=false paused:=false
         # Optional world elements
         - 
           waitForRos; 
