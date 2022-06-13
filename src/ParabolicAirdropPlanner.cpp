@@ -1,4 +1,5 @@
 #include <larics_motion_planning/ParabolicAirdropPlanner.h>
+#include <larics_motion_planning/MotionPlanningUtil.h>
 
 ParabolicAirdropPlanner::ParabolicAirdropPlanner(
   string config_filename):GlobalPlanner(config_filename)
@@ -14,11 +15,15 @@ ParabolicAirdropPlanner::ParabolicAirdropPlanner(
   //alpha_.resize(10);
   //alpha_ << 20.0, 25.0, 15.0, 30.0, 10.0, 5.0, 0.0, 35.0, 40.0, 45.0;
 
-  string username = "/home/";
-  username = username + getenv("USER") + "/";
-  size_t found = config_filename.find(username);
-  if (found != string::npos) configureParabolicAirdropFromFile(config_filename);
-  else configureParabolicAirdropFromFile(username + config_filename);
+  size_t found = config_filename.find(motion_util::getUserPrefix());
+  if (found != string::npos) 
+  {
+    configureParabolicAirdropFromFile(config_filename);
+  }
+  else 
+  {
+    configureParabolicAirdropFromFile(motion_util::getUserPrefix() + config_filename);
+  }
 }
 
 bool ParabolicAirdropPlanner::configureParabolicAirdropFromFile(

@@ -1,4 +1,5 @@
 #include <larics_motion_planning/RrtPathPlanner.h>
+#include <larics_motion_planning/MotionPlanningUtil.h>
 #include <ctime>
 
 void printRrtStarConfig(RrtStarConfig config)
@@ -45,9 +46,7 @@ RrtPathPlanner::RrtPathPlanner(string config_filename,
   shared_ptr<StateValidityCheckerInterface> validity_checker)
 {
   state_validity_checker_ = validity_checker;
-  string username = "/home/";
-  username = username + getenv("USER") + "/";
-  configureFromFile(username + config_filename);
+  configureFromFile(motion_util::getUserPrefix() + config_filename);
   path_length_ = 0.0;
 }
 

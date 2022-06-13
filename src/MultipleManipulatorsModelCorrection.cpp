@@ -1,4 +1,5 @@
 #include <larics_motion_planning/MultipleManipulatorsModelCorrection.h>
+#include <larics_motion_planning/MotionPlanningUtil.h>
 
 MultipleManipulatorsModelCorrection::MultipleManipulatorsModelCorrection(
   string config_filename, shared_ptr<KinematicsInterface> kinematics)
@@ -6,10 +7,7 @@ MultipleManipulatorsModelCorrection::MultipleManipulatorsModelCorrection(
   // Immediately cast into multiple manipulator kinematics. This is not pretty
   // but it is necessary to get single manipulator joint positions.
   kinematics_ = dynamic_pointer_cast<MultipleManipulatorsKinematics>(kinematics);
-
-  string username = "/home/";
-  username = username + getenv("USER") + "/";
-  configureFromFile(username + config_filename);
+  configureFromFile(motion_util::getUserPrefix() + config_filename);
 }
 
 bool MultipleManipulatorsModelCorrection::configureFromFile(

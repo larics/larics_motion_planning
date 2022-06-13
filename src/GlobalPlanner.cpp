@@ -1,4 +1,5 @@
 #include <larics_motion_planning/GlobalPlanner.h>
+#include <larics_motion_planning/MotionPlanningUtil.h>
 
 GlobalPlanner::GlobalPlanner(string config_filename)
 {
@@ -18,15 +19,32 @@ bool GlobalPlanner::configureFromFile(string config_filename)
   config_filename_ = config_filename;
 
   // Set up map interface
-  map_interface_ = make_shared<OctomapMap>(
-    config["global_planner"]["map_config_file"].as<string>());
+  map_interface_ = make_shared<OctomapMap>( 
+    motion_util::loadPathOrThrow(
+      [&](){ return config["global_planner"]["map_config_file"].as<string>(); }, 
+      "MAP_CONFIG",
+      "global_planner/map_config_file")
+    );
+
   // Set up trajectory planning interface
   trajectory_interface_ = make_shared<ToppraTrajectory>(
-    config["global_planner"]["trajectory_config_file"].as<string>());
+    motion_util::loadPathOrThrow(
+      [&](){ return config["global_planner"]["trajectory_config_file"].as<string>(); },
+      "TRAJ_CONFIG",
+      "global_planner/trajectory_config_file")
+    );
+
   // Set up state validity interface
-  string username = "/home/";
-  username = username + getenv("USER") + "/";
-  YAML::Node state_config = YAML::LoadFile(username + config["global_planner"]["state_validity_checker_config_file"].as<string>());
+  const auto state_validity_config_filename = motion_util::loadPathOrThrow(
+        [&]() { return config["global_planner"]["state_validity_checker_config_file"].as<string>();},
+        "STATE_VALIDITY_CONFIG",
+        "global_planner/state_validity_checker_config_file"
+    );
+
+  YAML::Node state_config = YAML::LoadFile(
+      motion_util::getUserPrefix() + state_validity_config_filename
+    );
+  
   state_validity_checker_type_ = state_config["state_validity_checker"]["type"].as<string>();
   //if (state_validity_checker_type_ == "point"){
   //  state_validity_checker_interface_ = make_shared<PointStateValidityChecker>(
@@ -41,7 +59,7 @@ bool GlobalPlanner::configureFromFile(string config_filename)
     state_validity_checker_type_ == "rectangle" ||
     state_validity_checker_type_ == "prism"){
     state_validity_checker_interface_ = make_shared<SimpleStateValidityCheckers>(
-      config["global_planner"]["state_validity_checker_config_file"].as<string>(),
+      state_validity_config_filename,
       map_interface_, state_validity_checker_type_);
     cout << "State validity checker type is: " << state_validity_checker_type_ << endl;
   }
@@ -75,14 +93,25 @@ bool GlobalPlanner::configureFromFile(string config_filename)
   }
 
   // Set up model correction interface
-  YAML::Node model_config = YAML::LoadFile(username + config["global_planner"]["model_correction_file"].as<string>());
+  const auto model_correction_filename =  
+    motion_util::loadPathOrThrow(
+      [&](){ return config["global_planner"]["model_correction_file"].as<string>(); },
+      "MODEL_CORRECTION_CONFIG",
+      "global_planner/model_correction_file"
+    );
+
+  std::cout << "Loading model correction config with filename:\n" 
+    << motion_util::getUserPrefix() + model_correction_filename << "\n";
+  YAML::Node model_config = YAML::LoadFile(
+    motion_util::getUserPrefix() + model_correction_filename);
+  
   string model_correction_type = model_config["model_correction"]["type"].as<string>();
   if (model_correction_type == "multiple_manipulators"){
     // Kinematics interface has been set up for state validity checker. 
     // It is same here so we do not need to initialize it.
     // Set up model corrections interface
     model_correction_interface_ = make_shared<MultipleManipulatorsModelCorrection>(
-      config["global_planner"]["model_correction_file"].as<string>(),
+      model_correction_filename,
       kinematics_interface_);
     cout << "Model correction type is: multiple manipulators." << endl;
   }
@@ -94,7 +123,11 @@ bool GlobalPlanner::configureFromFile(string config_filename)
 
   // Set up path planning interface
   path_planner_interface_ = make_shared<RrtPathPlanner>(
-    config["global_planner"]["path_planner_config_file"].as<string>(),
+    motion_util::loadPathOrThrow(
+      [&](){ return config["global_planner"]["path_planner_config_file"].as<string>(); },
+      "PATH_PLANNER_CONFIG",
+      "global_planner/path_planner_config_file"
+    ),
     state_validity_checker_interface_);
   num_trajectory_restarts_ =
     config["global_planner"]["trajectory"]["restarts"].as<int>();
