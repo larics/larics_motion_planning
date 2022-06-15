@@ -3,11 +3,9 @@
 
 GlobalPlanner::GlobalPlanner(string config_filename)
 {
-  string username = "/home/";
-  username = username + getenv("USER") + "/";
-  size_t found = config_filename.find(username);
+  size_t found = config_filename.find(motion_util::getUserPrefix());
   if (found != string::npos) configureFromFile(config_filename);
-  else configureFromFile(username + config_filename);
+  else configureFromFile(motion_util::getUserPrefix() + config_filename);
 }
 
 bool GlobalPlanner::configureFromFile(string config_filename)
