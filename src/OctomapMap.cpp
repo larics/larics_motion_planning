@@ -1,6 +1,7 @@
 /// \file OctomapMap.cpp
 
 #include <larics_motion_planning/OctomapMap.h>
+#include <larics_motion_planning/MotionPlanningUtil.h>
 
 OctomapMap::OctomapMap(double resolution) :
 map_(make_unique<octomap::OcTree>(resolution))
@@ -13,9 +14,7 @@ map_(make_unique<octomap::OcTree>(resolution))
 OctomapMap::OctomapMap(string octomap_config_file)
 {
   // Configures the map from yaml file.
-  string username = "/home/";
-  username = username + getenv("USER") + "/";
-  configureFromFile(username + octomap_config_file);
+  configureFromFile(motion_util::getUserPrefix() + octomap_config_file);
 }
 
 OctomapMap::~OctomapMap()
@@ -53,10 +52,14 @@ bool OctomapMap::configureFromFile(string config_filename)
   YAML::Node config = YAML::LoadFile(config_filename);
 
   // Load map from path provided in file.
-  string username = "/home/";
-  username = username + getenv("USER") + "/";
-  map_ = make_unique<octomap::OcTree>(username +
-    config["octomap"]["path_to_file"].as<string>());
+  map_ = make_unique<octomap::OcTree>(
+    motion_util::getUserPrefix() +
+    motion_util::loadPathOrThrow(
+      [&](){ return config["octomap"]["path_to_file"].as<string>(); },
+      "OCTOMAP_FILE",
+      "octomap/path_to_file"
+      )
+    );
   // Set search depth from file.
   search_depth_ = config["octomap"]["search_depth"].as<int>();
   return true;
