@@ -577,7 +577,7 @@ bool GlobalPlannerRosInterface::multiDofTrajectoryCallback(
     return true;
   }
 
-  cout << req << "\n";
+  //cout << req << "\n";
 
   // Check if user overrides trajectory dynamic constraints set through
   // config file
