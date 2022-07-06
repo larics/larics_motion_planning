@@ -412,13 +412,13 @@ bool GlobalPlannerRosInterface::multipleManipulatorsModelCorrectedTrajectoryCall
         j,6+11,1,5);
     }
     corrected_trajectory = global_planner_->modelCorrectedTrajectory(
-      /*jointTrajectoryToTrajectory(extended_initial_trajectory),
-      jointTrajectoryToTrajectory(service.response.executed_trajectory)*/
-      ext_init, executed_trajectory);
+      jointTrajectoryToTrajectory(extended_initial_trajectory),
+      jointTrajectoryToTrajectory(service.response.executed_trajectory)
+      /*ext_init, executed_trajectory*/);
 
     // Try to do this iteratively. Start from i=1 because the first iteration
     // has already been done above.
-    int max_iter = 10;
+    int max_iter = 1;
     for (int i=1; i<max_iter; i++){
       cout << "Starting iteration: " << i << endl;
 
@@ -593,7 +593,7 @@ bool GlobalPlannerRosInterface::multiDofTrajectoryCallback(
     return true;
   }
 
-  cout << req << "\n";
+  //cout << req << "\n";
 
   // Check if user overrides trajectory dynamic constraints set through
   // config file
