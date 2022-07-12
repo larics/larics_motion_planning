@@ -1,4 +1,9 @@
 # Simulation for asap manipulator
+# USAGE:
+# 1) Use without impedance (trajectory only)
+#   tmuxinator start -p asap_manipulator_sim.yaml 
+# 2) Use with impedance
+#   tmuxinator start -p asap_manipulator_sim.yaml use_impedance=true
 name: asap_manipulator_sim
 root: ./
 startup_window: roscore
@@ -31,7 +36,8 @@ windows:
           waitForRos; 
           waitForSimulation; 
           roslaunch asap_manipulator_4r planning_context.launch;
-          roslaunch larics_gazebo_worlds spawn_takeoff_pad.launch
+          roslaunch larics_gazebo_worlds spawn_takeoff_pad.launch;
+          roslaunch larics_gazebo_worlds spawn_cylinder.launch x:=2.75 z:=0.8 cylinder_length:=0.01 cylinder_radius:=1.0 pitch:=1.5707963
   - uavs:
       layout: tiled
       panes:
@@ -90,6 +96,109 @@ windows:
           accelerations: [0]
           effort: [0]
           time_from_start: {secs: 0, nsecs: 0}"
+  - running:
+      layout: tiled
+      panes:
+        - |
+          history -s "rosservice call /uav/model_correction_trajectory \"waypoints:
+            header:
+              seq: 0
+              stamp: {secs: 0, nsecs: 0}
+              frame_id: ''
+            joint_names: ['']
+            points:
+            - positions: [0, 0, 1, 0, 0, 0, 0.0, -0.5, 1, -0.5, 0, 0, 0, 0, 0, 0, 1]
+              velocities: [0]
+              accelerations: [0]
+              effort: [0]
+              time_from_start: {secs: 0, nsecs: 0}
+            - positions: [2, 0, 1, 0, 0, 0, 0.0, -0.5, 1, -0.5, 0, 0, 0, 0, 0, 0, 1]
+              velocities: [0]
+              accelerations: [0]
+              effort: [0]
+              time_from_start: {secs: 0, nsecs: 0}
+          publish_path: false
+          publish_trajectory: true
+          plan_path: false
+          plan_trajectory: true
+          override_dynamic_constraints: false
+          velocity_constraints: [0]
+          acceleration_constraints: [0]\""; echo -e "\033[0;32mPlan trajectory without force."
+        - |
+          history -s "rosservice call /uav/model_correction_trajectory \"waypoints:
+            header:
+              seq: 0
+              stamp: {secs: 0, nsecs: 0}
+              frame_id: ''
+            joint_names: ['']
+            points:
+            - positions: [0, 0, 1, 0, 0, 0, 0.0, -0.5, 1, -0.5, 0, 0, 0, 0, 0, 0, 1]
+              velocities: [0]
+              accelerations: [0]
+              effort: [0]
+              time_from_start: {secs: 0, nsecs: 0}
+            - positions: [2, 0, 1, 0, 0, 0, 0.0, -0.5, 1, -0.5, 0.4, 0, 0, 0, 0, 0, 1]
+              velocities: [0]
+              accelerations: [0]
+              effort: [0]
+              time_from_start: {secs: 0, nsecs: 0}
+          publish_path: false
+          publish_trajectory: true
+          plan_path: false
+          plan_trajectory: true
+          override_dynamic_constraints: false
+          velocity_constraints: [0]
+          acceleration_constraints: [0]\""; echo -e "\033[0;32mPlan trajectory with force in X axis. Only UAV is impedant."
+        - |
+          history -s "rosservice call /uav/model_correction_trajectory \"waypoints:
+            header:
+              seq: 0
+              stamp: {secs: 0, nsecs: 0}
+              frame_id: ''
+            joint_names: ['']
+            points:
+            - positions: [0, 0, 1, 0, 0, 0, 0.0, -0.5, 1, -0.5, 0, 0, 0, 0, 0, 0, 1]
+              velocities: [0]
+              accelerations: [0]
+              effort: [0]
+              time_from_start: {secs: 0, nsecs: 0}
+            - positions: [2, 0, 1, 0, 0, 0, 0.0, -0.5, 1, -0.5, 0.4, 0, 0, 0, 0, 0, 0]
+              velocities: [0]
+              accelerations: [0]
+              effort: [0]
+              time_from_start: {secs: 0, nsecs: 0}
+          publish_path: false
+          publish_trajectory: true
+          plan_path: false
+          plan_trajectory: true
+          override_dynamic_constraints: false
+          velocity_constraints: [0]
+          acceleration_constraints: [0]\""; echo -e "\033[0;32mPlan trajectory with force in X axis. Only manipulator is impedant."
+        - |
+          history -s "rosservice call /uav/model_correction_trajectory \"waypoints:
+            header:
+              seq: 0
+              stamp: {secs: 0, nsecs: 0}
+              frame_id: ''
+            joint_names: ['']
+            points:
+            - positions: [0, 0, 1, 0, 0, 0, 0.0, -0.5, 1, -0.5, 0, 0, 0, 0, 0, 0, 1]
+              velocities: [0]
+              accelerations: [0]
+              effort: [0]
+              time_from_start: {secs: 0, nsecs: 0}
+            - positions: [2, 0, 1, 0, 0, 0, 0.0, -0.5, 1, -0.5, 0.4, 0, 0, 0, 0, 0, 0.5]
+              velocities: [0]
+              accelerations: [0]
+              effort: [0]
+              time_from_start: {secs: 0, nsecs: 0}
+          publish_path: false
+          publish_trajectory: true
+          plan_path: false
+          plan_trajectory: true
+          override_dynamic_constraints: false
+          velocity_constraints: [0]
+          acceleration_constraints: [0]\""; echo -e "\033[0;32mPlan trajectory with force in X axis. Both UAV and manipulator are impedant. Alpha=0.5."
   - impedance_control:
       layout: tiled
       panes:
