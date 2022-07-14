@@ -4,6 +4,8 @@
 #   tmuxinator start -p asap_manipulator_sim.yaml 
 # 2) Use with impedance
 #   tmuxinator start -p asap_manipulator_sim.yaml use_impedance=true
+# NOTES:
+# 1) Setting force up to 2N was achievable by the manipulator
 name: asap_manipulator_sim
 root: ./
 startup_window: roscore
@@ -137,7 +139,7 @@ windows:
               accelerations: [0]
               effort: [0]
               time_from_start: {secs: 0, nsecs: 0}
-            - positions: [2, 0, 1, 0, 0, 0, 0.0, -0.5, 1, -0.5, 0.4, 0, 0, 0, 0, 0, 1]
+            - positions: [2, 0, 1, 0, 0, 0, 0.0, -0.5, 1, -0.5, 2.0, 0, 0, 0, 0, 0, 1]
               velocities: [0]
               accelerations: [0]
               effort: [0]
@@ -162,7 +164,7 @@ windows:
               accelerations: [0]
               effort: [0]
               time_from_start: {secs: 0, nsecs: 0}
-            - positions: [2, 0, 1, 0, 0, 0, 0.0, -0.5, 1, -0.5, 0.4, 0, 0, 0, 0, 0, 0]
+            - positions: [2, 0, 1, 0, 0, 0, 0.0, -0.5, 1, -0.5, 2.0, 0, 0, 0, 0, 0, 0]
               velocities: [0]
               accelerations: [0]
               effort: [0]
@@ -187,7 +189,7 @@ windows:
               accelerations: [0]
               effort: [0]
               time_from_start: {secs: 0, nsecs: 0}
-            - positions: [2, 0, 1, 0, 0, 0, 0.0, -0.5, 1, -0.5, 0.4, 0, 0, 0, 0, 0, 0.5]
+            - positions: [2, 0, 1, 0, 0, 0, 0.0, -0.5, 1, -0.5, 2.0, 0, 0, 0, 0, 0, 0.5]
               velocities: [0]
               accelerations: [0]
               effort: [0]
