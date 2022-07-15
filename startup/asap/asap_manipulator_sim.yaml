@@ -8,7 +8,7 @@
 # 1) Setting force up to 2N was achievable by the manipulator
 name: asap_manipulator_sim
 root: ./
-startup_window: roscore
+#startup_window: roscore
 pre_window: |
   cd ~/; 
   export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:$HOME/uav_ws/src/larics_gazebo_worlds/models;
