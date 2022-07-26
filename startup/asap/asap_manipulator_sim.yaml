@@ -211,7 +211,7 @@ windows:
           fi;
           waitForSimulation; sleep 22;
           roslaunch asap_manipulator_4r planning_context.launch;
-          roslaunch impedance_control impedance_control_asap_4r.launch namespace:="uav"
+          roslaunch impedance_control impedance_control_asap_4r_sim.launch namespace:="uav"
         - |
           if [ "$USE_IMPEDANCE" == "false" ] 
           then 
@@ -219,7 +219,7 @@ windows:
           fi;
           waitForSimulation; sleep 22;
           roslaunch asap_manipulator_4r planning_context.launch;
-          roslaunch impedance_control impedance_control_asap_4r.launch namespace:="model_uav"
+          roslaunch impedance_control impedance_control_asap_4r_sim.launch namespace:="model_uav"
         - |
           if [ "$USE_IMPEDANCE" == "false" ] 
           then 
