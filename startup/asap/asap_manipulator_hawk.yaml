@@ -1,21 +1,30 @@
 # Simulation for asap manipulator
 # USAGE:
 # 1) Use without impedance (trajectory only)
-#   tmuxinator start -p asap_manipulator_sim.yaml 
+#   tmuxinator start -p asap_manipulator_hawk.yaml 
 # 2) Use with impedance
-#   tmuxinator start -p asap_manipulator_sim.yaml use_impedance=true
+#   tmuxinator start -p asap_manipulator_hawk.yaml use_impedance=true
+# 2) Use without uav
+#   tmuxinator start -p asap_manipulator_hawk.yaml use_impedance=true offline_testing=true
 # NOTES:
 # 1) Setting force up to 2N was achievable by the manipulator
-name: asap_manipulator_sim
+name: asap_manipulator_hawk
 root: ./
 #startup_window: roscore
 pre_window: |
   cd ~/; 
   export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:$HOME/uav_ws/src/larics_gazebo_worlds/models;
   export USE_IMPEDANCE=<%= @settings["use_impedance"]%>;
+  export OFFLINE_TESTING=<%= @settings["offline_testing"]%>;
+  echo "OFFLINE TESTING IS";
+  echo $OFFLINE_TESTING;
   if [[ -z "${USE_IMPEDANCE}" ]]
   then 
     export USE_IMPEDANCE="false"
+  fi;
+  if [[ -z "${OFFLINE_TESTING}" ]]
+  then 
+    export OFFLINE_TESTING="false"
   fi;
   if [ "$USE_IMPEDANCE" == "false" ]
   then
@@ -26,13 +35,21 @@ pre_window: |
     REFERENCE_DELAY=35
   fi;
 windows:
-  - roscore_gazebo:
+  - offline_testing:
       layout: tiled
       panes:
-        - roscore
+        - |
+          if [ "$OFFLINE_TESTING" == "false" ] 
+          then 
+            exit
+          fi;
+          roscore
+  - gazebo:
+      layout: tiled
+      panes:
         - waitForRos; 
           roslaunch gazebo_ros empty_world.launch 
-          use_sim_time:=true paused:=false
+          use_sim_time:=false paused:=false
         # Optional world elements
         - 
           waitForRos; 
@@ -40,18 +57,6 @@ windows:
           roslaunch asap_manipulator_4r planning_context.launch;
           roslaunch larics_gazebo_worlds spawn_takeoff_pad.launch;
           roslaunch larics_gazebo_worlds spawn_cylinder.launch x:=2.75 z:=0.8 cylinder_length:=0.01 cylinder_radius:=1.0 pitch:=1.5707963
-  - uavs:
-      layout: tiled
-      panes:
-        - 
-          waitForSimulation; 
-          sleep 8; 
-          roslaunch mmuav_gazebo uav_attitude_position.launch 
-            start_gazebo:=false 
-            manipulator_type:="asap_manipulator_4r" z:=1 
-            manipulator_tool:="rod" name:="uav"
-            collision_bitmask:=1
-            start_trajectory_dequeue:=$START_TRAJECTORY_DEQUEUE
         - 
           waitForSimulation; 
           sleep 8; 
@@ -70,7 +75,7 @@ windows:
       layout: tiled
       panes:
         - waitForSimulation; sleep 5; 
-          roslaunch larics_motion_planning arducopter_asap_manipulator_4r.launch
+          roslaunch larics_motion_planning kopterworx_asap_manipulator_4r.launch
           use_impedance:=$USE_IMPEDANCE
         - |
           waitForSimulation; sleep $REFERENCE_DELAY; rostopic pub -1 /model_uav/reference_tracker/set_current_trajectory_point trajectory_msgs/JointTrajectoryPoint "
@@ -86,13 +91,13 @@ windows:
           effort: [0]
           time_from_start: {secs: 0, nsecs: 0}"
         - |
-          waitForSimulation; sleep $REFERENCE_DELAY; rostopic pub -1 /uav/reference_tracker/set_current_trajectory_point trajectory_msgs/JointTrajectoryPoint "
+          waitForSimulation; sleep $REFERENCE_DELAY; rostopic pub -1 /red/reference_tracker/set_current_trajectory_point trajectory_msgs/JointTrajectoryPoint "
           positions: [0, 0, 1.0, 0.0, 0.0, 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
           velocities: [0]
           accelerations: [0]
           effort: [0]
           time_from_start: {secs: 0, nsecs: 0}";
-          rostopic pub -1 /uav/go_to/reference/joint_trajectory_point trajectory_msgs/JointTrajectoryPoint "
+          rostopic pub -1 /red/go_to/reference/joint_trajectory_point trajectory_msgs/JointTrajectoryPoint "
           positions: [0, 0, 1, 0, 0, 0, 0.0, -0.5, 1, -0.5, 0, 0, 0, 0, 0, 0, 1]
           velocities: [0]
           accelerations: [0]
@@ -102,7 +107,7 @@ windows:
       layout: tiled
       panes:
         - |
-          history -s "rosservice call /uav/model_correction_trajectory \"waypoints:
+          history -s "rosservice call /red/model_correction_trajectory \"waypoints:
             header:
               seq: 0
               stamp: {secs: 0, nsecs: 0}
@@ -127,7 +132,7 @@ windows:
           velocity_constraints: [0]
           acceleration_constraints: [0]\""; echo -e "\033[0;32mPlan trajectory without force."
         - |
-          history -s "rosservice call /uav/model_correction_trajectory \"waypoints:
+          history -s "rosservice call /red/model_correction_trajectory \"waypoints:
             header:
               seq: 0
               stamp: {secs: 0, nsecs: 0}
@@ -152,7 +157,7 @@ windows:
           velocity_constraints: [0]
           acceleration_constraints: [0]\""; echo -e "\033[0;32mPlan trajectory with force in X axis. Only UAV is impedant."
         - |
-          history -s "rosservice call /uav/model_correction_trajectory \"waypoints:
+          history -s "rosservice call /red/model_correction_trajectory \"waypoints:
             header:
               seq: 0
               stamp: {secs: 0, nsecs: 0}
@@ -177,7 +182,7 @@ windows:
           velocity_constraints: [0]
           acceleration_constraints: [0]\""; echo -e "\033[0;32mPlan trajectory with force in X axis. Only manipulator is impedant."
         - |
-          history -s "rosservice call /uav/model_correction_trajectory \"waypoints:
+          history -s "rosservice call /red/model_correction_trajectory \"waypoints:
             header:
               seq: 0
               stamp: {secs: 0, nsecs: 0}
@@ -211,7 +216,7 @@ windows:
           fi;
           waitForSimulation; sleep 22;
           roslaunch asap_manipulator_4r planning_context.launch;
-          roslaunch impedance_control impedance_control_asap_4r_sim.launch namespace:="uav"
+          roslaunch impedance_control impedance_control_asap_4r_sim.launch namespace:="red"
         - |
           if [ "$USE_IMPEDANCE" == "false" ] 
           then 
@@ -226,8 +231,8 @@ windows:
             exit
           fi;
           waitForSimulation; sleep 30;
-          rosservice call /uav/force_filter/zero_all "{}";
-          rosservice call /uav/aerial_manipulator_control/start "data: true";
+          rosservice call /red/force_filter/zero_all "{}";
+          rosservice call /red/aerial_manipulator_control/start "data: true";
           exit;
         - |
           if [ "$USE_IMPEDANCE" == "false" ] 
@@ -242,9 +247,9 @@ windows:
       layout: tiled
       panes:
         - |
-          if [ ! -d "$HOME/bags/asap_manipulator_sim" ];
+          if [ ! -d "$HOME/bags/asap_manipulator_hawk" ];
           then
-            mkdir $HOME/bags/asap_manipulator_sim;
+            mkdir $HOME/bags/asap_manipulator_hawk;
           fi;
-          cd ~/bags/asap_manipulator_sim;
-          history -s "rosbag record -a --chunksize=64 -x \"/(.*)(gazebo|camera|bias|joint_states|parameter_descriptions|parameter_updates)(.*)\" -o asap_manipulator_sim"
+          cd ~/bags/asap_manipulator_hawk;
+          history -s "rosbag record -a --chunksize=64 -x \"/(.*)(gazebo|camera|bias|joint_states|parameter_descriptions|parameter_updates)(.*)\" -o asap_manipulator_hawk"

@@ -107,11 +107,17 @@ bool GlobalPlannerRosInterface::modelCorrectedTrajectoryCallback(
   req.publish_trajectory = false;
   success = this->multiDofTrajectoryCallback(req, res);
   req.publish_trajectory = publish_trajectory_temp;
+  int initial_trajectory_size = res.trajectory.points.size()-1;
+  int man_dof = 4;
 
   Trajectory trajectory;
   if (success == true){
 
     trajectory = global_planner_->getTrajectory();
+    // This is the starting
+    Eigen::VectorXd ik_starting_configuration;
+    ik_starting_configuration = trajectory.position.block(0, 6, 1, man_dof).transpose();
+    cout << ik_starting_configuration << endl;
 
     cout << "Cols: " << trajectory.position.cols() << " Rows: " << trajectory.position.rows() << endl;
     cout << "Animating initial trajectory" << endl;
@@ -173,7 +179,8 @@ bool GlobalPlannerRosInterface::modelCorrectedTrajectoryCallback(
     // 0.075 z displacement for arducopter simulation
     // 0.125 z displacement for neo
     // 0.2 z displacement for arducopter with wp manipulator 3rx
-    t_b_l0.translate(Eigen::Vector3d(0, 0, 0.2));
+    // -0.2 z displacement for arducopter with asap manipulator
+    t_b_l0.translate(Eigen::Vector3d(0, 0, -0.2));
     t_b_l0.rotate(rot_uav_manipulator);
     shared_ptr<KinematicsInterface> kinematics = global_planner_->getKinematicsInterface();
     // Go through all trajectory points.
@@ -193,7 +200,7 @@ bool GlobalPlannerRosInterface::modelCorrectedTrajectoryCallback(
       // Transform from l0 to end effector.
       // TODO: Provjeriti ovaj dio ako ne radi.
       Eigen::Affine3d t_l0_ee = kinematics->getEndEffectorTransform(
-        (trajectory.position.block(i, 6, 1, 3)).transpose());
+        (trajectory.position.block(i, 6, 1, man_dof)).transpose());
       // Calculate end effector pose in global coordinate system.
       Eigen::Affine3d t_w_ee = t_w_b*t_b_l0*t_l0_ee;
       // Now we have pose of the end effector that we desire, and it was planned
@@ -251,10 +258,12 @@ bool GlobalPlannerRosInterface::modelCorrectedTrajectoryCallback(
       // i da vraća VectorXd.
       bool found_ik;
       Eigen::VectorXd ik_solution;
+      kinematics->setJointPositions(ik_starting_configuration);
       ik_solution = kinematics->calculateInverseKinematics(t_l0_ee, found_ik);
+      ik_starting_configuration = ik_solution;
       if (found_ik == false) cout << i << " " << yaw << endl;
       else{
-        trajectory.position.block(i, 6, 1, 3) = ik_solution.transpose();
+        trajectory.position.block(i, 6, 1, man_dof) = ik_solution.transpose();
       }
     }
     cout << "Model corrections applied. Animating with model corrections" << endl;
@@ -311,17 +320,17 @@ bool GlobalPlannerRosInterface::modelCorrectedTrajectoryCallback(
   cout << "Reverse trajectory ervice call was: " << reverse_trajectory_success << endl;
   */
 
-  // TODO: Check this!!
   // Append last planned point to resulting trajectory and set velocities and
   // accelerations to zero.
   res.trajectory.points.push_back(
     req.waypoints.points[req.waypoints.points.size()-1]);
-  int dof = res.trajectory.points.size()-1;
-  res.trajectory.points[dof].velocities = res.trajectory.points[dof].positions;
-  res.trajectory.points[dof].accelerations = res.trajectory.points[dof].positions;
-  for (int i=0; i<res.trajectory.points[dof].positions.size(); i++){
-    res.trajectory.points[dof].velocities[i] = 0;
-    res.trajectory.points[dof].accelerations[i] = 0;
+  res.trajectory.points[res.trajectory.points.size()-1].velocities = 
+    res.trajectory.points[initial_trajectory_size].positions;
+  res.trajectory.points[res.trajectory.points.size()-1].accelerations = 
+    res.trajectory.points[initial_trajectory_size].positions;
+  for (int i=0; i<res.trajectory.points[initial_trajectory_size].positions.size(); i++){
+    res.trajectory.points[res.trajectory.points.size()-1].velocities[i] = 0;
+    res.trajectory.points[res.trajectory.points.size()-1].accelerations[i] = 0;
   }
 
   // Publish path and trajectory if requested.
@@ -577,7 +586,7 @@ bool GlobalPlannerRosInterface::multiDofTrajectoryCallback(
     return true;
   }
 
-  //cout << req << "\n";
+  //cout << req << endl;
 
   // Check if user overrides trajectory dynamic constraints set through
   // config file
