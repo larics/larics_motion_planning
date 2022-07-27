@@ -16,7 +16,7 @@ windows:
       panes:
         - > #UAV
           waitForSimulation; sleep 5; 
-          roslaunch mmuav_gazebo uav_attitude_position.launch start_gazebo:=false x:=2.0 z:=1.0 manipulator_type:="wp_manipulator" manipulator_tool:="rod_with_camera" collision_bitmask:=1
+          roslaunch mmuav_gazebo uav_attitude_position.launch start_gazebo:=false x:=2.0 z:=1.0 manipulator_type:="wp_manipulator" manipulator_tool:="rod_with_camera" collision_bitmask:=1 start_trajectory_dequeue:=true
         - > # Model uav if needed
           waitForSimulation; sleep 5; 
           history -s "roslaunch mmuav_gazebo uav_attitude_position.launch start_gazebo:=false name:=\"model_uav\" x:=2.0 z:=1.0 manipulator_type:=\"wp_manipulator\" manipulator_tool:=\"rod_with_camera\" collision_bitmask:=2"
@@ -41,6 +41,14 @@ windows:
           accelerations: [0]
           effort: [0]
           time_from_start: {secs: 0, nsecs: 0}"
+        - |
+          waitForSimulation; history -s "rostopic pub -1 /uav/go_to/reference/multiarray std_msgs/Float64MultiArray \"layout:
+            dim:
+            - label: ''
+              size: 0
+              stride: 0
+            data_offset: 0
+          data: [0.49860658679029957, 0.7503987182246562, 1.05, 0.0, 0.0, 1.5700000000000003, 0.787, 1.0507963267948965, 0.787, -1.57, 0.787]\""
   - ellipse_waypoints:
       layout: tiled
       panes:
@@ -58,10 +66,18 @@ windows:
               stride: 0
             data_offset: 0
           data: [0, 0, 0, 0, 0, 0, 0.787, 0.787, 0.787, -1.57, 0.787]"
+        - |
+          waitForRos; history -s "rostopic pub -1 /uav/ellipse_waypoints_trajectory_planner/box_config std_msgs/Float64MultiArray \"layout:
+            dim:
+            - label: ''
+              size: 0
+              stride: 0
+            data_offset: 0
+          data: [1, 2.5, 0.8, 1.57]\""
   - gui:
       layout: tiled
       panes:
-        - waitForSimulation; sleep 5; rosrun rqt_gui rqt_gui
+        - waitForSimulation; sleep 5; history -s "rosrun rqt_gui rqt_gui"
         - |
           waitForSimulation; sleep 5; 
           roscd larics_motion_planning/startup; rosrun rviz rviz -d greenhouse_uav_mrs_rviz.rviz

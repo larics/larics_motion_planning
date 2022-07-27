@@ -1,10 +1,9 @@
 #include <larics_motion_planning/MultipleManipulatorsKinematics.h>
+#include <larics_motion_planning/MotionPlanningUtil.h>
 
 MultipleManipulatorsKinematics::MultipleManipulatorsKinematics(string config_filename)
 {
-  string username = "/home/";
-  username = username + getenv("USER") + "/";
-  configureFromFile(username + config_filename);
+  configureFromFile(motion_util::getUserPrefix() + config_filename);
 }
 
 bool MultipleManipulatorsKinematics::configureFromFile(string config_filename)

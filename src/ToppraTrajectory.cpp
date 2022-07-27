@@ -1,17 +1,15 @@
 #include <larics_motion_planning/ToppraTrajectory.h>
+#include <larics_motion_planning/MotionPlanningUtil.h>
 
 ToppraTrajectory::ToppraTrajectory(string config_filename) :
 TrajectoryInterface(config_filename)
 {
-  string username = "/home/";
-  username = username + getenv("USER") + "/";
-
   // Set up node handle and create service
   nh_ = ros::NodeHandle();
   generate_trajectory_client_ = nh_.serviceClient<topp_ros::GenerateTrajectory>(
     "generate_toppra_trajectory");
 
-  configureFromFile(username + config_filename);
+  configureFromFile(motion_util::getUserPrefix() + config_filename);
 }
 
 ToppraTrajectory::ToppraTrajectory(Eigen::MatrixXd config_matrix, double sampling_frequency) :

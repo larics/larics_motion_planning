@@ -1,4 +1,5 @@
 #include <larics_motion_planning/TrajectoryInterface.h>
+#include <larics_motion_planning/MotionPlanningUtil.h>
 
 TrajectoryInterface::TrajectoryInterface()
 {
@@ -8,15 +9,11 @@ TrajectoryInterface::TrajectoryInterface()
 TrajectoryInterface::TrajectoryInterface(string config_filename)
 {
   cout << "Hello from TrajectoryInterface" << endl;
-  cout << config_filename << endl;
-
-  string username = "/home/";
-  username = username + getenv("USER") + "/";
-
   cout << "Initializing trajectory interface from file:" << endl;
   cout << "  " << config_filename << endl;
+
   // Open yaml file with configuration
-  YAML::Node config = YAML::LoadFile(username + config_filename);
+  YAML::Node config = YAML::LoadFile(motion_util::getUserPrefix() + config_filename);
 
   // Load everything from yaml file
   // Indexes for constant velocity reparametrization
