@@ -3,9 +3,14 @@
 
 WpManipulatorKinematics::WpManipulatorKinematics(string config_filename)
 {
-  string username = "/home/";
-  username = username + getenv("USER") + "/";
-  configureFromFile(username + config_filename);
+  if (getenv("ABSOLUTE_CONFIG")){
+    configureFromFile(config_filename);
+  }
+  else{
+    string username = "/home/";
+    username = username + getenv("USER") + "/";
+    configureFromFile(username + config_filename);
+  }
 }
 
 WpManipulatorKinematics::WpManipulatorKinematics(string robot_model_name, 
