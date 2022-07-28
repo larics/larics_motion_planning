@@ -32,18 +32,19 @@ bool WpManipulatorKinematics::configureFromFile(string config_filename)
   cout << "  " << config_filename << endl;
 
   YAML::Node config = YAML::LoadFile(config_filename);
-
   // Load manipulator configuration
   string robot_model_name, joint_group_name, dh_parameters_file;
   robot_model_name = config["kinematics"]["wp_manipulator_kinematics"]["robot_model_name"].as<string>();
   joint_group_name = config["kinematics"]["wp_manipulator_kinematics"]["joint_group_name"].as<string>();
-  string username = "/home/";
-  username = username + getenv("USER") + "/";
+  //string username = "/home/";
+  //username = username + getenv("USER") + "/";
   //dh_parameters_file = username + config["kinematics"]["wp_manipulator_kinematics"]["dh_parameters_file"].as<string>();
   dh_parameters_file = motion_util::loadPathOrThrow(
       [&](){ return config["kinematics"]["wp_manipulator_kinematics"]["dh_parameters_file"].as<string>(); }, 
       "DH_PARAMETERS_FILE",
       "wp_manipulator_kinematics/kinematics_config_file");
+  cout << "WpManipulatorKinematics.cpp" << endl;
+  cout << "  DH params file: " << dh_parameters_file << endl;
   // Configure manipulator
   manipulator_.setManipulatorName(robot_model_name, joint_group_name);
   manipulator_.LoadParameters(dh_parameters_file);
