@@ -35,7 +35,7 @@ bool WpManipulatorKinematics::configureFromFile(string config_filename)
   string username = "/home/";
   username = username + getenv("USER") + "/";
   //dh_parameters_file = username + config["kinematics"]["wp_manipulator_kinematics"]["dh_parameters_file"].as<string>();
-  motion_util::loadPathOrThrow(
+  dh_parameters_file = motion_util::loadPathOrThrow(
       [&](){ return config["kinematics"]["wp_manipulator_kinematics"]["dh_parameters_file"].as<string>(); }, 
       "DH_PARAMETERS_FILE",
       "wp_manipulator_kinematics/kinematics_config_file");
