@@ -1,4 +1,5 @@
 #include <larics_motion_planning/WpManipulatorKinematics.h>
+#include <larics_motion_planning/MotionPlanningUtil.h>
 
 WpManipulatorKinematics::WpManipulatorKinematics(string config_filename)
 {
@@ -33,7 +34,11 @@ bool WpManipulatorKinematics::configureFromFile(string config_filename)
   joint_group_name = config["kinematics"]["wp_manipulator_kinematics"]["joint_group_name"].as<string>();
   string username = "/home/";
   username = username + getenv("USER") + "/";
-  dh_parameters_file = username + config["kinematics"]["wp_manipulator_kinematics"]["dh_parameters_file"].as<string>();
+  //dh_parameters_file = username + config["kinematics"]["wp_manipulator_kinematics"]["dh_parameters_file"].as<string>();
+  motion_util::loadPathOrThrow(
+      [&](){ return config["kinematics"]["wp_manipulator_kinematics"]["dh_parameters_file"].as<string>(); }, 
+      "DH_PARAMETERS_FILE",
+      "wp_manipulator_kinematics/kinematics_config_file");
   // Configure manipulator
   manipulator_.setManipulatorName(robot_model_name, joint_group_name);
   manipulator_.LoadParameters(dh_parameters_file);
