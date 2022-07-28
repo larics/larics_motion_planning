@@ -3,15 +3,17 @@
   <arg name="namespace" default="red" />
   <arg name="model_namespace" default="model_uav" />
   <arg name="use_impedance" default="false" />
+  <arg name="global_planner_config_file" default="$(find larics_motion_planning)/config/asap/arducopter_asap_manipulator_4r.yaml" />
 
   <!-- Before launching this file you need to launch planning context-->
   <!-- roslaunch asap_manipulator_4r planning_context.launch -->
 
   <group ns="$(arg namespace)" >
     <!-- Global planner generates path and/or trajectory based on desired waypoints.-->
+    <!-- For debugging with gdb add: launch-prefix="gdb -ex run -_-args" -->
     <node name="global_planner" pkg="larics_motion_planning" type="global_planner_node" output="screen">
       <param name="rate" value="$(arg planner_rate)" />
-      <param name="global_planner_config_file" value="$(find larics_motion_planning)/config/asap/arducopter_asap_manipulator_4r.yaml" />
+      <param name="global_planner_config_file" value="$(arg global_planner_config_file)" />
       <param name="model_animation_dt_us" value="10" />
       <param name="model_uav_namespace" value="/$(arg model_namespace)" />
 
