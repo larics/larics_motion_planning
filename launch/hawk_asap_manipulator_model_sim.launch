@@ -1,0 +1,63 @@
+<launch>
+  <arg name="planner_rate" default="10" />
+  <arg name="model_namespace" default="model_uav" />
+  <arg name="use_impedance" default="false" />
+  <arg name="global_planner_model_config_file" default="$(find larics_motion_planning)/config/asap/hawk_asap_manipulator_model_sim.yaml" />
+
+  <!-- Before launching this file you need to launch planning context-->
+  <!-- roslaunch asap_manipulator_4r planning_context.launch -->
+
+  <!-- This is the part where we get corrections based on model -->
+  <group ns="$(arg model_namespace)">
+    <node name="global_planner" pkg="larics_motion_planning" type="global_planner_node" output="screen">
+      <param name="rate" value="$(arg planner_rate)" />
+      <param name="global_planner_config_file" value="$(arg global_planner_model_config_file)" />
+      <!-- This would be model for the model, so it is set to none -->
+      <param name="model_uav_namespace" value="/none" />
+
+      <!-- visualization parameters -->
+      <param name="state_scale" value="0.05" />
+      <param name="waypoints_scale" value="0.5" />
+    </node>
+
+    <node name="joint_trajectory_reference_tracker" pkg="larics_motion_planning" type="joint_trajectory_reference_tracker.py" output="screen">
+      <!--remap from="reference_tracker/joint_trajectory_point" to="aerial_manipulator_control/trajectory_ref_input" /-->
+      <remap from="reference_tracker/joint_trajectory" to="joint_trajectory" />
+    </node>
+
+    <group if="$(arg use_impedance)">
+    <node name="impedance_joint_trajectory_handler" pkg="larics_motion_planning" type="impedance_joint_trajectory_handler.py" output="screen">
+      <remap from="impedance_joint_trajectory_handler/joint_trajectory_point_in" to="reference_tracker/joint_trajectory_point" />
+      <remap from="impedance_joint_trajectory_handler/joint_trajectory_point_out" to="aerial_manipulator_control/trajectory_ref_input" />
+      <param name="delay_time" value="0.1" />
+    </node>
+    </group>
+
+
+    <node name="go_to_reference" pkg="larics_motion_planning" type="go_to_reference.py" output="screen">
+      <remap from="go_to/trajectory_request" to="multi_dof_trajectory" />
+      <remap from="go_to/joint_trajectory" to="joint_trajectory" />
+      <remap from="go_to/current_state" to="reference_tracker/current_reference" />
+    </node>
+
+    <node name="generate_toppra_trajectory" pkg="topp_ros" type="generate_toppra_trajectory.py" output="screen" />
+
+    <group if="$(arg use_impedance)">
+    <node name="model_trajectory_to_impedance" pkg="larics_motion_planning" type="model_trajectory_to_impedance.py" output="screen">
+      <!--remap from="model_trajectory/joint_trajectory_point" to="aerial_manipulator_control/trajectory_ref_input"/-->
+      <remap from="model_trajectory/joint_trajectory_point" to="reference_tracker/joint_trajectory_point"/>
+
+      <param name="record_termination/roll" value="0.1" />
+      <param name="record_termination/pitch" value="0.1" />
+      <param name="record_termination/timer" value="2.0" />
+    </node>
+    </group>
+
+    <group unless="$(arg use_impedance)">
+    <node name="joint_trajectory_to_uav_and_asap_manipulator_4r_through_service" pkg="larics_motion_planning" type="joint_trajectory_to_uav_and_asap_manipulator_4r_through_service.py" output="screen">
+    </node>
+    </group>
+
+  </group>
+
+</launch>
