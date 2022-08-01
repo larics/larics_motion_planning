@@ -29,7 +29,7 @@ windows:
       layout: tiled
       panes:
         # Optional world elements
-        - 
+        - |
           waitForRos; 
           waitForSimulation; 
           roslaunch asap_manipulator_4r planning_context.launch;
