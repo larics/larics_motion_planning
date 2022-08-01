@@ -1,5 +1,7 @@
 export USE_IMPEDANCE=true
 export ABSOLUTE_CONFIG=true
+export MODEL_UAV_NAMESPACE=model_uav
+export UAV_NAMESPACE=red
 export MAP_CONFIG=$(rospack find larics_motion_planning)/startup/asap/hawk_asap_manipulator_model_sim/custom_config/hawk_asap_manipulator_model_sim.yaml
 export TRAJ_CONFIG=$(rospack find larics_motion_planning)/startup/asap/hawk_asap_manipulator_model_sim/custom_config/hawk_asap_manipulator_model_sim.yaml
 export STATE_VALIDITY_CONFIG=$(rospack find larics_motion_planning)/startup/asap/hawk_asap_manipulator_model_sim/custom_config/hawk_asap_manipulator_model_sim.yaml

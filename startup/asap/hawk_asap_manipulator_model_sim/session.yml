@@ -44,7 +44,7 @@ windows:
           roslaunch mmuav_gazebo uav_attitude_position.launch 
             start_gazebo:=false 
             manipulator_type:="asap_manipulator_4r" z:=1 
-            manipulator_tool:="rod" name:="model_uav" 
+            manipulator_tool:="rod" name:=$MODEL_UAV_NAMESPACE 
             collision_bitmask:=2
             start_trajectory_dequeue:=$START_TRAJECTORY_DEQUEUE
         - >
@@ -60,18 +60,13 @@ windows:
           use_impedance:=$USE_IMPEDANCE
           global_planner_model_config_file:=$(rospack find larics_motion_planning)/startup/asap/hawk_asap_manipulator_model_sim/custom_config/hawk_asap_manipulator_model_sim.yaml
         - |
-          waitForSimulation; sleep $REFERENCE_DELAY; rostopic pub -1 /model_uav/reference_tracker/set_current_trajectory_point trajectory_msgs/JointTrajectoryPoint "
+          waitForSimulation; sleep $REFERENCE_DELAY; rostopic pub -1 /$MODEL_UAV_NAMESPACE/reference_tracker/set_current_trajectory_point trajectory_msgs/JointTrajectoryPoint "
           positions: [0, 0, 1.0, 0.0, 0.0, 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
           velocities: [0]
           accelerations: [0]
           effort: [0]
           time_from_start: {secs: 0, nsecs: 0}";
-          rostopic pub -1 /model_uav/go_to/reference/joint_trajectory_point trajectory_msgs/JointTrajectoryPoint "
-          positions: [0, 0, 2, 0, 0, 0, 0.0, -0.5, 1, -0.5, 0, 0, 0, 0, 0, 0, 1]
-          velocities: [0]
-          accelerations: [0]
-          effort: [0]
-          time_from_start: {secs: 0, nsecs: 0}"
+          rosrun larics_motion_planning asap_model_go_to_carrot_sim.sh
   - impedance_control:
       layout: tiled
       panes:
@@ -82,15 +77,15 @@ windows:
           fi;
           waitForSimulation; sleep 22;
           roslaunch asap_manipulator_4r planning_context.launch;
-          roslaunch impedance_control impedance_control_asap_4r_sim.launch namespace:="model_uav"
+          roslaunch impedance_control impedance_control_asap_4r_sim.launch namespace:=$MODEL_UAV_NAMESPACE
         - |
           if [ "$USE_IMPEDANCE" == "false" ] 
           then 
             exit
           fi;
           waitForSimulation; sleep 30;
-          rosservice call /model_uav/force_filter/zero_all "{}";
-          rosservice call /model_uav/aerial_manipulator_control/start "data: true";
+          rosservice call /$MODEL_UAV_NAMESPACE/force_filter/zero_all "{}";
+          rosservice call /$MODEL_UAV_NAMESPACE/aerial_manipulator_control/start "data: true";
           exit;
   - logging:
       layout: tiled
