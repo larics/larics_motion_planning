@@ -1,0 +1,29 @@
+name: uav_wp_manipulator_model
+root: ./
+startup_window: roscore
+pre_window: cd ~/; export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:$HOME/uav_ws/src/larics_gazebo_worlds/models
+windows:
+  - roscore_gazebo:
+      layout: tiled
+      panes:
+        - roscore
+        - waitForRos; roslaunch gazebo_ros empty_world.launch use_sim_time:=true paused:=false
+        - >
+          waitForSimulation; 
+          roslaunch larics_gazebo_worlds spawn_greenhouse_layout_simple.launch
+  - uavs:
+      layout: tiled
+      panes:
+        - > #UAV
+          waitForSimulation; sleep 5; 
+          roslaunch mmuav_gazebo uav_attitude_position.launch start_gazebo:=false x:=2.0 z:=1.0 manipulator_type:="wp_manipulator" manipulator_tool:="rod_with_camera" collision_bitmask:=1 start_trajectory_dequeue:=true
+        - > # Model uav if needed
+          waitForSimulation; sleep 5; 
+          roslaunch mmuav_gazebo uav_attitude_position.launch start_gazebo:=false name:="model_uav" x:=2.0 z:=1.0 manipulator_type:="wp_manipulator" manipulator_tool:="rod_with_camera" collision_bitmask:=2
+  - planning:
+      layout: tiled
+      panes:
+        - >
+          sleep 5; 
+          roslaunch wp_manipulator planning_context.launch; 
+          roslaunch larics_motion_planning arducopter_wp_manipulator.launch

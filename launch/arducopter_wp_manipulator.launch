@@ -15,6 +15,11 @@
       <!-- visualization parameters -->
       <param name="state_scale" value="0.05" />
       <param name="waypoints_scale" value="0.5" />
+
+      <!-- Transform between uav and manipulator -->
+      <param name="t_uav_man/z" value="0.075" />
+      <param name="t_uav_man/yaw" value="3.14159265359" />
+      <param name="t_uav_man/roll" value="1.57079632679" />
     </node>
 
     <node name="generate_toppra_trajectory" pkg="topp_ros" type="generate_toppra_trajectory.py" output="screen" />
