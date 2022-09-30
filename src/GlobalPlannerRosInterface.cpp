@@ -15,6 +15,22 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
   nh_private.param("model_animation_dt_us", model_animation_dt_, 
     int(10));
 
+  // Get the transform between the uav and manipulator as 6 parameters. The list
+  // argument passing does not work with private params, but it should work with
+  // global parameters.
+  double man_x, man_y, man_z, man_r, man_p, man_yaw;
+  nh_private.param("t_uav_man/x", man_x, 0.0); transform_uav_manipulator_.push_back(man_x);
+  nh_private.param("t_uav_man/y", man_y, 0.0); transform_uav_manipulator_.push_back(man_y);
+  nh_private.param("t_uav_man/z", man_z, 0.0); transform_uav_manipulator_.push_back(man_z);
+  nh_private.param("t_uav_man/roll", man_r, 0.0); transform_uav_manipulator_.push_back(man_r);
+  nh_private.param("t_uav_man/pitch", man_p, 0.0); transform_uav_manipulator_.push_back(man_p);
+  nh_private.param("t_uav_man/yaw", man_yaw, 0.0); transform_uav_manipulator_.push_back(man_yaw);
+  cout << "[GlobalPlannerRosInterface] Transform: ";
+  for (int i=0; i<transform_uav_manipulator_.size(); i++){
+    cout << transform_uav_manipulator_[i] << ", ";
+  }
+  cout << endl << endl;
+
   // Global planner config
   //global_planner_ = make_shared<GlobalPlanner>(global_planner_config_file_);
   global_planner_ = make_shared<ParabolicAirdropPlanner>(global_planner_config_file_);
@@ -164,10 +180,10 @@ bool GlobalPlannerRosInterface::modelCorrectedTrajectoryCallback(
     Eigen::Affine3d t_b_l0;
     t_b_l0 = Eigen::Affine3d::Identity();
     Eigen::Matrix3d rot_uav_manipulator;
-    // This is for arducopter with wp manipulator 3rx
-    rot_uav_manipulator = Eigen::AngleAxisd(0, Eigen::Vector3d::UnitZ())
-      * Eigen::AngleAxisd(0,  Eigen::Vector3d::UnitY())
-      * Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX());
+    // This is for arducopter with wp manipulator 3rx - Identity rotation!
+    rot_uav_manipulator = Eigen::AngleAxisd(transform_uav_manipulator_[5], Eigen::Vector3d::UnitZ())
+      * Eigen::AngleAxisd(transform_uav_manipulator_[4],  Eigen::Vector3d::UnitY())
+      * Eigen::AngleAxisd(transform_uav_manipulator_[3], Eigen::Vector3d::UnitX());
     // This is for arducopter in simulation
     //rot_uav_manipulator = Eigen::AngleAxisd(3.14159265359, Eigen::Vector3d::UnitZ())
     //  * Eigen::AngleAxisd(0,  Eigen::Vector3d::UnitY())
@@ -180,7 +196,8 @@ bool GlobalPlannerRosInterface::modelCorrectedTrajectoryCallback(
     // 0.125 z displacement for neo
     // 0.2 z displacement for arducopter with wp manipulator 3rx
     // -0.2 z displacement for arducopter with asap manipulator
-    t_b_l0.translate(Eigen::Vector3d(0, 0, -0.2));
+    t_b_l0.translate(Eigen::Vector3d(transform_uav_manipulator_[0],
+      transform_uav_manipulator_[1], transform_uav_manipulator_[2]));
     t_b_l0.rotate(rot_uav_manipulator);
     shared_ptr<KinematicsInterface> kinematics = global_planner_->getKinematicsInterface();
     // Go through all trajectory points.
