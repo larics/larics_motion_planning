@@ -62,6 +62,8 @@ class GlobalPlannerRosInterface
 
     // Transform between uav and manipulator for model correction service
     std::vector<double> transform_uav_manipulator_;
+    // Manipulator number of dof
+    int manipulator_dof_;
     
     ros::Subscriber octomap_sub_;
     shared_ptr<OctomapMap> octomapmap_;

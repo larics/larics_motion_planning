@@ -25,6 +25,7 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
   nh_private.param("t_uav_man/roll", man_r, 0.0); transform_uav_manipulator_.push_back(man_r);
   nh_private.param("t_uav_man/pitch", man_p, 0.0); transform_uav_manipulator_.push_back(man_p);
   nh_private.param("t_uav_man/yaw", man_yaw, 0.0); transform_uav_manipulator_.push_back(man_yaw);
+  nh_private.param("manipulator_dof", manipulator_dof_, 5);
   cout << "[GlobalPlannerRosInterface] Transform: ";
   for (int i=0; i<transform_uav_manipulator_.size(); i++){
     cout << transform_uav_manipulator_[i] << ", ";
@@ -124,7 +125,7 @@ bool GlobalPlannerRosInterface::modelCorrectedTrajectoryCallback(
   success = this->multiDofTrajectoryCallback(req, res);
   req.publish_trajectory = publish_trajectory_temp;
   int initial_trajectory_size = res.trajectory.points.size()-1;
-  int man_dof = 4;
+  int man_dof = manipulator_dof_;
 
   Trajectory trajectory;
   if (success == true){
