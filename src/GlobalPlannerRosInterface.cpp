@@ -25,6 +25,8 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
   nh_private.param("t_uav_man/roll", man_r, 0.0); transform_uav_manipulator_.push_back(man_r);
   nh_private.param("t_uav_man/pitch", man_p, 0.0); transform_uav_manipulator_.push_back(man_p);
   nh_private.param("t_uav_man/yaw", man_yaw, 0.0); transform_uav_manipulator_.push_back(man_yaw);
+  nh_private.param("manipulator_dof", manipulator_dof_, 5);
+  nh_private.param("model_planning_user_confirmation_flag", model_planning_user_confirmation_, true);
   cout << "[GlobalPlannerRosInterface] Transform: ";
   for (int i=0; i<transform_uav_manipulator_.size(); i++){
     cout << transform_uav_manipulator_[i] << ", ";
@@ -124,7 +126,7 @@ bool GlobalPlannerRosInterface::modelCorrectedTrajectoryCallback(
   success = this->multiDofTrajectoryCallback(req, res);
   req.publish_trajectory = publish_trajectory_temp;
   int initial_trajectory_size = res.trajectory.points.size()-1;
-  int man_dof = 4;
+  int man_dof = manipulator_dof_;
 
   Trajectory trajectory;
   if (success == true){
@@ -352,9 +354,12 @@ bool GlobalPlannerRosInterface::modelCorrectedTrajectoryCallback(
 
   // Publish path and trajectory if requested.
   if (req.publish_trajectory){
-    cout << "Press enter to publish compensated trajectory" << endl;
-    string tempstr;
-    getline(cin, tempstr);
+    if (model_planning_user_confirmation_ == true){
+      cout << "Press enter to publish model corrected trajectory" << endl;
+      string tempstr;
+      getline(cin, tempstr);
+    }
+    cout << "Publishing model corrected trajectory." << endl;
     joint_trajectory_pub_.publish(res.trajectory);
   }
   if (req.publish_path){
@@ -521,9 +526,12 @@ bool GlobalPlannerRosInterface::multipleManipulatorsModelCorrectedTrajectoryCall
   
   // Publish path and trajectory if requested.
   if (req.publish_trajectory){
-    cout << "Press enter to publish compensated trajectory" << endl;
-    string tempstr;
-    getline(cin, tempstr);
+    if (model_planning_user_confirmation_ == true){
+      cout << "Press enter to publish model corrected trajectory" << endl;
+      string tempstr;
+      getline(cin, tempstr);
+    }
+    cout << "Publishing model corrected trajectory." << endl;
     joint_trajectory_pub_.publish(res.trajectory);
   }
   if (req.publish_path){
