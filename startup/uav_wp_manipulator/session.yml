@@ -26,7 +26,7 @@ windows:
         - >
           waitForRos; sleep 5; 
           roslaunch wp_manipulator planning_context.launch; 
-          roslaunch larics_motion_planning arducopter_wp_manipulator.launch
+          roslaunch larics_motion_planning uav_wp_manipulator_startup.launch
         - > # Move the aerial manipulator and model to starting configuration
           waitForSimulation; sleep 15;
           rostopic pub --once /uav/go_to/full_state_ref std_msgs/Float64MultiArray "layout:
@@ -68,6 +68,10 @@ windows:
           override_dynamic_constraints: false
           velocity_constraints: [0]
           acceleration_constraints: [0]\""
+  - exp_repeating:
+      layout: tiled
+      panes:
+        - history -s "rosrun larics_motion_planning execute_multiple_trajectories.sh 10"
   - logging:
       layout: tiled
       panes:

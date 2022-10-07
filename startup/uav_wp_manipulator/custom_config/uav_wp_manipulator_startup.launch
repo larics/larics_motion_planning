@@ -9,7 +9,7 @@
   <group ns="$(arg namespace)">
     <node name="global_planner" pkg="larics_motion_planning" type="global_planner_node" output="screen">
       <param name="rate" value="$(arg rate)" />
-      <param name="global_planner_config_file" value="$(find larics_motion_planning)/startup/uav_wp_manipulator/uav_and_wp_manipulator_config.yaml" />
+      <param name="global_planner_config_file" value="$(find larics_motion_planning)/startup/uav_wp_manipulator/custom_config/uav_and_wp_manipulator_config.yaml" />
       <param name="model_uav_namespace" value="/model_uav" />
 
       <!-- visualization parameters -->
@@ -44,7 +44,7 @@
 
     <node name="map_to_world_transform_publisher" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 world map 10" />
 
-    <node name="plant_box_inspection_points" pkg="larics_motion_planning" type="plant_box_inspection_points.py" output="screen">
+    <!--node name="plant_box_inspection_points" pkg="larics_motion_planning" type="plant_box_inspection_points.py" output="screen">
       <param name="box_length" value="0.4" />
       <param name="box_width" value="0.4" />
       <param name="box_height" value="0.1" />
@@ -54,7 +54,7 @@
     </node>
 
     <node name="plant_box_inspection_state_machine" pkg="larics_motion_planning" type="plant_box_inspection_state_machine.py" output="screen">
-    </node>
+    </node-->
 
   </group>
 
