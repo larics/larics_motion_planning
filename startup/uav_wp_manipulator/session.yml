@@ -81,4 +81,4 @@ windows:
             mkdir $HOME/bags/uav_manipulator_model;
           fi;
           cd ~/bags/uav_manipulator_model;
-          history -s "rosbag record -a --chunksize=64 -x \"/(.*)(gazebo|camera|bias|joint_states|parameter_descriptions|parameter_updates|motor_speed)(.*)\" -o uav_manipulator_model"
+          history -s "rosbag record -a --chunksize=64 -x \"/(.*)(ft_sensor|tf|model_uav|gazebo|camera|bias|joint_states|parameter_descriptions|parameter_updates|motor_speed)(.*)\" -o uav_manipulator_model"

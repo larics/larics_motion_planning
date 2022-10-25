@@ -1,9 +1,9 @@
 global_planner:
-  map_config_file: "catkin_ws/src/larics_motion_planning/config/uav_and_wp_manipulator_config.yaml"
-  trajectory_config_file: "catkin_ws/src/larics_motion_planning/config/uav_and_wp_manipulator_config.yaml"
-  path_planner_config_file: "catkin_ws/src/larics_motion_planning/config/uav_and_wp_manipulator_config.yaml"
-  state_validity_checker_config_file: "catkin_ws/src/larics_motion_planning/config/uav_and_wp_manipulator_config.yaml"
-  kinematics_config_file: "catkin_ws/src/larics_motion_planning/config/uav_and_wp_manipulator_config.yaml"
+  map_config_file: "catkin_ws/src/larics_motion_planning/startup/uav_wp_manipulator/custom_config/uav_and_wp_manipulator_config.yaml"
+  trajectory_config_file: "catkin_ws/src/larics_motion_planning/startup/uav_wp_manipulator/custom_config/uav_and_wp_manipulator_config.yaml"
+  path_planner_config_file: "catkin_ws/src/larics_motion_planning/startup/uav_wp_manipulator/custom_config/uav_and_wp_manipulator_config.yaml"
+  state_validity_checker_config_file: "catkin_ws/src/larics_motion_planning/startup/uav_wp_manipulator/custom_config/uav_and_wp_manipulator_config.yaml"
+  kinematics_config_file: "catkin_ws/src/larics_motion_planning/startup/uav_wp_manipulator/custom_config/uav_and_wp_manipulator_config.yaml"
   model_correction_file: "catkin_ws/src/larics_motion_planning/config/model_correction_config_example.yaml"
   
   trajectory:
@@ -117,8 +117,8 @@ path_planner:
 
 trajectory_planner:
   toppra_trajectory:
-    velocities: [1.5, 1.5, 0.5, 100, 100, 0.3, 1.0, 1.0, 1.0, 1.0, 1.0]
-    accelerations: [0.6, 0.6, 0.4, 100, 100, 0.3, 1.2, 1.2, 1.2, 1.2, 1.2]
+    velocities: [1.5, 1.5, 0.5, 100, 100, 0.5, 1.2, 1.2, 1.2, 1.2, 1.2]
+    accelerations: [1.0, 1.0, 0.5, 100, 100, 0.5, 1.2, 1.2, 1.2, 1.2, 1.2]
     # This flag is important because it preconditiones angular values before 
     # sending them to toppra trajectory. The problem is that toppra does not know
     # for discontinuities at half circle (PI) and the planned trajectory will
