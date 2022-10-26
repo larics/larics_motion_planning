@@ -10,7 +10,7 @@ windows:
         - waitForRos; roslaunch gazebo_ros empty_world.launch use_sim_time:=true paused:=false
         - >
           waitForSimulation; 
-          roslaunch larics_gazebo_worlds spawn_factory.launch
+          roslaunch larics_gazebo_worlds spawn_factory.launch collision_bitmask:=1
   - uavs:
       layout: tiled
       panes:
@@ -72,6 +72,45 @@ windows:
       layout: tiled
       panes:
         - history -s "rosrun larics_motion_planning execute_multiple_trajectories.sh 10"
+  - exp_pipes:
+      layout: tiled
+      panes:
+        - waitForRos; rosrun larics_motion_planning model_trajectory_service_modifier.py __ns:=uav
+        - | # Example for pipe1
+          history -s "rosservice call /uav/model_trajectory_service_modifier/model_correction_trajectory \"waypoints:
+            header:
+              seq: 0
+              stamp: {secs: 0, nsecs: 0}
+              frame_id: ''
+            joint_names: ['']
+            points:
+            - positions: [0,-7,1,0,0,0,0.787, 0.787, 0.787, -1.57, 0.787]
+              velocities: [0]
+              accelerations: [0]
+              effort: [0]
+              time_from_start: {secs: 0, nsecs: 0}
+            - positions: [-5.0,-1.2,2.7,0,0,3.14, 0.525, 0.525, 0.787, -1.57, 0.787]
+              velocities: [0]
+              accelerations: [0]
+              effort: [0]
+              time_from_start: {secs: 0, nsecs: 0}
+            - positions: [-5.5,-1.2,3,0,0,3.14, 0.525, 0.525, 0.787, -1.57, 0.787]
+              velocities: [0]
+              accelerations: [0]
+              effort: [0]
+              time_from_start: {secs: 0, nsecs: 0}
+            - positions: [-6.0,-1.2,3.3,0,0,3.14, 0.525, 0.525, 0.787, -1.57, 0.787]
+              velocities: [0]
+              accelerations: [0]
+              effort: [0]
+              time_from_start: {secs: 0, nsecs: 0}
+          publish_path: false
+          publish_trajectory: true
+          plan_path: true
+          plan_trajectory: true
+          override_dynamic_constraints: false
+          velocity_constraints: [0]
+          acceleration_constraints: [0]\""
   - logging:
       layout: tiled
       panes:
