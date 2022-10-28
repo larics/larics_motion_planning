@@ -27,6 +27,9 @@ class JointTrajectoryToMarkerArray:
         self.color_hex_array = ["#00876c", "#40996f", "#67aa72", "#8bbb77", 
             "#b0cb7e", "#d5da88", "#fbe895", "#f8ce7c", "#f5b468", "#f0985a", 
             "#ea7b52", "#e15e4f", "#d43d51"]
+        # This set of colors was used for six model planned trajectories
+        # in the thesis.
+        #self.color_hex_array = ["bf7000", "bf7000", "c9b300", "c9b300", "860080", "860080"]
         self.current_color_id = 0
 
         self.marker_array_pub = rospy.Publisher(
