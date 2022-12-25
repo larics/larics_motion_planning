@@ -1,4 +1,5 @@
 #include <larics_motion_planning/SimpleStateValidityCheckers.h>
+#include <larics_motion_planning/MotionPlanningUtil.h>
 
 SimpleStateValidityCheckers::SimpleStateValidityCheckers(
   string config_filename, shared_ptr<MapInterface> map, string type)
@@ -6,9 +7,7 @@ SimpleStateValidityCheckers::SimpleStateValidityCheckers(
   map_ = map;
   checker_type_ = string(type);
 
-  string username = "/home/";
-  username = username + getenv("USER") + "/";
-  configureFromFile(username + config_filename);
+  configureFromFile(motion_util::getUserPrefix() + config_filename);
 
   if (checker_type_.compare("ball") == 0) points_ = generateBall();
   else if (checker_type_.compare("sphere") == 0) points_ = generateSphere();

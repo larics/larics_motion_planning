@@ -116,7 +116,7 @@ class PlantInspectionStateMachine:
       self.current_reference[i+self.dof_uav] = self.manipulator_joint_states[i].joint_state
 
   def handleStateSanityCheck(self):
-    #print("Handling sanity check!")
+    print("[PlantInspectionSm]->Entering SanityCheck state!")
 
     self.state.data = "GetInspectionPoints"
 
@@ -127,6 +127,7 @@ class PlantInspectionStateMachine:
     # Add more sanity checks if necessary
 
   def handleStateGetInspectionPoints(self):
+    print("[PlantInspectionSm]-> Entering GetInspectionPoints state!")
     # Call inspection points service
     req = GetPlantBoxInspectionPointsRequest()
     req.box_config_vector = self.box_config.data
@@ -141,6 +142,7 @@ class PlantInspectionStateMachine:
       self.state.data = "Idle"
 
   def handleStateGoToFirstPoint(self):
+    print("[PlantInspection]-> Entering GoToFirstPoint state!")
     # Update current reference just in case
     self.updateCurrentReference()
 
@@ -179,7 +181,7 @@ class PlantInspectionStateMachine:
       dt = res.trajectory.points[len(res.trajectory.points)-1].time_from_start.to_sec()
       temp_rate = rospy.Rate(10)
       while (not rospy.is_shutdown()) and ((time.time()-t0) < (dt + 5.0)):
-        pass
+        temp_rate.sleep()
         #print("waiting: ", time.time()-t0)
 
   def handleStateInspectForward(self):

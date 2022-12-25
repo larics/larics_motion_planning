@@ -1,4 +1,5 @@
 #include <larics_motion_planning/RrtPathPlanner.h>
+#include <larics_motion_planning/MotionPlanningUtil.h>
 #include <ctime>
 
 void printRrtStarConfig(RrtStarConfig config)
@@ -45,9 +46,7 @@ RrtPathPlanner::RrtPathPlanner(string config_filename,
   shared_ptr<StateValidityCheckerInterface> validity_checker)
 {
   state_validity_checker_ = validity_checker;
-  string username = "/home/";
-  username = username + getenv("USER") + "/";
-  configureFromFile(username + config_filename);
+  configureFromFile(motion_util::getUserPrefix() + config_filename);
   path_length_ = 0.0;
 }
 
@@ -469,8 +468,8 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   }
 
   ob::PathPtr path = pdef->getSolutionPath();
-  og::PathGeometric path_geom(dynamic_cast<const og::PathGeometric&>(
-    *pdef->getSolutionPath()));
+  if (!path) return false;
+  og::PathGeometric path_geom(dynamic_cast<const og::PathGeometric&>(*path));
 
   // Try to simplify path
   og::PathSimplifier path_simplifier(si);
@@ -501,7 +500,7 @@ bool RrtPathPlanner::planPath(Eigen::MatrixXd positions)
   path_length_ = path_geom.length();
   //cout << "Planning successful" << endl;
 
-  return true;
+  return pdef->hasExactSolution();
 }
 
 inline void RrtPathPlanner::convertOmplPathToEigenMatrix(og::PathGeometric path)

@@ -1,4 +1,5 @@
 #include <larics_motion_planning/ParabolicAirdropPlanner.h>
+#include <larics_motion_planning/MotionPlanningUtil.h>
 
 ParabolicAirdropPlanner::ParabolicAirdropPlanner(
   string config_filename):GlobalPlanner(config_filename)
@@ -14,11 +15,15 @@ ParabolicAirdropPlanner::ParabolicAirdropPlanner(
   //alpha_.resize(10);
   //alpha_ << 20.0, 25.0, 15.0, 30.0, 10.0, 5.0, 0.0, 35.0, 40.0, 45.0;
 
-  string username = "/home/";
-  username = username + getenv("USER") + "/";
-  size_t found = config_filename.find(username);
-  if (found != string::npos) configureParabolicAirdropFromFile(config_filename);
-  else configureParabolicAirdropFromFile(username + config_filename);
+  size_t found = config_filename.find(motion_util::getUserPrefix());
+  if (found != string::npos) 
+  {
+    configureParabolicAirdropFromFile(config_filename);
+  }
+  else 
+  {
+    configureParabolicAirdropFromFile(motion_util::getUserPrefix() + config_filename);
+  }
 }
 
 bool ParabolicAirdropPlanner::configureParabolicAirdropFromFile(
@@ -123,11 +128,19 @@ void ParabolicAirdropPlanner::setMapInterface(shared_ptr<MapInterface> map)
 bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
   Eigen::VectorXd uav_pose, Eigen::VectorXd target_pose, bool plan_path)
 {
+  // Create time measurement variables
+  auto begin = chrono::steady_clock::now();
+  auto end = chrono::steady_clock::now();
+  double t_parabola_construct, t_parabola_transform, t_plan_stopping, 
+    t_plan_dropoff, t_concatenate, t_path_trajectory, t_algorithm;
+  int n_iterations = 0;
+
   parabola_set_points_ = Eigen::MatrixXd(0,3);
   double g=9.81;
   //for (double dx=1.0; dx<=8.0; dx+=0.5){
     //for (double v=0.5; v<=6.0; v+=0.5){
       //for (double alpha=0.0; alpha<=deg2rad(45.0); alpha+=deg2rad(5.0)){
+  auto begin_algorithm = chrono::steady_clock::now();
   for (int i=0; i<dx_.size(); i++){
     double dx = dx_[i];
     for (int j=0; j<v_.size(); j++){
@@ -139,11 +152,15 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
         double t = dx/(v*cos(alpha));
 
         if (dz < max_dz_){
+          n_iterations++;
 
           // Construct the parabola. Note that this is not final one, it still
           // has to be transformed to world.
           Eigen::MatrixXd parabola;
+          begin = tick();
           parabola = constructParabola(dx, dz, alpha, v, t, g);
+          end = tick();
+          t_parabola_construct = chrono2duration(begin, end);
 
           // Translate and rotate parabola to find suitable one. We do this in
           // a for loop by changing yaw angle.
@@ -151,8 +168,11 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
             psi+=deg2rad(psi_increment_)){
 
             Eigen::MatrixXd transformed_parabola;
+            begin = tick();
             transformed_parabola = transformParabola(parabola, target_pose,
-              psi, dx); 
+              psi, dx);
+            end = tick();
+            t_parabola_transform = chrono2duration(begin, end);
 
             // Yaw won't change in stopping trajectory but it still needs to 
             // be planned
@@ -198,9 +218,12 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
                 stopping_trajectory_constraints_(1,1) = 0.1;
               }
             }
+            begin = tick();
             spline_interpolator_.generateTrajectoryNoSync(conditions, 
               stopping_trajectory_constraints_, spline_sampling_time_);
             Trajectory stopping_trajectory = spline_interpolator_.getTrajectory();
+            end = tick();
+            t_plan_stopping = chrono2duration(begin, end);
             //cout << stopping_trajectory.acceleration << endl;
             bool valid_flag = true;
             // Check parabola candidate for collision
@@ -221,6 +244,7 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
               transformed_parabola(0, 0), transformed_parabola(0, 1), 
               transformed_parabola(0, 2)+payload_z_offset_, psi;
             // Plan trajectory
+            begin = tick();
             if (plan_path == true) {
               if (this->planPathAndTrajectory(waypoints) == false) continue;
             }
@@ -228,12 +252,18 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
               if (this->planTrajectory(waypoints) == false) continue;
             }
             Trajectory trajectory = trajectory_interface_->getTrajectory();
+            end = tick();
+            //t_path_trajectory = double(chrono::duration_cast<chrono::nanoseconds>(end - begin).count())*1e-9;
+            t_path_trajectory = chrono2duration(begin, end);
 
             // Plan dropoff spline
             Trajectory dropoff_trajectory;
             int dropoff_index = 0;
+            begin = tick();
             dropoff_trajectory = planDropoffSpline(trajectory, v, 
               alpha, psi, dropoff_index);
+            end = tick();
+            t_plan_dropoff = chrono2duration(begin, end);
             if (dropoff_trajectory.time.size() == 0) continue;
             cout << "Dropoff index: " << dropoff_index << endl;
             
@@ -244,6 +274,7 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
 
             // Now that we have all three trajectories we have to concatenate
             // them
+            begin = tick();
             Trajectory all = concatenateTrajectories(trajectory,
               dropoff_trajectory, dropoff_index);
             cout << "intermediate: " << all.position.rows() << endl;
@@ -255,6 +286,8 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
             airdrop_trajectory_ = addDropPointColumn(airdrop_trajectory_, 
               airdrop_trajectory_.position.rows() - 
               stopping_trajectory.position.rows());
+            end = tick();
+            t_concatenate = chrono2duration(begin, end);
             cout << "Best trajectory length: " << dropoff_trajectory.position.rows() << endl;
             cout << "Stop trajectory length: " << stopping_trajectory.position.rows() << endl;
             cout << "Trajectory length: " << trajectory.position.rows() << endl;
@@ -268,14 +301,21 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
             cout << "  z = " << dz << endl << "  t = " << t << endl;
 
             // Fill out information vector
-            info_vector_.conservativeResize(16);
+            end = tick();
+            t_algorithm = chrono2duration(begin_algorithm, end);
+            cout << "Total algorithm time: " << t_algorithm << endl;
+            cout << "Path and trajectory time: " << t_path_trajectory << endl;
+            info_vector_.conservativeResize(24);
             info_vector_ << dx, dz, v, alpha, psi, t,
               double(airdrop_trajectory_.position.rows())*spline_sampling_time_,
               double(dropoff_trajectory.position.rows())*spline_sampling_time_,
               double(stopping_trajectory.position.rows())*spline_sampling_time_,
               target_pose(0), target_pose(1), target_pose(2),
               transformed_parabola(0, 0), transformed_parabola(0, 1), 
-              transformed_parabola(0, 2)+payload_z_offset_, yaw;
+              transformed_parabola(0, 2)+payload_z_offset_, yaw, 
+              t_parabola_construct, t_parabola_transform, t_plan_stopping, 
+              t_plan_dropoff, t_concatenate, t_path_trajectory, t_algorithm,
+              n_iterations;
 
 
             return true;
@@ -330,6 +370,15 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
   Eigen::VectorXd uav_pose, Eigen::VectorXd target_pose, bool plan_path, 
   Eigen::VectorXd parabola_params)
 {
+  // Create time measurement variables
+  auto begin_algorithm = chrono::steady_clock::now();
+  auto begin = chrono::steady_clock::now();
+  auto end = chrono::steady_clock::now();
+
+  double t_parabola_construct, t_parabola_transform, t_plan_stopping, 
+    t_plan_dropoff, t_concatenate, t_path_trajectory, t_algorithm;
+  int n_iterations = 1;
+
   parabola_set_points_ = Eigen::MatrixXd(0,3);
   double g=9.81;
   
@@ -344,11 +393,17 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
 
   // Construct parabola in x-z plane
   Eigen::MatrixXd parabola;
+  begin = tick();
   parabola = constructParabola(dx, dz, alpha, v, t, g);
+  end = tick();
+  t_parabola_construct = chrono2duration(begin, end);
   // Transform parabola to xyz
   Eigen::MatrixXd transformed_parabola;
+  begin = tick();
   transformed_parabola = transformParabola(parabola, target_pose,
     psi, dx);
+  end = tick();
+  t_parabola_transform = chrono2duration(begin, end);
 
   // Yaw won't change in stopping trajectory but it still needs to 
   // be planned
@@ -391,9 +446,12 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
       stopping_trajectory_constraints_(1,1) = 0.1;
     }
   }
+  begin = tick();
   spline_interpolator_.generateTrajectoryNoSync(conditions, 
     stopping_trajectory_constraints_, spline_sampling_time_);
   Trajectory stopping_trajectory = spline_interpolator_.getTrajectory();
+  end = tick();
+  t_plan_stopping = chrono2duration(begin, end);
   //cout << stopping_trajectory.acceleration << endl;
 
   bool valid_flag = true;
@@ -410,6 +468,8 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
     //uav_pose(0), uav_pose(1), transformed_parabola(0, 2)+payload_z_offset_, yaw, 
     transformed_parabola(0, 0), transformed_parabola(0, 1), 
     transformed_parabola(0, 2)+payload_z_offset_, psi;
+
+  begin = tick();
   // Plan trajectory
   if (plan_path == true) {
     this->planPathAndTrajectory(waypoints);
@@ -418,16 +478,23 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
     this->planTrajectory(waypoints);
   }
   Trajectory trajectory = trajectory_interface_->getTrajectory();
+  end = tick();
+  t_path_trajectory = chrono2duration(begin, end);
+
   // Plan dropoff spline
   Trajectory dropoff_trajectory;
   int dropoff_index = 0;
+  begin = tick();
   dropoff_trajectory = planDropoffSpline(trajectory, v, 
     alpha, psi, dropoff_index);
+  end = tick();
+  t_plan_dropoff = chrono2duration(begin, end);
   cout << "Dropoff index: " << dropoff_index << endl;
 
 
   // Now that we have all three trajectories we have to concatenate
   // them
+  begin = tick();
   Trajectory all = concatenateTrajectories(trajectory,
     dropoff_trajectory, dropoff_index);
   cout << "intermediate: " << all.position.rows() << endl;
@@ -439,6 +506,8 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
   airdrop_trajectory_ = addDropPointColumn(airdrop_trajectory_, 
     airdrop_trajectory_.position.rows() - 
     stopping_trajectory.position.rows());
+  end = tick();
+  t_concatenate = chrono2duration(begin, end);
   cout << "Best trajectory length: " << dropoff_trajectory.position.rows() << endl;
   cout << "Stop trajectory length: " << stopping_trajectory.position.rows() << endl;
   cout << "Trajectory length: " << trajectory.position.rows() << endl;
@@ -452,14 +521,21 @@ bool ParabolicAirdropPlanner::generateParabolicAirdropTrajectory(
   cout << "  z = " << dz << endl << "  t = " << t << endl;
 
   // Fill out information vector
-  info_vector_.conservativeResize(16);
+  end = tick();
+  t_algorithm = chrono2duration(begin_algorithm, end);
+  cout << "Total algorithm time: " << t_algorithm << endl;
+  cout << "Path and trajectory time: " << t_path_trajectory << endl;
+  info_vector_.conservativeResize(24);
   info_vector_ << dx, dz, v, alpha, psi, t,
     double(airdrop_trajectory_.position.rows())*spline_sampling_time_,
     double(dropoff_trajectory.position.rows())*spline_sampling_time_,
     double(stopping_trajectory.position.rows())*spline_sampling_time_,
     target_pose(0), target_pose(1), target_pose(2),
     transformed_parabola(0, 0), transformed_parabola(0, 1), 
-    transformed_parabola(0, 2)+payload_z_offset_, yaw;
+    transformed_parabola(0, 2)+payload_z_offset_, yaw, 
+    t_parabola_construct, t_parabola_transform, t_plan_stopping, 
+    t_plan_dropoff, t_concatenate, t_path_trajectory, t_algorithm,
+    n_iterations;
 
   return true;
 }
@@ -868,4 +944,15 @@ Trajectory ParabolicAirdropPlanner::addDropPointColumn(Trajectory trajectory,
 inline double deg2rad(double deg)
 {
   return deg*M_PI/180.0;
+}
+
+inline double chrono2duration(chrono::steady_clock::time_point begin,
+  chrono::steady_clock::time_point end)
+{
+  return double(chrono::duration_cast<chrono::nanoseconds>(end - begin).count())*1e-9;
+}
+
+inline chrono::steady_clock::time_point tick()
+{
+  return chrono::steady_clock::now();
 }

@@ -60,6 +60,12 @@ class GlobalPlannerRosInterface
     // Global planner configuration file
     string global_planner_config_file_;
 
+    // Transform between uav and manipulator for model correction service
+    std::vector<double> transform_uav_manipulator_;
+    // Manipulator number of dof
+    int manipulator_dof_;
+    // User confirmation to publish trajectory if model planning is used
+    bool model_planning_user_confirmation_;
     
     ros::Subscriber octomap_sub_;
     shared_ptr<OctomapMap> octomapmap_;

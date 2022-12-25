@@ -1,0 +1,193 @@
+# Pipe 1 (inclined)
+dz = 0.6974
+dx = 1.2254
+alpha = 1.05rad
+
+rostopic pub --once /uav/go_to/full_state_ref std_msgs/Float64MultiArray "layout:
+  dim:
+  - label: ''
+    size: 0
+    stride: 0
+  data_offset: 0
+data: [-5.5,-5.0,3,0,0,3.14, 0.525, 0.525, 0.787, -1.57, 0.787]"
+
+# pre insertion
+rostopic pub --once /uav/go_to/full_state_ref std_msgs/Float64MultiArray "layout:
+  dim:
+  - label: ''
+    size: 0
+    stride: 0
+  data_offset: 0
+data: [-5.5,-1.2,3,0,0,3.14, 0.525, 0.525, 0.787, -1.57, 0.787]"
+
+# insertion
+rostopic pub --once /uav/go_to/full_state_ref std_msgs/Float64MultiArray "layout:
+  dim:
+  - label: ''
+    size: 0
+    stride: 0
+  data_offset: 0
+data: [-6.0,-1.2,3.3,0,0,3.14, 0.525, 0.525, 0.787, -1.57, 0.787]"
+
+
+
+[-5.5,-1.2,3,0,0,3.14, 0.525, 0.525, 0.787, -1.57, 0.787]
+
+z-3 = -0.866(x+5.5)
+z = -0.866x - 1.763
+z(-6.0) = 3.433
+z(-6.5) = 3.866
+
+Problem je što goal point neće nikad biti valid... Za tih zadnjih pola metra treba samo dodati točku
+
+rosservice call /uav/multi_dof_trajectory "waypoints:
+  header:
+    seq: 0
+    stamp: {secs: 0, nsecs: 0}
+    frame_id: ''
+  joint_names: ['']
+  points:
+  - positions: [-4,13,1,0,0,0,0.787, 0.787, 0.787, -1.57, 0.787]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [-5.0,-1.2,2.7,0,0,3.14, 0.525, 0.525, 0.787, -1.57, 0.787]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [-5.5,-1.2,3,0,0,3.14, 0.525, 0.525, 0.787, -1.57, 0.787]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+publish_path: true
+publish_trajectory: true
+plan_path: true
+plan_trajectory: true
+override_dynamic_constraints: false
+velocity_constraints: [0]
+acceleration_constraints: [0]"
+
+
+# Pipe 2 (big straight pipe in the back)
+rostopic pub --once /uav/go_to/full_state_ref std_msgs/Float64MultiArray "layout:
+  dim:
+  - label: ''
+    size: 0
+    stride: 0
+  data_offset: 0
+data: [0,-7.0,10,0,0,0, 0.787, 0.787, 0.787, -1.57, 0.787]"
+
+# insertion point
+rostopic pub --once /uav/go_to/full_state_ref std_msgs/Float64MultiArray "layout:
+  dim:
+  - label: ''
+    size: 0
+    stride: 0
+  data_offset: 0
+data: [7.95,7.2,3.325,0,0,0, 0.787, 0.787, 0.787, -1.57, 0.787]"
+
+
+rosservice call /uav/multi_dof_trajectory "waypoints:
+  header:
+    seq: 0
+    stamp: {secs: 0, nsecs: 0}
+    frame_id: ''
+  joint_names: ['']
+  points:
+  - positions: [0,-7,1,0,0,0,0.787, 0.787, 0.787, -1.57, 0.787]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [7.5,7.2,3.325,0,0,0, 0.787, 0.787, 0.787, -1.57, 0.787]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+publish_path: true
+publish_trajectory: true
+plan_path: true
+plan_trajectory: true
+override_dynamic_constraints: false
+velocity_constraints: [0]
+acceleration_constraints: [0]"
+
+
+
+
+
+
+# Pipe 3 (small pipe)
+# insertion point
+rostopic pub --once /uav/go_to/full_state_ref std_msgs/Float64MultiArray "layout:
+  dim:
+  - label: ''
+    size: 0
+    stride: 0
+  data_offset: 0
+data: [10.4,-4.205,1.715,0,0,3.14, 0.787, 0.787, 0.787, -1.57, 0.787]"
+
+
+
+rosservice call /uav/model_trajectory_service_modifier/model_correction_trajectory "waypoints:
+  header:
+    seq: 0
+    stamp: {secs: 0, nsecs: 0}
+    frame_id: ''
+  joint_names: ['']
+  points:
+  - positions: [0,-7,1,0,0,0,0.787, 0.787, 0.787, -1.57, 0.787]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [11.4,-4.205,1.715,0,0,3.14, 0.787, 0.787, 0.787, -1.57, 0.787]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [10.4,-4.205,1.715,0,0,3.14, 0.787, 0.787, 0.787, -1.57, 0.787]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+publish_path: false
+publish_trajectory: true
+plan_path: true
+plan_trajectory: true
+override_dynamic_constraints: false
+velocity_constraints: [0]
+acceleration_constraints: [0]"
+
+rosservice call /uav/multi_dof_trajectory "waypoints:
+  header:
+    seq: 0
+    stamp: {secs: 0, nsecs: 0}
+    frame_id: ''
+  joint_names: ['']
+  points:
+  - positions: [-4,13,1,0,0,0,0.787, 0.787, 0.787, -1.57, 0.787]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [11.4,-4.205,1.715,0,0,3.14, 0.787, 0.787, 0.787, -1.57, 0.787]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [10.9,-4.205,1.715,0,0,3.14, 0.787, 0.787, 0.787, -1.57, 0.787]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+publish_path: true
+publish_trajectory: true
+plan_path: true
+plan_trajectory: true
+override_dynamic_constraints: false
+velocity_constraints: [0]
+acceleration_constraints: [0]"

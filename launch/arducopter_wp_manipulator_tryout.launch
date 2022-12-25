@@ -1,0 +1,93 @@
+<launch>
+  <arg name="rate" default="10" />
+  <arg name="namespace" default="uav" />
+  <arg name="model_namespace" default="model_uav" />
+
+  <!-- Before launching this file you need to launch planning context-->
+  <!-- roslaunch wp_manipulator planning_context.launch -->
+
+  <group ns="$(arg namespace)">
+    <node name="global_planner" pkg="larics_motion_planning" type="global_planner_node" output="screen">
+      <param name="rate" value="$(arg rate)" />
+      <param name="global_planner_config_file" value="$(find larics_motion_planning)/config/uav_and_wp_manipulator_config.yaml" />
+      <param name="model_uav_namespace" value="/model_uav" />
+
+      <!-- visualization parameters -->
+      <param name="state_scale" value="0.05" />
+      <param name="waypoints_scale" value="0.5" />
+
+      <!-- Transform between uav and manipulator -->
+      <param name="t_uav_man/z" value="0.075" />
+      <param name="t_uav_man/yaw" value="3.14159265359" />
+      <param name="t_uav_man/roll" value="1.57079632679" />
+    </node>
+
+
+    <!-- Simple tracker that receives trajectory and sends it to the UAV. It also publishes current vehicle state.-->
+    <node name="joint_trajectory_reference_tracker" pkg="larics_motion_planning" type="joint_trajectory_reference_tracker.py" output="screen">
+      <remap from="reference_tracker/joint_trajectory" to="joint_trajectory" />
+    </node>
+
+    <node name="joint_trajectory_point_to_arducopter_and_manipulator" pkg="larics_motion_planning" type="joint_trajectory_point_to_arducopter_and_manipulator.py" output="screen">
+      <remap from="joint_trajectory_point_to_arducopter_and_manipulator/multi_dof_trajectory_point_out" to="multi_dof_trajectory_point" />
+      <remap from="joint_trajectory_point_to_arducopter_and_manipulator/joint_trajectory_point_in" to="reference_tracker/joint_trajectory_point" />
+    </node>
+
+    <!-- Node that plans a straight trajectory to the end point upon request. -->
+    <node name="go_to_reference" pkg="larics_motion_planning" type="go_to_reference.py" output="screen">
+      <remap from="go_to/trajectory_request" to="multi_dof_trajectory" />
+      <remap from="go_to/joint_trajectory" to="joint_trajectory" />
+      <remap from="go_to/current_state" to="reference_tracker/current_reference" />
+    </node>
+
+    <node name="generate_toppra_trajectory" pkg="topp_ros" type="generate_toppra_trajectory.py" output="screen" />
+
+    <node name="octomap_server_node" pkg="octomap_server" type="octomap_server_node" args="$(find larics_gazebo_worlds)/models/greenhouse_row/greenhouse_row.binvox.bt" output="screen">
+      <param name="frame_id" value="world" />
+    </node>
+
+    <node name="map_to_world_transform_publisher" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 world map 10" />
+
+  </group>
+
+  <!-- This is the part where we get corrections based on model -->
+  <group ns="$(arg model_namespace)">
+    <node name="global_planner" pkg="larics_motion_planning" type="global_planner_node" output="screen">
+      <param name="rate" value="$(arg rate)" />
+      <param name="global_planner_config_file" value="$(find larics_motion_planning)/config/uav_and_wp_manipulator_config.yaml" />
+      <param name="model_uav_namespace" value="/none" />
+
+      <!-- visualization parameters -->
+      <param name="state_scale" value="0.05" />
+      <param name="waypoints_scale" value="0.5" />
+
+      <!-- Transform between uav and manipulator -->
+      <param name="t_uav_man/z" value="0.075" />
+      <param name="t_uav_man/yaw" value="3.14159265359" />
+      <param name="t_uav_man/roll" value="1.57079632679" />
+    </node>
+
+    <node name="joint_trajectory_reference_tracker" pkg="larics_motion_planning" type="joint_trajectory_reference_tracker.py" output="screen">
+      <!--remap from="reference_tracker/joint_trajectory_point" to="aerial_manipulator_control/trajectory_ref_input" /-->
+      <remap from="reference_tracker/joint_trajectory" to="joint_trajectory" />
+    </node>
+
+    <node name="joint_trajectory_point_to_arducopter_and_manipulator" pkg="larics_motion_planning" type="joint_trajectory_point_to_arducopter_and_manipulator.py" output="screen">
+      <remap from="joint_trajectory_point_to_arducopter_and_manipulator/multi_dof_trajectory_point_out" to="multi_dof_trajectory_point" />
+      <remap from="joint_trajectory_point_to_arducopter_and_manipulator/joint_trajectory_point_in" to="reference_tracker/joint_trajectory_point" />
+    </node>
+
+    <node name="generate_toppra_trajectory" pkg="topp_ros" type="generate_toppra_trajectory.py" output="screen" />
+
+    <node name="uav_trajectory_go_to" pkg="larics_motion_planning" type="uav_trajectory_go_to.py" output="screen">
+      <param name="uav_type" value="arducopter_manipulator_sim" />
+      <param name="manipulator_dof" value="5" />
+      <param name="use_roll_pitch" value="true" />
+    </node>
+
+    <!-- e ovo bi mogao biti problem -->
+    <node name="joint_trajectory_to_uav_and_wp_manipulator_through_service" pkg="larics_motion_planning" type="joint_trajectory_to_uav_and_wp_manipulator_through_service.py" output="screen">
+    </node>
+  </group>
+
+</launch>

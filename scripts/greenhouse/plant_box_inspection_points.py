@@ -91,6 +91,7 @@ class BoxInspectionPoints:
       #print(self.box_config_vector)
 
   def boxConfigCallback(self, msg):
+    res = GetPlantBoxInspectionPointsResponse()
     if len(msg.data) < len(self.box_config_vector):
       print("[PlantInspection]->boxConfigCallback: At least 4 points must be provided")
     else:

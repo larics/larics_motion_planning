@@ -1,0 +1,76 @@
+<launch>
+  <arg name="rate" default="10" />
+  <arg name="namespace" default="uav" />
+  <arg name="model_namespace" default="model_uav" />
+
+  <!-- Before launching this file you need to launch planning context-->
+  <!-- roslaunch wp_manipulator planning_context.launch -->
+
+  <group ns="$(arg namespace)">
+    <node name="global_planner" pkg="larics_motion_planning" type="global_planner_node" output="screen">
+      <param name="rate" value="$(arg rate)" />
+      <param name="global_planner_config_file" value="$(find larics_motion_planning)/startup/uav_wp_manipulator/custom_config/uav_and_wp_manipulator_config.yaml" />
+      <param name="model_uav_namespace" value="/model_uav" />
+
+      <!-- visualization parameters -->
+      <param name="state_scale" value="0.05" />
+      <param name="waypoints_scale" value="0.5" />
+
+      <!-- Transform between uav and manipulator -->
+      <param name="t_uav_man/z" value="0.075" />
+      <param name="t_uav_man/yaw" value="3.14159265359" />
+      <param name="t_uav_man/roll" value="1.57079632679" />
+
+      <!-- Remove user confirmation for publishing trajectory -->
+      <param name="model_planning_user_confirmation_flag" value="false" />
+      <!-- Manipulator dof -->
+      <param name="manipulator_dof" value="5" />
+    </node>
+
+    <node name="generate_toppra_trajectory" pkg="topp_ros" type="generate_toppra_trajectory.py" output="screen" />
+
+    <node name="octomap_server_node" pkg="octomap_server" type="octomap_server_node" args="$(find larics_gazebo_worlds)/models/factory/factory.binvox.bt" output="screen">
+      <param name="frame_id" value="world" />
+    </node>
+
+    <!--node name="joint_trajectory_to_uav_and_wp_manipulator_through_service" pkg="larics_motion_planning" type="joint_trajectory_to_uav_and_wp_manipulator_through_service.py" output="screen">
+    </node-->
+
+    <node name="uav_trajectory_go_to" pkg="larics_motion_planning" type="uav_trajectory_go_to.py" output="screen">
+      <param name="uav_type" value="arducopter_manipulator_sim" />
+      <param name="manipulator_dof" value="5" />
+      <param name="use_roll_pitch" value="true" />
+    </node>
+
+    <node name="map_to_world_transform_publisher" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 world map 10" />
+
+    <!--node name="plant_box_inspection_points" pkg="larics_motion_planning" type="plant_box_inspection_points.py" output="screen">
+      <param name="box_length" value="0.4" />
+      <param name="box_width" value="0.4" />
+      <param name="box_height" value="0.1" />
+      <param name="r1" value="1.5" />
+      <param name="r2" value="1.0" />
+      <param name="plants_delta_z" value="0.05" />
+    </node>
+
+    <node name="plant_box_inspection_state_machine" pkg="larics_motion_planning" type="plant_box_inspection_state_machine.py" output="screen">
+    </node-->
+
+  </group>
+
+  <!-- This is the part where we get corrections based on model -->
+  <group ns="$(arg model_namespace)">
+
+    <node name="generate_toppra_trajectory" pkg="topp_ros" type="generate_toppra_trajectory.py" output="screen" />
+
+    <node name="uav_trajectory_go_to" pkg="larics_motion_planning" type="uav_trajectory_go_to.py" output="screen">
+      <param name="uav_type" value="arducopter_manipulator_sim" />
+      <param name="manipulator_dof" value="5" />
+      <param name="use_roll_pitch" value="true" />
+    </node>
+
+    <node name="joint_trajectory_to_uav_and_wp_manipulator_through_service" pkg="larics_motion_planning" type="joint_trajectory_to_uav_and_wp_manipulator_through_service.py" output="screen">
+    </node>
+  </group>
+
+</launch>
