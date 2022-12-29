@@ -13,6 +13,7 @@
       <param name="global_planner_config_file" value="$(find larics_motion_planning)/startup/multiple_manipulators/homogeneous_5dof/custom_config/homogeneous_5dof_planner_config.yaml" />
       <param name="model_uav_namespace" value="$(arg model_namespace)" />
       <param name="model_animation_dt_us" value="10" />
+      <param name="model_planning_user_confirmation_flag" value="false" />
 
       <!-- visualization parameters -->
       <param name="state_scale" value="0.05" />
