@@ -103,7 +103,7 @@ windows:
               accelerations: [0]
               effort: [0]
               time_from_start: {secs: 0, nsecs: 0}
-            - positions: [0.0,0,1,0,0,0,0.785398, 0.785398, 0.785398, -1.5707963, 0.785398,0.045,0,1,0,0,3.141592654,0.785398, 0.785398, 0.785398, -1.5707963, 0.785398]
+            - positions: [0.0,0,1,0,0,0,0.785398, 0.785398, 0.785398, -1.5707963, 0.785398,1.045,0,1,0,0,3.141592654,0.785398, 0.785398, 0.785398, -1.5707963, 0.785398]
               velocities: [0]
               accelerations: [0]
               effort: [0]
@@ -115,6 +115,15 @@ windows:
           override_dynamic_constraints: false
           velocity_constraints: [0]
           acceleration_constraints: [0]\""
+  - multiple_trajectories:
+      layout: tiled
+      panes:
+        - |
+          roscd larics_motion_planning/startup/multiple_manipulators/homogeneous_5dof/custom_scripts;
+          history -s "./execute_multiple_trajectories_homogeneous_5dof.sh -n 20 -t straight"
+        - |
+          roscd larics_motion_planning/startup/multiple_manipulators/homogeneous_5dof/custom_scripts;
+          history -s "./execute_multiple_trajectories_homogeneous_5dof.sh -n 20 -t square"
   - logging:
       layout: tiled
       panes:
