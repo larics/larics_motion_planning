@@ -51,13 +51,13 @@ windows:
         - |
           waitForSimulation; sleep 25; 
           rostopic pub -1 /planner/go_to/reference/joint_trajectory_point trajectory_msgs/JointTrajectoryPoint "
-          positions: [0,0,1,0,0,0,0.785398, 0.785398, 0.785398, -1.5707963, 0.785398,1.045,0,1,0,0,3.141592654,0.785398, 0.785398, 0.785398, -1.5707963, 0.785398]
+          positions: [-0.55,0.018,1,0,0,0,0.785398, 0.785398, 0.557, -0.861, 0.304, 0.553,-0.018,1,0,0,3.141592654,0.785398, 0.785398, 0.557, -0.861, 0.304]
           velocities: [0]
           accelerations: [0]
           effort: [0]
           time_from_start: {secs: 0, nsecs: 0}";
           rostopic pub -1 /model_planner/go_to/reference/joint_trajectory_point trajectory_msgs/JointTrajectoryPoint "
-          positions: [0,0,1,0,0,0,0.785398, 0.785398, 0.785398, -1.5707963, 0.785398,1.045,0,1,0,0,3.141592654,0.785398, 0.785398, 0.785398, -1.5707963, 0.785398]
+          positions: [-0.55,0.018,1,0,0,0,0.785398, 0.785398, 0.557, -0.861, 0.304, 0.553,-0.018,1,0,0,3.141592654,0.785398, 0.785398, 0.557, -0.861, 0.304]
           velocities: [0]
           accelerations: [0]
           effort: [0]
@@ -73,12 +73,12 @@ windows:
               frame_id: ''
             joint_names: ['']
             points:
-            - positions: [0,0,1,0,0,0,0.785398, 0.785398, 0.785398, -1.57, 0.785398,1.045,0,1,0,0,3.141592654,0.785398, 0.785398, 0.785398, -1.5707963, 0.785398]
+            - positions: [-0.55,0.018,1,0,0,0,0.785398, 0.785398, 0.557, -0.861, 0.304, 0.553,-0.018,1,0,0,3.141592654,0.785398, 0.785398, 0.557, -0.861, 0.304]
               velocities: [0]
               accelerations: [0]
               effort: [0]
               time_from_start: {secs: 0, nsecs: 0}
-            - positions: [-1.0,0,1,0,0,0,0.785398, 0.785398, 0.785398, -1.5707963, 0.785398,0.045,0,1,0,0,3.141592654,0.785398, 0.785398, 0.785398, -1.5707963, 0.785398]
+            - positions: [0.45,0.018,1,0,0,0,0.785398, 0.785398, 0.557, -0.861, 0.304, 1.553,-0.018,1,0,0,3.141592654,0.785398, 0.785398, 0.557, -0.861, 0.304]
               velocities: [0]
               accelerations: [0]
               effort: [0]
@@ -98,12 +98,12 @@ windows:
               frame_id: ''
             joint_names: ['']
             points:
-            - positions: [-1.0,0,1,0,0,0,0.785398, 0.785398, 0.785398, -1.5707963, 0.785398,0.045,0,1,0,0,3.141592654,0.785398, 0.785398, 0.785398, -1.5707963, 0.785398]
+            - positions: [0.45,0.018,1,0,0,0,0.785398, 0.785398, 0.557, -0.861, 0.304, 1.553,-0.018,1,0,0,3.141592654,0.785398, 0.785398, 0.557, -0.861, 0.304]
               velocities: [0]
               accelerations: [0]
               effort: [0]
               time_from_start: {secs: 0, nsecs: 0}
-            - positions: [0.0,0,1,0,0,0,0.785398, 0.785398, 0.785398, -1.5707963, 0.785398,1.045,0,1,0,0,3.141592654,0.785398, 0.785398, 0.785398, -1.5707963, 0.785398]
+            - positions: [-0.55,0.018,1,0,0,0,0.785398, 0.785398, 0.557, -0.861, 0.304, 0.553,-0.018,1,0,0,3.141592654,0.785398, 0.785398, 0.557, -0.861, 0.304]
               velocities: [0]
               accelerations: [0]
               effort: [0]
@@ -135,3 +135,16 @@ windows:
           cd ~/bags/model_corrections;
           history -s "rosbag record -a --chunksize=64 -x \"/(.*)(gazebo|camera|bias|joint_states|parameter_descriptions|parameter_updates)(.*)\" -o model_corrections";
           history -s "rosbag record --chunksize=1  -e \"(.*)(go_to|end_effector_configuration|executing_trajectory|controller|reference_tracker|full_state|executing_model_trajectory)(.*)\" -x \"/(.*)(gazebo|camera|bias|joint_states|parameter_descriptions|parameter_updates)(.*)\" -o model_corrections"
+
+
+# Waypoints for trajectories
+# Old waypoints have one joint at -1.57 which is the limit.
+# The suspicion is that this does not allow the inverse kinematics to
+# correct properly. These waypoints are:
+# [0,0,1,0,0,0,0.785398, 0.785398, 0.785398, -1.5707963, 0.785398,1.045,0,1,0,0,3.141592654,0.785398, 0.785398, 0.785398, -1.5707963, 0.785398]
+# [-1.0,0,1,0,0,0,0.785398, 0.785398, 0.785398, -1.5707963, 0.785398,0.045,0,1,0,0,3.141592654,0.785398, 0.785398, 0.785398, -1.5707963, 0.785398]
+
+# New set of waypoints keeps the end-effector orientation the same as above,
+# but joints are a bit further away from their limits:
+# [-0.55,0.018,1,0,0,0,0.785398, 0.785398, 0.557, -0.861, 0.304, 0.553,-0.018,1,0,0,3.141592654,0.785398, 0.785398, 0.557, -0.861, 0.304]
+# [0.45,0.018,1,0,0,0,0.785398, 0.785398, 0.557, -0.861, 0.304, 1.553,-0.018,1,0,0,3.141592654,0.785398, 0.785398, 0.557, -0.861, 0.304]
