@@ -268,6 +268,20 @@ Trajectory GlobalPlanner::modelCorrectedTrajectory(
     planned_trajectory, executed_trajectory);
 }
 
+bool GlobalPlanner::planObjectPath(Eigen::MatrixXd waypoints)
+{
+  bool success = false;
+
+  for (int i=0; i<num_path_restarts_ && success==false; i++){
+    // First obtain collision free path.
+    success = this->planPath(waypoints);
+    if (success == false) cout << "Planning object path failed!" << endl;
+  }
+
+  return success;
+}
+
+
 Eigen::MatrixXd GlobalPlanner::getPath()
 {
   return path_;

@@ -101,6 +101,11 @@ class GlobalPlannerRosInterface
     bool multipleManipulatorsModelCorrectedTrajectoryCallback(
       larics_motion_planning::MultiDofTrajectory::Request &req, 
       larics_motion_planning::MultiDofTrajectory::Response &res);
+    // Service server for multiple manipulators through object planner
+    ros::ServiceServer multiple_manipulators_object_service_server_;
+    bool multipleManipulatorsObjectTrajectoryCallback(
+      larics_motion_planning::MultiDofTrajectory::Request &req, 
+      larics_motion_planning::MultiDofTrajectory::Response &res);
 
     // Cartesian trajectory service
     ros::ServiceServer cartesian_trajectory_server_;

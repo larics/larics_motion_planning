@@ -67,6 +67,11 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
     "multiple_manipulators_model_correction_trajectory",
     &GlobalPlannerRosInterface::multipleManipulatorsModelCorrectedTrajectoryCallback,
     this);
+  // Service for multiple manipulators object trajectory planning
+  multiple_manipulators_object_service_server_ = nh_.advertiseService(
+    "multiple_manipulators_object_trajectory",
+    &GlobalPlannerRosInterface::multipleManipulatorsObjectTrajectoryCallback,
+    this);
   // Service client for executing model trajectory and recording it.
   if (model_uav_namespace.at(0) != '/'){
     model_uav_namespace = "/" + model_uav_namespace;
@@ -555,6 +560,52 @@ bool GlobalPlannerRosInterface::multipleManipulatorsModelCorrectedTrajectoryCall
     //cartesian_path_pub_.publish(res.path);
   }
 
+  return true;
+}
+
+bool GlobalPlannerRosInterface::multipleManipulatorsObjectTrajectoryCallback(
+  larics_motion_planning::MultiDofTrajectory::Request &req, 
+  larics_motion_planning::MultiDofTrajectory::Response &res)
+{
+  // The idea for this part of the planner is to generate a path for the
+  // manipulated object. Based on that path and the provided kinematics
+  // interface, compute each aerial manipulator state and return the final
+  // full state path. This is intended to be used with some external node that
+  // sends this path to the uav planner.
+  cout << "Starting the multiple manipulators object trajectory generation." << endl;
+
+  // If the planner finds a feasible path, this will become true.
+  bool success = false;
+
+  // Check the number of waypoints. Exit if there are less than two
+  if (req.waypoints.points.size() < 2){
+    cout << "At least two points required for generating trajectory." << endl;
+    res.success = success;
+    return true;
+  }
+
+  // Convert the input to Eigen waypoints
+  Eigen::MatrixXd waypoints = this->jointTrajectoryToEigenWaypoints(req.waypoints);
+  visualization_.setWaypoints(waypoints);
+  cout << waypoints << endl;
+
+  // This function only plans path, so no need to check the trajectory flags.
+  if (req.plan_path == true){
+    success = global_planner_->planObjectPath(waypoints);
+    res.path = this->eigenPathToJointTrajectory(global_planner_->getPath());
+    res.path_length = global_planner_->getPathLength();
+    visualization_.setPath(global_planner_->getPath());
+  }
+  else{
+    res.success = success;
+    return true;
+  }
+
+  // This does not publish anything, just returns the path.
+  res.success = success;
+
+
+  cout << "Done with the the multiple manipulators object trajectory generation." << endl;
   return true;
 }
 
