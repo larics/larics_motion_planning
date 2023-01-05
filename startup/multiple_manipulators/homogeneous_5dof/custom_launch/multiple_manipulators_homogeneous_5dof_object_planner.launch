@@ -1,0 +1,23 @@
+<launch>
+  <arg name="planner_rate" default="10" />
+  <arg name="namespace" default="object" />
+
+  <!-- Before launching this file you need to launch planning context-->
+  <!-- roslaunch wp_manipulator planning_context.launch -->
+
+  <group ns="$(arg namespace)">
+    <!-- Global planner generates path and/or trajectory based on desired waypoints.-->
+    <node name="global_planner" pkg="larics_motion_planning" type="global_planner_node" output="screen">
+      <param name="rate" value="$(arg planner_rate)" />
+      <param name="global_planner_config_file" value="$(find larics_motion_planning)/startup/multiple_manipulators/homogeneous_5dof/custom_config/homogeneous_5dof_object_planner_config.yaml" />
+      <param name="model_uav_namespace" value="none" />
+      <param name="model_animation_dt_us" value="10" />
+      <param name="model_planning_user_confirmation_flag" value="false" />
+
+      <!-- visualization parameters -->
+      <param name="state_scale" value="0.05" />
+      <param name="waypoints_scale" value="0.5" />
+    </node>
+  </group>
+
+</launch>
