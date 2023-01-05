@@ -80,6 +80,9 @@ class UavWpManipulatorModelCorrection : public ModelCorrectionInterface
 
     // End-effector q is calculated with some weighing factor alpha
     double alpha_;
+
+    // Gains for roll and pitch corrections
+    double roll_correction_gain_, pitch_correction_gain_;
 };
 
 #endif // UAV_WP_MANIPULATOR_MODEL_CORRECTION

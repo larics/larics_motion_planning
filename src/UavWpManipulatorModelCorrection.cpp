@@ -47,6 +47,23 @@ UavWpManipulatorModelCorrection::UavWpManipulatorModelCorrection(
 
   // Get alpha
   alpha_ = config["alpha"].as<double>();
+
+  // Get flags for roll and pitch correction
+  bool roll_flag = true, pitch_flag = true;
+  roll_flag = config["apply_roll_corrections"].as<bool>();
+  if (roll_flag == true){
+    roll_correction_gain_ = 1.0;
+  }
+  else{
+    roll_correction_gain_ = 0.0;
+  }
+  pitch_flag = config["apply_pitch_corrections"].as<bool>();
+  if (pitch_flag == true){
+    pitch_correction_gain_ = 1.0;
+  }
+  else{
+    pitch_correction_gain_ = 0.0;
+  }
 }
 
 bool UavWpManipulatorModelCorrection::configureFromFile(string config_filename)
@@ -142,8 +159,8 @@ Trajectory UavWpManipulatorModelCorrection::modelCorrectedTrajectory(
     //  * Eigen::AngleAxisd(executed_trajectory.position(i, 4), Eigen::Vector3d::UnitY())
     //  * Eigen::AngleAxisd(executed_trajectory.position(i, 3), Eigen::Vector3d::UnitX());
     r_w_b = Eigen::AngleAxisd(planned_trajectory.position(i, 5), Eigen::Vector3d::UnitZ())
-      * Eigen::AngleAxisd(executed_trajectory.position(i, 4), Eigen::Vector3d::UnitY())
-      * Eigen::AngleAxisd(executed_trajectory.position(i, 3), Eigen::Vector3d::UnitX());
+      * Eigen::AngleAxisd(executed_trajectory.position(i, 4)*pitch_correction_gain_, Eigen::Vector3d::UnitY())
+      * Eigen::AngleAxisd(executed_trajectory.position(i, 3)*roll_correction_gain_, Eigen::Vector3d::UnitX());
     t_w_b.rotate(r_w_b);
 
     // With new transform we can calculate true end-effector position in

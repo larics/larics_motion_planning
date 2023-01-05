@@ -210,6 +210,8 @@ model_correction:
         rotation: [1.57079632679, 0, 3.14159265359]
       manipulator_dof: 5
       alpha: 1.0
+      apply_roll_corrections: true
+      apply_pitch_corrections: true
     - 
       type: "UavWpManipulator"
       indexes:
@@ -220,3 +222,5 @@ model_correction:
         rotation: [0, 0, 0]
       manipulator_dof: 3
       alpha: 1.0
+      apply_roll_corrections: true
+      apply_pitch_corrections: true
