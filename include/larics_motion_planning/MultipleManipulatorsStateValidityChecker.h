@@ -65,6 +65,13 @@ class MultipleManipulatorsStateValidityChecker : public StateValidityCheckerInte
     /// \return Validity points of all robots.
     Eigen::MatrixXd generateValidityPoints(Eigen::VectorXd state);
 
+    /// \brief Generates validity points for all manipulators and the 
+    ///   manipulated object
+    /// \param state 6-DoF state of the object. The full state can be obtained
+    ///   through kinematics.
+    /// \return Validity points of all robots and the object.
+    Eigen::MatrixXd generateObjectValidityPoints(Eigen::VectorXd state);
+
   private:
     // Map and kinematics
     shared_ptr<MapInterface> map_;
@@ -106,8 +113,16 @@ class MultipleManipulatorsStateValidityChecker : public StateValidityCheckerInte
     // Number of degrees of freedom of the base.
     std::vector<int> base_dof_;
 
+    // Object planner related variables.
+    bool object_planner_is_used_;
+    double object_planner_resolution_;
+    Eigen::Vector3d object_dimensions_;
+
     Eigen::MatrixXd generatePrism(double x, double y, double z, 
       double resolution, string direction);
+
+    Eigen::MatrixXd generateObject(Eigen::Vector3d dimensions,
+      double resolution);
 };
 
 #endif // MULTIPLE_MANIPULATORS_STATE_VALIDITY_CHECKER

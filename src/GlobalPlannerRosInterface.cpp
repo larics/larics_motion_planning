@@ -936,7 +936,8 @@ bool GlobalPlannerRosInterface::visualizeStateCallback(
   visualization_.setStatePoints(global_planner_->getRobotStatePoints(state));
   visualization_.publishStatePoints();
 
-
+  // Some tryout stuff
+  /*
   Eigen::Affine3d t_b_l0;
   t_b_l0 = Eigen::Affine3d::Identity();
   Eigen::Matrix3d rot_uav_manipulator;
@@ -983,6 +984,7 @@ bool GlobalPlannerRosInterface::visualizeStateCallback(
   res.end_effector.orientation.y = quat.y();
   res.end_effector.orientation.z = quat.z();
   res.end_effector.orientation.w = quat.w();
+  */
 
   cout << req.state.data.size() << endl;
   return true;
