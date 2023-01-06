@@ -24,18 +24,22 @@ bool MultipleManipulatorsStateValidityChecker::configureFromFile(
 
   // Open yaml file with configuration
   YAML::Node config = YAML::LoadFile(config_filename);
+  string username = "/home/";
+  username = username + getenv("USER") + "/";
+  string kinematics_config_filename = username + config["global_planner"]["kinematics_config_file"].as<string>();
+  YAML::Node kinematics_config = YAML::LoadFile(kinematics_config_filename);
   
   // Get the number of manipulators. This should be the same number as in 
   // kinematics interface.
   n_manipulators_ = config["state_validity_checker"]["multiple_manipulators"].size();
   // Check if there is the same number of manipulators in both state validity
   // checker and kinematics
-  if (n_manipulators_ != config["kinematics"]["multiple_manipulators"].size()){
+  if (n_manipulators_ != kinematics_config["kinematics"]["multiple_manipulators"].size()){
     cout << "ERROR: Number of manipulators is different in kinematics." << endl;
     cout << "  This occured in MultipleManipulatorsStateValidityChecker." << endl;
     cout << "  Number of manipulators in state validity checker: " << n_manipulators_ << endl;
     cout << "  Number of manipulators in kinematics: ";
-    cout << config["kinematics"]["multiple_manipulators"].size() << endl;
+    cout << kinematics_config["kinematics"]["multiple_manipulators"].size() << endl;
     exit(0);
   }
 
