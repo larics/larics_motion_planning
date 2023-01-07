@@ -595,11 +595,30 @@ bool GlobalPlannerRosInterface::multipleManipulatorsObjectTrajectoryCallback(
     res.path = this->eigenPathToJointTrajectory(global_planner_->getPath());
     res.path_length = global_planner_->getPathLength();
     visualization_.setPath(global_planner_->getPath());
+
+
+    Trajectory visualization_trajectory;
+    Eigen::MatrixXd vis_path = global_planner_->getPath();
+    bool temp_success = global_planner_->planTrajectory(vis_path);
+    visualization_trajectory = global_planner_->getTrajectory();
+    cout << "Animating object planner path." << endl;
+    cout << "Visualization trajectory rows: " << visualization_trajectory.position.rows() << endl;
+    for (int i=0; i<visualization_trajectory.position.rows(); i++){
+      visualization_.setStatePoints(
+        global_planner_->getRobotStatePoints((visualization_trajectory.position.row(i)).transpose()));
+      visualization_.publishStatePoints();
+      usleep(model_animation_dt_);
+    }
   }
   else{
     res.success = success;
     return true;
   }
+
+  // IMPORTANT!
+  // This part of the code will call the function to get the full state.
+  // If the call is here, then we can return something even if the path
+  // planning flag is set to false.
 
   // This does not publish anything, just returns the path.
   res.success = success;

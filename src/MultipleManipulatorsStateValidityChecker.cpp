@@ -293,8 +293,7 @@ Eigen::MatrixXd MultipleManipulatorsStateValidityChecker::generateValidityPoints
 
     // IMPORTANT!!!
     // After generating object points, full state of the manipulator is required
-    // and then the rest of this function can be called. This if will not return
-    // points, just in the beginning. The remainder of this function can add 
+    // and then the rest of this function can be called. The remainder of this function can add 
     // the additional points, if the full state is properly computed.
   }
 

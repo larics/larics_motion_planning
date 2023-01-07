@@ -11,13 +11,15 @@
       <param name="rate" value="$(arg planner_rate)" />
       <param name="global_planner_config_file" value="$(find larics_motion_planning)/startup/multiple_manipulators/homogeneous_5dof/custom_config/homogeneous_5dof_object_planner_config.yaml" />
       <param name="model_uav_namespace" value="none" />
-      <param name="model_animation_dt_us" value="10" />
+      <param name="model_animation_dt_us" value="2000" />
       <param name="model_planning_user_confirmation_flag" value="false" />
 
       <!-- visualization parameters -->
       <param name="state_scale" value="0.05" />
       <param name="waypoints_scale" value="0.5" />
     </node>
+
+    <node name="generate_toppra_trajectory" pkg="topp_ros" type="generate_toppra_trajectory.py" output="screen" />
   </group>
 
 </launch>
