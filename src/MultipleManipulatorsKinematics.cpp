@@ -69,6 +69,39 @@ bool MultipleManipulatorsKinematics::configureFromFile(string config_filename)
       temp_transform.rotate(temp_rotation);
       // Append to transform list
       grasp_transforms_.push_back(temp_transform);
+
+      try{
+        // Base degrees of freedom
+        temp_dof = config["kinematics"]["multiple_manipulators"][i]["base_dof"].as<int>();
+        base_n_dofs_.push_back(temp_dof);
+
+        // Set up a fixed transform between UAV and manipulator
+        std::vector<double> temp_transf;
+        temp_transf = config["kinematics"]["multiple_manipulators"][i]["base_manipulator_transform"].as< std::vector<double> >();
+        Eigen::Affine3d t_base_manipulator;
+        t_base_manipulator = Eigen::Affine3d::Identity();
+        Eigen::Matrix3d rot_uav_manipulator;
+        rot_uav_manipulator = Eigen::AngleAxisd(temp_transf[5], Eigen::Vector3d::UnitZ())
+          * Eigen::AngleAxisd(temp_transf[4],  Eigen::Vector3d::UnitY())
+          * Eigen::AngleAxisd(temp_transf[3], Eigen::Vector3d::UnitX());
+        t_base_manipulator.translate(Eigen::Vector3d(temp_transf[0], temp_transf[1], temp_transf[2]));
+        t_base_manipulator.rotate(rot_uav_manipulator);
+        t_base_manipulator_vector_.push_back(t_base_manipulator);
+      }
+      catch(...){
+        string ys = "\033[0;33m";
+        string ye = "\033[0m";
+        cout << ys << "[MultipleManipulatorsKinematics] Missing fields." << ye << endl;
+        cout << ys << "  Something wrong or missing in the kinematics:" << ye << endl;
+        cout << ys << "    base_dof and/or base_manipulator_transform fields missing." << ye << endl;
+        cout << ys << "  Setting identity transform and 6-DoF." << ye << endl;
+        cout << ys << "  Ignore this message if you are not using multiple manipulators." << ye << endl;
+        // Default number of degrees of freedom is 6, with identity transform.
+        base_n_dofs_.push_back(6);
+        Eigen::Affine3d t_base_manipulator;
+        t_base_manipulator = Eigen::Affine3d::Identity();
+        t_base_manipulator_vector_.push_back(t_base_manipulator);
+      }
     }
     else {
       cout << "MultipleManipulatorsKinematics" << endl;
@@ -187,7 +220,7 @@ Eigen::VectorXd MultipleManipulatorsKinematics::calculateInverseKinematics(
     // State of each manipulator is multiplied by grasp transform. This might
     // have to be changed.
     current_manipulator_state = manipulators_[i]->calculateInverseKinematics(
-      transform*grasp_transforms_[i], multiple_found_ik);
+      transform, multiple_found_ik);
     found_ik &= multiple_found_ik;
     // Append current manipulator state to the full merged state.
     joint_states.conservativeResize(joint_states.rows() + 
@@ -219,4 +252,53 @@ void MultipleManipulatorsKinematics::setSingleManipulatorJointPositions(
   Eigen::VectorXd q, int id)
 {
   manipulators_[id]->setJointPositions(q);
+}
+
+Eigen::VectorXd MultipleManipulatorsKinematics::getFullStateFromObjectState(
+  Eigen::VectorXd object_q, int id)
+{
+  // Initialize base and manipulator configuration vectors
+  Eigen::VectorXd q_m;
+  Eigen::VectorXd q_b;
+  q_m = Eigen::VectorXd::Zero(n_dofs_[id]);
+  q_b = Eigen::VectorXd::Zero(base_n_dofs_[id]);
+  // Get the object transform
+  Eigen::Affine3d t_w_o(Eigen::Affine3d::Identity());
+  t_w_o.translate(Eigen::Vector3d(object_q(0), object_q(1), object_q(2)));
+  Eigen::Matrix3d rot_object;
+  rot_object = Eigen::AngleAxisd(object_q(5), Eigen::Vector3d::UnitZ())
+    * Eigen::AngleAxisd(object_q(4),  Eigen::Vector3d::UnitY())
+    * Eigen::AngleAxisd(object_q(3), Eigen::Vector3d::UnitX());
+  t_w_o.rotate(rot_object);
+
+  // Based on the grasp transform and the object transform, get the transform
+  // of the end-effector in the world frame.
+  Eigen::Affine3d t_w_ee;
+  t_w_ee = t_w_o * grasp_transforms_[id];
+  
+  // Get the manipulator configuration vector
+  shared_ptr<WpManipulatorKinematics> man;
+  man = static_pointer_cast<WpManipulatorKinematics>(manipulators_[id]);
+  q_m = man->calculateOptimalManipulatorState(t_w_ee);
+  
+  // Get the base configuration vector
+  // Transform between base and manipulator is given in config.
+  Eigen::Affine3d t_b_l0 = t_base_manipulator_vector_[id];
+  // Transform between L0 and end-effector is obtainable through direct
+  // kinematics
+  Eigen::Affine3d t_l0_ee;
+  t_l0_ee = manipulators_[id]->getEndEffectorTransform(q_m);
+  // transform between world and body is chained through known ones
+  Eigen::Affine3d t_w_b;
+  t_w_b = t_w_ee*t_l0_ee.inverse()*t_b_l0.inverse();
+  // Pack in q_b
+  Eigen::Vector3d xyz = t_w_b.translation();
+  Eigen::Vector3d rpy = t_w_b.rotation().eulerAngles(2, 1, 0);
+  q_b << xyz, rpy;
+
+  // Pack all in full state q
+  Eigen::VectorXd q = Eigen::VectorXd::Zero(n_dofs_[id] + base_n_dofs_[id]);
+  q << q_b, q_m;
+
+  return q;
 }
