@@ -4,11 +4,9 @@
 WpManipulatorKinematics::WpManipulatorKinematics(string config_filename)
 {
   if (getenv("ABSOLUTE_CONFIG")){
-    cout << "Gettao sam env" << endl;
     configureFromFile(config_filename);
   }
   else{
-    cout << "Else se izvodi" << endl;
     string username = "/home/";
     username = username + getenv("USER") + "/";
     configureFromFile(username + config_filename);
@@ -23,6 +21,7 @@ WpManipulatorKinematics::WpManipulatorKinematics(string robot_model_name,
   string params_file = username + dh_parameters_file;
 
   // Configure manipulator
+  robot_model_name_ = robot_model_name;
   manipulator_.setManipulatorName(robot_model_name, joint_group_name);
   manipulator_.LoadParameters(params_file);
   manipulator_.init();
@@ -37,6 +36,7 @@ bool WpManipulatorKinematics::configureFromFile(string config_filename)
   // Load manipulator configuration
   string robot_model_name, joint_group_name, dh_parameters_file;
   robot_model_name = config["kinematics"]["wp_manipulator_kinematics"]["robot_model_name"].as<string>();
+  robot_model_name_ = robot_model_name;
   joint_group_name = config["kinematics"]["wp_manipulator_kinematics"]["joint_group_name"].as<string>();
   if (getenv("ABSOLUTE_CONFIG")){
     dh_parameters_file = motion_util::loadPathOrThrow(
@@ -85,4 +85,25 @@ void WpManipulatorKinematics::setJointPositions(
 Eigen::MatrixXd WpManipulatorKinematics::getJacobian(Eigen::VectorXd q)
 {
   return manipulator_.getJacobian(q);
+}
+
+Eigen::VectorXd WpManipulatorKinematics::calculateOptimalManipulatorState(
+  Eigen::Affine3d T_w_t)
+{
+  Eigen::Vector3d rpy = T_w_t.rotation().eulerAngles(2, 1, 0);
+
+  Eigen::VectorXd q;
+  // These ifs are non configurable for now.
+  if (robot_model_name_ == "wp_manipulator"){
+    q = Eigen::VectorXd::Zero(5);
+    q << M_PI/4 + rpy(1)/2, M_PI/4 + rpy(1)/2, 0.557, -0.861, 0.304;
+  }
+  else{
+    cout << "[WpManipulatorKinematics] No such manipulator robot model." << endl;
+    cout << "  Your provided robot model is: " << robot_model_name_ << endl;
+  }
+
+  // If wrong manipulator robot model is provided, return empty q. The caller should
+  // check the size of q.
+  return q;
 }
