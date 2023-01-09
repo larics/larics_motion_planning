@@ -71,7 +71,7 @@ path_planner:
     dimensions: [5, 1]
     weights: [1.0, 0.1]
     types: ["RealVector", "SO2"]
-    bounds: [[[-3, 1.0], [-10.0, 10.0], [0.2, 3.0], [0.0, 0.0], [0.0, 0.0]], [[-3.15, 3.15]]]
+    bounds: [[[-3, 1.0], [-10.0, 10.0], [0.2, 3.0], [0.0, 0.0], [-0.2, 0.2]], [[-3.15, 3.15]]]
   longest_valid_segment:
     is_used: true
     is_metric: true
@@ -144,7 +144,7 @@ state_validity_checker:
       manipulator_link_dimensions: [[0.0340, 0.1225, 0.0285], [0.1365, 0.0340, 0.0285], [0.0755, 0.0285, 0.0340], [0.0725, 0.0285, 0.0340], [0.0453, 0.0285, 0.0340]]
       manipulator_link_directions: ["y", "x", "x", "x", "x"]
 
-      base_dimensions: [0.4, 0.4, 0.17]
+      base_dimensions: [0.6, 0.6, 0.17]
       base_dof: 6
       base_manipulator_transform: [0, 0, 0.075, 1.57079632679, 0, 3.14159265359]
 
@@ -164,7 +164,7 @@ state_validity_checker:
       manipulator_link_dimensions: [[0.0340, 0.1225, 0.0285], [0.1365, 0.0340, 0.0285], [0.0755, 0.0285, 0.0340], [0.0725, 0.0285, 0.0340], [0.0453, 0.0285, 0.0340]]
       manipulator_link_directions: ["y", "x", "x", "x", "x"]
 
-      base_dimensions: [0.4, 0.4, 0.17]
+      base_dimensions: [0.6, 0.6, 0.17]
       base_dof: 6
       base_manipulator_transform: [0, 0, 0.075, 1.57079632679, 0, 3.14159265359]
 

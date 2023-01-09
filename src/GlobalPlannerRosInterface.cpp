@@ -14,6 +14,8 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
     string("/model_uav"));
   nh_private.param("model_animation_dt_us", model_animation_dt_, 
     int(10));
+  nh_private.param("model_animation_flag", model_animation_flag_,
+    bool(false));
 
   // Get the transform between the uav and manipulator as 6 parameters. The list
   // argument passing does not work with private params, but it should work with
@@ -587,7 +589,6 @@ bool GlobalPlannerRosInterface::multipleManipulatorsObjectTrajectoryCallback(
   // Convert the input to Eigen waypoints
   Eigen::MatrixXd waypoints = this->jointTrajectoryToEigenWaypoints(req.waypoints);
   visualization_.setWaypoints(waypoints);
-  cout << waypoints << endl;
 
   // This function only plans path, so no need to check the trajectory flags.
   if (req.plan_path == true){
@@ -601,13 +602,15 @@ bool GlobalPlannerRosInterface::multipleManipulatorsObjectTrajectoryCallback(
     Eigen::MatrixXd vis_path = global_planner_->getPath();
     bool temp_success = global_planner_->planTrajectory(vis_path);
     visualization_trajectory = global_planner_->getTrajectory();
-    cout << "Animating object planner path." << endl;
-    cout << "Visualization trajectory rows: " << visualization_trajectory.position.rows() << endl;
-    for (int i=0; i<visualization_trajectory.position.rows(); i++){
-      visualization_.setStatePoints(
-        global_planner_->getRobotStatePoints((visualization_trajectory.position.row(i)).transpose()));
-      visualization_.publishStatePoints();
-      usleep(model_animation_dt_);
+    if (model_animation_flag_ == true){
+      cout << "Animating object planner path." << endl;
+      cout << "Visualization trajectory rows: " << visualization_trajectory.position.rows() << endl;
+      for (int i=0; i<visualization_trajectory.position.rows(); i++){
+        visualization_.setStatePoints(
+          global_planner_->getRobotStatePoints((visualization_trajectory.position.row(i)).transpose()));
+        visualization_.publishStatePoints();
+        usleep(model_animation_dt_);
+      }
     }
   }
   else{
@@ -619,6 +622,14 @@ bool GlobalPlannerRosInterface::multipleManipulatorsObjectTrajectoryCallback(
   // This part of the code will call the function to get the full state.
   // If the call is here, then we can return something even if the path
   // planning flag is set to false.
+  shared_ptr<MultipleManipulatorsKinematics> kinematics;
+  kinematics = dynamic_pointer_cast<MultipleManipulatorsKinematics>(
+    global_planner_->getKinematicsInterface());
+
+  Eigen::MatrixXd object_path = global_planner_->getPath();
+  Eigen::MatrixXd full_state_path = kinematics->getFullSystemStateFromObjectState(
+    object_path);
+  res.path = this->eigenPathToJointTrajectory(full_state_path);
 
   // This does not publish anything, just returns the path.
   res.success = success;
