@@ -13,6 +13,7 @@
 
 #include <string>
 #include <Eigen/Eigen>
+#include <math.h>
 
 #include "yaml-cpp/yaml.h"
 
@@ -121,11 +122,14 @@ class MultipleManipulatorsKinematics : public KinematicsInterface
     // Transform from base to manipulator
     std::vector<int> base_n_dofs_;
     std::vector<Eigen::Affine3d> t_base_manipulator_vector_;
+    std::vector<double> base_relative_yaw_vector_;
 
     // Grasp transforms. The idea of this variable is to provide one
     // end-effector transform and get all manipulators transforms by multiplying
     // them with appropriate grasp transform.
     std::vector<Eigen::Affine3d> grasp_transforms_;
 };
+
+double wrapToPi(double x);
 
 #endif // MULTIPLE_MANIPULATORS_KINEMATICS_H

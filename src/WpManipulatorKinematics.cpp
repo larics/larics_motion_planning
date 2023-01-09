@@ -87,16 +87,57 @@ Eigen::MatrixXd WpManipulatorKinematics::getJacobian(Eigen::VectorXd q)
   return manipulator_.getJacobian(q);
 }
 
-Eigen::VectorXd WpManipulatorKinematics::calculateOptimalManipulatorState(
-  Eigen::Affine3d T_w_t)
+Eigen::VectorXd WpManipulatorKinematics::calculateOptimalSingleManipulatorState(
+  Eigen::Affine3d grasp_transform, Eigen::VectorXd object_state)
 {
-  Eigen::Vector3d rpy = T_w_t.rotation().eulerAngles(2, 1, 0);
+  //Eigen::Vector3d rpy = grasp_transform.rotation().eulerAngles(2, 1, 0);
+  //cout << "rpy: " << rpy.transpose() << endl;
+  //rpy = object_state.block(3,0,3,1);
+  //cout << "rpy from object: " << rpy.transpose() << endl;
+
+  //Eigen::Vector3d p_o_ee = object_state.block(0,0,3,1) - grasp_transform.translation();
+  //cout << "Delta p: " << p_o_ee.transpose() << endl;
+  //cout << "Object position: " << object_state.block(0,0,3,1).transpose() << endl;
+  //cout << "Tool translation: " << grasp_transform.translation().transpose() << endl;
+
+  // Imagine object at the (0,0,0) position. The grasp translation vector is
+  // used to define the DeltaZ, when it is rotated by the object pitch angle.
+  // This is used to properly set the manipulator q later on.
+  Eigen::Matrix3d rot_object;
+  rot_object = Eigen::AngleAxisd(object_state(5), Eigen::Vector3d::UnitZ())
+    * Eigen::AngleAxisd(object_state(4),  Eigen::Vector3d::UnitY())
+    * Eigen::AngleAxisd(object_state(3), Eigen::Vector3d::UnitX());
+  Eigen::Vector3d p_o_ee = rot_object*grasp_transform.translation();
+  Eigen::Vector3d rpy = object_state.block(3,0,3,1);
+  //cout << "grasp translation: " << grasp_transform.translation().transpose() << endl;
+  //cout << "p_o_ee: " << p_o_ee.transpose() << endl;
+  //cout << "rpy: " << rpy.transpose() << endl;
 
   Eigen::VectorXd q;
   // These ifs are non configurable for now.
   if (robot_model_name_ == "wp_manipulator"){
     q = Eigen::VectorXd::Zero(5);
-    q << M_PI/4 + rpy(1)/2, M_PI/4 + rpy(1)/2, 0.557, -0.861, 0.304;
+    // The amount of rotation for each joint is determined from the roll,
+    // pitch and yaw of the object. Since manipulator attachment points are on
+    // different sides of the stick like object, one manipulator will have to
+    // point down, and the other one up. Delta in z-axis determines the
+    // direction these joints have to move.
+    double sgn = signum(p_o_ee(2));
+    //cout << "p_o_ee(2): " << p_o_ee(2) << endl;
+    //cout << "signum: " << sgn << endl;
+    //q << M_PI/4 + sgn*rpy(1)/2, M_PI/4 + sgn*rpy(1)/2, 0.557, -0.861, 0.304;
+    
+    // It is interesting that this has to be separated based on the desired
+    // onbject pitch angle. Nevertheless, this way it works. I think it has
+    // something to do with the fact that I am trying to set some rotations
+    // from homogeneous transform directly into the manipulator q, and this
+    // is not as straight forward as it seems.
+    if (rpy(1) >= 0){
+      q << M_PI/4 + sgn*rpy(1)/2, M_PI/4 + sgn*rpy(1)/2, 0.557, -0.861, 0.304;
+    }
+    else {
+      q << M_PI/4 - sgn*rpy(1)/2, M_PI/4 - sgn*rpy(1)/2, 0.557, -0.861, 0.304;
+    }
   }
   else{
     cout << "[WpManipulatorKinematics] No such manipulator robot model." << endl;
@@ -106,4 +147,10 @@ Eigen::VectorXd WpManipulatorKinematics::calculateOptimalManipulatorState(
   // If wrong manipulator robot model is provided, return empty q. The caller should
   // check the size of q.
   return q;
+}
+
+
+double signum(double val){
+  if (val >= 0) return 1.0;
+  else return -1.0;
 }

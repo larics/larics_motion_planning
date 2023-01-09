@@ -184,8 +184,18 @@ kinematics:
       degrees_of_freedom: 5
       indexes: [6, 7, 8, 9, 10]
       grasp_transform:
-        translation: [0, -0.15, 0]
-        rotation: [0, 0, 1.57079632679]
+        translation: [-0.17265, 0, 0]
+        # If provided, the rotation matrix overrides rpy rotation
+        rotation: [3.14159265359, 0, 0]
+        rotation_matrix: [1, 0, 0, 
+                          0, -1, 0,
+                          0, 0, -1]
+      # The relative yaw angle between the uav body and the manipulated object
+      # This is required to properly set the uav body rotation, assuming roll
+      # and pitch angles are 0.
+      base_relative_yaw: 0.0
+      base_dof: 6
+      base_manipulator_transform: [0, 0, 0.075, 1.57079632679, 0, 3.14159265359]
       robot_model_name: "wp_manipulator"
       joint_group_name: "wp_manipulator_arm"
       dh_parameters_file: "catkin_ws/src/aerial_manipulators/aerial_manipulators_control/config/wp_manipulator_dh_parameters.yaml"
@@ -193,9 +203,19 @@ kinematics:
       type: "wp_manipulator"
       degrees_of_freedom: 5
       indexes: [17, 18, 19, 20, 21]
+      # The relative yaw angle between the uav body and the manipulated object
+      # This is required to properly set the uav body rotation, assuming roll
+      # and pitch angles are 0.
+      base_relative_yaw: 3.14159265359
+      base_dof: 6
+      base_manipulator_transform: [0, 0, 0.075, 1.57079632679, 0, 3.14159265359]
       grasp_transform:
-        translation: [0, 0.15, 0]
-        rotation: [0, 0, -1.57079632679]
+        translation: [0.17265, 0, 0]
+        rotation: [1.57079632679, 3.14159265359, 3.14159265359]
+        # If provided, the rotation matrix overrides rpy rotation
+        rotation_matrix: [-1, 0, 0, 
+                          0, 1, 0,
+                          0, 0, -1]
       robot_model_name: "wp_manipulator"
       joint_group_name: "wp_manipulator_arm"
       dh_parameters_file: "catkin_ws/src/aerial_manipulators/aerial_manipulators_control/config/wp_manipulator_dh_parameters.yaml"

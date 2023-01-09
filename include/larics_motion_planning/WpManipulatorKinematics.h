@@ -77,12 +77,16 @@ class WpManipulatorKinematics : public KinematicsInterface
     ///   internal assumption of multirotor hover.
     /// \param T_w_t Transform of the tool in the world frame. This is required
     ///   to obtain the roll and pitch of the end-effector.
+    /// \param object_state 6-DoF object state with appropriate angles.
     /// \return Joint states for the required configuration.
-    Eigen::VectorXd calculateOptimalManipulatorState(Eigen::Affine3d T_w_t);
+    Eigen::VectorXd calculateOptimalSingleManipulatorState(
+      Eigen::Affine3d grasp_transform, Eigen::VectorXd object_state);
 
   private:
     ManipulatorControl manipulator_;
     string robot_model_name_;
 };
+
+double signum(double val);
 
 #endif // WP_MANIPULATOR_KINEMATICS_H

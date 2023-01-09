@@ -286,22 +286,36 @@ Eigen::MatrixXd MultipleManipulatorsStateValidityChecker::generateValidityPoints
 {
   points_ = Eigen::MatrixXd(0,3);
 
+  Eigen::VectorXd full_state;
+
   // If object is used, first generate its points.
   if (object_planner_is_used_ == true){
     points_ = generateObjectValidityPoints(state);
-    return points_;
 
     // IMPORTANT!!!
     // After generating object points, full state of the manipulator is required
     // and then the rest of this function can be called. The remainder of this function can add 
     // the additional points, if the full state is properly computed.
+    for (int i=0; i<n_manipulators_; i++){
+      Eigen::VectorXd current_q;
+      current_q = kinematics_->getFullStateFromObjectState(state, i);
+      full_state.conservativeResize(full_state.rows() + current_q.rows(), 1);
+      full_state.block(full_state.rows() - current_q.rows(), 0, 
+        current_q.rows(), 1) = current_q;
+    }
   }
+  else{
+    full_state = state;
+  }
+  //cout << full_state << endl;
+  //full_state << -0.55,0.018,-0.166,0,0,0,0.785398, 0.785398, 0.557, -0.861, 0.304, 0.553,-0.018,-0.166,0,0,3.141592654,0.785398, 0.785398, 0.557, -0.861, 0.304;
+  //cout << full_state << endl;
 
   for (int i=0; i<n_manipulators_; i++){
     // Extract current manipulator state based on indexes provided in the
     // config file.
     Eigen::VectorXd current_state(end_indexes_[i]-start_indexes_[i]+1);
-    current_state = state.block(
+    current_state = full_state.block(
       start_indexes_[i], 0, end_indexes_[i]-start_indexes_[i]+1, 1);//end_indexes_[i]-start_indexes_[i]);
 
     // Generate points based on the current manipulator state and concatenate
