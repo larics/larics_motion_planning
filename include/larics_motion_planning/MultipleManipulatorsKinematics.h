@@ -103,9 +103,24 @@ class MultipleManipulatorsKinematics : public KinematicsInterface
     ///   that the base is in horizontal position.
     /// \param object_q Object state that is 6-DoF.
     /// \param id Manipulator index.
-    /// \return Full state of the multiple manipulator system.
-    Eigen::VectorXd getFullStateFromObjectState(
+    /// \return Full state of a single manipulator with base and joints.
+    Eigen::VectorXd getSingleManipulatorStateFromObjectState(
       Eigen::VectorXd object_q, int id);
+
+    /// \brief Based on the object state, get full system state. Will call
+    ///   getSingleManipulatorStateFromObjectState() for each manipulator and
+    ///   create the full state.
+    /// \param object_q Object state that is 6-DoF.
+    /// \return Full state of the multiple manipulator system.
+    Eigen::VectorXd getFullSystemStateFromObjectState(
+      Eigen::VectorXd object_q);
+
+    /// \brief Based on the object state, get full system state for multiple
+    ///   waypoints.
+    /// \param object_q Matrix of object state that is 6-DoF.
+    /// \return Matrix of full state of the multiple manipulator system.
+    Eigen::MatrixXd getFullSystemStateFromObjectState(
+      Eigen::MatrixXd object_q);
 
   private:
     //ManipulatorControl manipulator_;

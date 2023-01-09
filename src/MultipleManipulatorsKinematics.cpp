@@ -274,7 +274,7 @@ void MultipleManipulatorsKinematics::setSingleManipulatorJointPositions(
   manipulators_[id]->setJointPositions(q);
 }
 
-Eigen::VectorXd MultipleManipulatorsKinematics::getFullStateFromObjectState(
+Eigen::VectorXd MultipleManipulatorsKinematics::getSingleManipulatorStateFromObjectState(
   Eigen::VectorXd object_q, int id)
 {
   // Initialize base and manipulator configuration vectors
@@ -337,6 +337,37 @@ Eigen::VectorXd MultipleManipulatorsKinematics::getFullStateFromObjectState(
   //cout << "t_w_b" << endl << t_w_b.matrix() << endl;
 
   return q;
+}
+
+Eigen::VectorXd MultipleManipulatorsKinematics::getFullSystemStateFromObjectState(
+  Eigen::VectorXd object_q)
+{
+  Eigen::VectorXd full_state;
+  for (int i=0; i<n_manipulators_; i++){
+    Eigen::VectorXd current_q;
+    current_q = this->getSingleManipulatorStateFromObjectState(object_q, i);
+    full_state.conservativeResize(full_state.rows() + current_q.rows(), 1);
+    full_state.block(full_state.rows() - current_q.rows(), 0, 
+      current_q.rows(), 1) = current_q;
+  }
+  return full_state;
+}
+
+Eigen::MatrixXd MultipleManipulatorsKinematics::getFullSystemStateFromObjectState(
+  Eigen::MatrixXd object_q)
+{
+  Eigen::VectorXd first_state;
+  Eigen::VectorXd first_object_state = object_q.row(0).transpose();
+  first_state = this->getFullSystemStateFromObjectState(first_object_state);
+  Eigen::MatrixXd full_states(object_q.rows(), first_state.size());
+
+  for (int i=0; i<full_states.rows(); i++){
+    Eigen::VectorXd current_state = object_q.row(i).transpose();
+    full_states.row(i) = this->getFullSystemStateFromObjectState(
+      current_state).transpose();
+  }
+
+  return full_states;
 }
 
 double wrapToPi(double x){

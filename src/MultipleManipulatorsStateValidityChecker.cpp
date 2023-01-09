@@ -298,7 +298,7 @@ Eigen::MatrixXd MultipleManipulatorsStateValidityChecker::generateValidityPoints
     // the additional points, if the full state is properly computed.
     for (int i=0; i<n_manipulators_; i++){
       Eigen::VectorXd current_q;
-      current_q = kinematics_->getFullStateFromObjectState(state, i);
+      current_q = kinematics_->getSingleManipulatorStateFromObjectState(state, i);
       full_state.conservativeResize(full_state.rows() + current_q.rows(), 1);
       full_state.block(full_state.rows() - current_q.rows(), 0, 
         current_q.rows(), 1) = current_q;
