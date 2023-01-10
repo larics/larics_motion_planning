@@ -598,27 +598,26 @@ bool GlobalPlannerRosInterface::multipleManipulatorsObjectTrajectoryCallback(
     res.path_length = global_planner_->getPathLength();
     visualization_.setPath(global_planner_->getPath());
 
-
-    Trajectory visualization_trajectory;
-    Eigen::MatrixXd vis_path = global_planner_->getPath();
-    bool temp_success = global_planner_->planTrajectory(vis_path);
-    visualization_trajectory = global_planner_->getTrajectory();
-    if (model_animation_flag_ == true){
-      cout << "Animating object planner path." << endl;
-      cout << "Visualization trajectory rows: " << visualization_trajectory.position.rows() << endl;
-      for (int i=0; i<visualization_trajectory.position.rows(); i++){
-        visualization_.setStatePoints(
-          global_planner_->getRobotStatePoints((visualization_trajectory.position.row(i)).transpose()));
-        visualization_.publishStatePoints();
-        usleep(model_animation_dt_);
-      }
-    }
     object_path = global_planner_->getPath();
     success = true;
   }
   else{
     object_path = waypoints;
     success = true;
+  }
+
+  if (model_animation_flag_ == true){
+    Trajectory visualization_trajectory;
+    bool temp_success = global_planner_->planTrajectory(object_path);
+    visualization_trajectory = global_planner_->getTrajectory();
+    cout << "Animating object planner path." << endl;
+    cout << "Visualization trajectory rows: " << visualization_trajectory.position.rows() << endl;
+    for (int i=0; i<visualization_trajectory.position.rows(); i++){
+      visualization_.setStatePoints(
+        global_planner_->getRobotStatePoints((visualization_trajectory.position.row(i)).transpose()));
+      visualization_.publishStatePoints();
+      usleep(model_animation_dt_);
+    }
   }
 
   // IMPORTANT!
