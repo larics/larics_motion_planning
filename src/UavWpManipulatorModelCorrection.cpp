@@ -155,12 +155,12 @@ Trajectory UavWpManipulatorModelCorrection::modelCorrectedTrajectory(
     // Similar to translation. The difference is that roll and pitch are taken
     // from the executed trajectory as these values are unknown and the idea
     // is to obtain them from the simulated trajectory.
-    //r_w_b = Eigen::AngleAxisd(executed_trajectory.position(i, 5), Eigen::Vector3d::UnitZ())
-    //  * Eigen::AngleAxisd(executed_trajectory.position(i, 4), Eigen::Vector3d::UnitY())
-    //  * Eigen::AngleAxisd(executed_trajectory.position(i, 3), Eigen::Vector3d::UnitX());
-    r_w_b = Eigen::AngleAxisd(planned_trajectory.position(i, 5), Eigen::Vector3d::UnitZ())
+    r_w_b = Eigen::AngleAxisd(executed_trajectory.position(i, 5), Eigen::Vector3d::UnitZ())
       * Eigen::AngleAxisd(executed_trajectory.position(i, 4)*pitch_correction_gain_, Eigen::Vector3d::UnitY())
       * Eigen::AngleAxisd(executed_trajectory.position(i, 3)*roll_correction_gain_, Eigen::Vector3d::UnitX());
+    //r_w_b = Eigen::AngleAxisd(planned_trajectory.position(i, 5), Eigen::Vector3d::UnitZ())
+    //  * Eigen::AngleAxisd(executed_trajectory.position(i, 4)*pitch_correction_gain_, Eigen::Vector3d::UnitY())
+    //  * Eigen::AngleAxisd(executed_trajectory.position(i, 3)*roll_correction_gain_, Eigen::Vector3d::UnitX());
     t_w_b.rotate(r_w_b);
 
     // With new transform we can calculate true end-effector position in
