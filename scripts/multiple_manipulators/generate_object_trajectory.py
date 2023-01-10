@@ -75,17 +75,22 @@ class GenerateObjectTrajectory:
       x = r*cos(yaw) + x_c
       y = r*sin(yaw) + y_c
       z = 0 + z_c
-      current_waypoint.positions = [x,y,z,0,0,yaw]
+      current_waypoint.positions = [x,y,z,0,0,wrapToPi(yaw)]
       self.waypoints.points.append(copy.deepcopy(current_waypoint))
 
     # Add last waypoint
     current_waypoint.positions = [r*cos(0)+x_c, r*sin(0)+y_c, z_c, 0, 0, 0]
     self.waypoints.points.append(copy.deepcopy(current_waypoint))
+    print self.waypoints
 
     # Plan and execute the trajectory
     self.callFullStateTrajectoryPlanning()
 
-
+def wrapToPi(x):
+  x = math.fmod(x + math.pi,2*math.pi)
+  if (x < 0):
+    x += 2*math.pi
+  return x - math.pi
 
 if __name__ == '__main__':
 
