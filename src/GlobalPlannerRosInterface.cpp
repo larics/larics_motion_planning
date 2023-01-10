@@ -591,6 +591,7 @@ bool GlobalPlannerRosInterface::multipleManipulatorsObjectTrajectoryCallback(
   visualization_.setWaypoints(waypoints);
 
   // This function only plans path, so no need to check the trajectory flags.
+  Eigen::MatrixXd object_path;
   if (req.plan_path == true){
     success = global_planner_->planObjectPath(waypoints);
     res.path = this->eigenPathToJointTrajectory(global_planner_->getPath());
@@ -612,10 +613,12 @@ bool GlobalPlannerRosInterface::multipleManipulatorsObjectTrajectoryCallback(
         usleep(model_animation_dt_);
       }
     }
+    object_path = global_planner_->getPath();
+    success = true;
   }
   else{
-    res.success = success;
-    return true;
+    object_path = waypoints;
+    success = true;
   }
 
   // IMPORTANT!
@@ -626,7 +629,6 @@ bool GlobalPlannerRosInterface::multipleManipulatorsObjectTrajectoryCallback(
   kinematics = dynamic_pointer_cast<MultipleManipulatorsKinematics>(
     global_planner_->getKinematicsInterface());
 
-  Eigen::MatrixXd object_path = global_planner_->getPath();
   Eigen::MatrixXd full_state_path = kinematics->getFullSystemStateFromObjectState(
     object_path);
   res.path = this->eigenPathToJointTrajectory(full_state_path);

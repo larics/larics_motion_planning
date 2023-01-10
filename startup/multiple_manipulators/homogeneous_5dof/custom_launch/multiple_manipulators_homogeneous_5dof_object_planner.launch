@@ -21,6 +21,11 @@
     </node>
 
     <node name="generate_toppra_trajectory" pkg="topp_ros" type="generate_toppra_trajectory.py" output="screen" />
+
+    <node name="go_to_object_config" pkg="larics_motion_planning" type="go_to_object_config.py" output="screen">
+      <param name="planner_ns" value="planner"/>
+      <param name="model_planner_ns" value="model_planner"/>
+    </node>
   </group>
 
 </launch>
