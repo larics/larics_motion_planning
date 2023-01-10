@@ -129,6 +129,7 @@ windows:
       panes:
         - |
           waitForRos;
+          roslaunch wp_manipulator planning_context.launch;
           roslaunch larics_motion_planning multiple_manipulators_homogeneous_5dof_object_planner.launch
         - |
           roscd larics_gazebo_worlds/models/storage_racking;
