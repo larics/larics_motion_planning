@@ -26,6 +26,10 @@
       <param name="planner_ns" value="planner"/>
       <param name="model_planner_ns" value="model_planner"/>
     </node>
+
+    <node name="full_state_trajectory_from_object" pkg="larics_motion_planning" type="full_state_trajectory_from_object.py" output="screen">
+      <param name="planner_ns" value="planner"/>
+    </node>
   </group>
 
 </launch>
