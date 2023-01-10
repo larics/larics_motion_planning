@@ -184,7 +184,7 @@ kinematics:
       degrees_of_freedom: 5
       indexes: [6, 7, 8, 9, 10]
       grasp_transform:
-        translation: [-0.17265, 0, 0]
+        translation: [-0.15, 0, 0]
         # If provided, the rotation matrix overrides rpy rotation
         rotation: [3.14159265359, 0, 0]
         rotation_matrix: [1, 0, 0, 
@@ -210,7 +210,7 @@ kinematics:
       base_dof: 6
       base_manipulator_transform: [0, 0, 0.075, 1.57079632679, 0, 3.14159265359]
       grasp_transform:
-        translation: [0.17265, 0, 0]
+        translation: [0.15, 0, 0]
         rotation: [1.57079632679, 3.14159265359, 3.14159265359]
         # If provided, the rotation matrix overrides rpy rotation
         rotation_matrix: [-1, 0, 0, 

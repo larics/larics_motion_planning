@@ -136,7 +136,7 @@ state_validity_checker:
     is_used: true
     resolution: 0.025
     # Object will be considered a prism for now.
-    dimensions: [0.3453, 0.05, 0.05]
+    dimensions: [0.3, 0.05, 0.05]
 
 
   multiple_manipulators:

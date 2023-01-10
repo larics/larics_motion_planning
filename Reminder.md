@@ -461,7 +461,7 @@ rostopic pub -1 /object/go_to/reference/multiarray std_msgs/Float64MultiArray "l
     size: 0
     stride: 0
   data_offset: 0
-data: [-1.3, 7, 1, 0, 0, 0]"
+data: [1, 0, 1, 0, 0, 0]"
 
 
 rostopic pub -1 /object/generate_object_trajectory/config std_msgs/Float64MultiArray "layout:
