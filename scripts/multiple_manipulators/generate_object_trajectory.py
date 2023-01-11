@@ -81,7 +81,6 @@ class GenerateObjectTrajectory:
     # Add last waypoint
     current_waypoint.positions = [r*cos(0)+x_c, r*sin(0)+y_c, z_c, 0, 0, 0]
     self.waypoints.points.append(copy.deepcopy(current_waypoint))
-    print self.waypoints
 
     # Plan and execute the trajectory
     self.callFullStateTrajectoryPlanning()

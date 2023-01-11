@@ -10,7 +10,7 @@ windows:
         - waitForRos; roslaunch gazebo_ros empty_world.launch use_sim_time:=true paused:=false
         # Optional world elements
         - >
-          waitForSimulation;
+          waitForSimulation; history -s "roslaunch larics_gazebo_worlds spawn_storage_racking.launch"
   - uavs:
       layout: tiled
       panes:
@@ -118,12 +118,16 @@ windows:
   - multiple_trajectories:
       layout: tiled
       panes:
-        - |
-          roscd larics_motion_planning/startup/multiple_manipulators/homogeneous_5dof/custom_scripts;
-          history -s "./execute_multiple_trajectories_homogeneous_5dof.sh -n 20 -t straight"
-        - |
-          roscd larics_motion_planning/startup/multiple_manipulators/homogeneous_5dof/custom_scripts;
-          history -s "./execute_multiple_trajectories_homogeneous_5dof.sh -n 20 -t square"
+        - history -s "rosrun larics_motion_planning execute_multiple_object_trajectories.sh -n 20 -t straight"
+        - history -s "rosrun larics_motion_planning execute_multiple_object_trajectories.sh -n 20 -t square"
+        - history -s "rosrun larics_motion_planning execute_multiple_object_trajectories.sh -n 20 -t circle"
+        - history -s "rosrun larics_motion_planning execute_multiple_object_trajectories.sh -n 10 -t warehouse"
+        #- |
+        #  roscd larics_motion_planning/startup/multiple_manipulators/homogeneous_5dof/custom_scripts;
+        #  history -s "./execute_multiple_trajectories_homogeneous_5dof.sh -n 20 -t straight"
+        #- |
+        #  roscd larics_motion_planning/startup/multiple_manipulators/homogeneous_5dof/custom_scripts;
+        #  history -s "./execute_multiple_trajectories_homogeneous_5dof.sh -n 20 -t square"
   - object_planning:
       layout: main-vertical
       panes:
@@ -133,8 +137,7 @@ windows:
           roslaunch larics_motion_planning multiple_manipulators_homogeneous_5dof_object_planner.launch
         - |
           roscd larics_gazebo_worlds/models/storage_racking;
-          history -s "rosrun octomap_server octomap_server_node storage_racking.binvox.bt __ns:=object";
-          echo "Octomap server if required."
+          history -s "rosrun octomap_server octomap_server_node storage_racking.binvox.bt __ns:=object"
         # Demonstration service calls only for the object planner. Use together
         # with the octomap to visualize planned trajectory states.
         - |

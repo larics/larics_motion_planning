@@ -470,4 +470,4 @@ rostopic pub -1 /object/generate_object_trajectory/config std_msgs/Float64MultiA
     size: 0
     stride: 0
   data_offset: 0
-data: [0, 0, 0, 1, 1.0, 0.2]"
+data: [0, 0, 0, 1, 2.0, 0.2]"
