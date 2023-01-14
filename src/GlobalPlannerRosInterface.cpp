@@ -411,7 +411,7 @@ bool GlobalPlannerRosInterface::multipleManipulatorsModelCorrectedTrajectoryCall
       usleep(model_animation_dt_);
     }
     cout << "Animated uncompensated trajectory with roll and pitch estimated from compensation." << endl;
-    usleep(1000000);
+    usleep(100000);
 
     // Send this trajectory to Gazebo simulation and collect information about
     // the executed trajectory.
@@ -440,6 +440,7 @@ bool GlobalPlannerRosInterface::multipleManipulatorsModelCorrectedTrajectoryCall
     
     // Correcting the end-effector trajectory.
     Trajectory executed_trajectory;
+    /*
     Trajectory ext_init;
     executed_trajectory = jointTrajectoryToTrajectory(service.response.executed_trajectory);
     ext_init = jointTrajectoryToTrajectory(extended_initial_trajectory);
@@ -449,6 +450,7 @@ bool GlobalPlannerRosInterface::multipleManipulatorsModelCorrectedTrajectoryCall
       executed_trajectory.position.block(j,6+11,1,5) = ext_init.position.block(
         j,6+11,1,5);
     }
+    */
     corrected_trajectory = global_planner_->modelCorrectedTrajectory(
       jointTrajectoryToTrajectory(extended_initial_trajectory),
       jointTrajectoryToTrajectory(service.response.executed_trajectory)
