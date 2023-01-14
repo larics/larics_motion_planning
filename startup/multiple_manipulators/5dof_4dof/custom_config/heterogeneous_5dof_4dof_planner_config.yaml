@@ -1,0 +1,244 @@
+global_planner:
+  map_config_file: "catkin_ws/src/larics_motion_planning/startup/multiple_manipulators/5dof_4dof/custom_config/heterogeneous_5dof_4dof_planner_config.yaml"
+  trajectory_config_file: "catkin_ws/src/larics_motion_planning/startup/multiple_manipulators/5dof_4dof/custom_config/heterogeneous_5dof_4dof_planner_config.yaml"
+  path_planner_config_file: "catkin_ws/src/larics_motion_planning/startup/multiple_manipulators/5dof_4dof/custom_config/heterogeneous_5dof_4dof_planner_config.yaml"
+  state_validity_checker_config_file: "catkin_ws/src/larics_motion_planning/startup/multiple_manipulators/5dof_4dof/custom_config/heterogeneous_5dof_4dof_planner_config.yaml"
+  kinematics_config_file: "catkin_ws/src/larics_motion_planning/startup/multiple_manipulators/5dof_4dof/custom_config/heterogeneous_5dof_4dof_planner_config.yaml"
+  model_correction_file: "catkin_ws/src/larics_motion_planning/startup/multiple_manipulators/5dof_4dof/custom_config/heterogeneous_5dof_4dof_planner_config.yaml"
+
+  trajectory:
+    restarts: 5
+
+  path_and_trajectory:
+    restarts: 5
+
+  path:
+    restarts: 5
+    collision_check_restarts: 5
+    collision_check: true
+
+  parabolic_airdrop:
+    # Parabola family parameters.
+    # d is dropoff distance projected onto xy plane
+    d: [3.0, 3.0, 2.0, 3.5, 1.5, 4.0, 1.0, 4.5, 5.0, 5.5, 6.0]
+    # v is linear speed of the projectile in airdrop direction
+    v: [3.0, 3.0, 2.0, 3.5, 1.5, 4.0, 1.0, 4.5, 5.0, 5.5, 6.0]
+    # alpha is angle at which the projectile is launched1
+    alpha: [0.0, 25.0, 15.0, 30.0, 10.0, 5.0, 0.0, 35.0, 40.0, 45.0]
+    # We search for all 360 degrees for the direction of parabola. This 
+    # parameter defines increment in degrees
+    yaw_increment: 90 #22.5
+    # Maximum difference in height between dropoff and final parabola point.
+    # Candidates with larger difference will be discarded.
+    max_dz: 50
+    # Parabola is planned for payload which is typically below the vehicle.
+    # That's why we have offset in z-axis while planning the trajectory for
+    # the uav.
+    payload_z_offset: 0.1
+
+    # Stopping trajectory parameters [x, y, z, yaw]
+    stopping_velocity: [8, 8, 3, 2]
+    stopping_acceleration: [2, 2, 1, 2.0]
+    use_horizontal_stopping_acceleration: false
+    horizontal_stopping_acceleration: 4.0
+    # Dropoff trajectory parameters [x, y, z, yaw]
+    dropoff_velocity: [4, 4, 3, 2]
+    dropoff_acceleration: [1.5, 1.5, 1, 1.0]
+    use_horizontal_dropoff_acceleration: false
+    horizontal_dropoff_acceleration: 2.0
+    # Max line integral for dropoff trajectory is the max length of toppra
+    # trajectory that is going to be replaced with the dropoff spline
+    max_line_integral: 5.0
+    # Common for both trajectories is acceleration between dropoff and stopping
+    # trajectories. The idea is to have a positive z-direction acceleration so
+    # the uav does not interact with dropped object. [x, y, z, yaw]
+    intermediate_acceleration: [0, 0, 0, 0]
+    use_horizontal_intermediate_acceleration: false
+    horizontal_intermediate_acceleration: 1.0
+
+    spline_sampling_time: 0.01
+
+octomap:
+  path_to_file: "catkin_ws/src/larics_motion_planning/config/empty_map.binvox.bt"
+  search_depth: 14
+
+path_planner:
+  spaces:
+    number: 6
+    # UAV1 [x,y,z,roll,pitch], UAV [yaw], [manipulator], UAV2, UAV2 [yaw], [wp manipulator 3rx]
+    dimensions: [5, 1, 5, 5, 1, 4]
+    weights: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    types: ["RealVector", "SO2", "RealVector", "RealVector", "SO2", "RealVector"]
+    bounds: [[[-10, 10.0], [-10.0, 10.0], [0.2, 10.0], [0.0, 0.0], [0.0, 0.0]], [[-3.15, 3.15]], [[-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57]], [[-10, 10.0], [-10.0, 10.0], [0.2, 10.0], [0.0, 0.0], [0.0, 0.0]], [[-3.15, 3.15]], [[-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57]]]
+  longest_valid_segment:
+    is_used: true
+    is_metric: true
+    value: 0.01
+  goal_bias:
+    is_used: true
+    value: 0.05
+  range:
+    is_used: true
+    value: 0.5
+  rewire_factor:
+    is_used: false
+    value: 1.1
+  delay_cc:
+    is_used: true
+    value: true
+  tree_pruning: 
+    is_used: true
+    value: false
+  prune_threshold:
+    is_used: true
+    value: 0.1
+  pruned_measure:
+    is_used: true
+    value: false
+  k_nearest:
+    is_used: true
+    value: true
+  solve_time:
+    is_incremental: true
+    time: 1.0
+    increment: 0.25
+  path_simplifier:
+    reduce_vertices:
+      is_used: true
+      max_steps: 0.25
+      max_empty_steps: 0
+      range_ratio: 0.33
+      use_as_fraction: true
+    smooth_b_spline:
+      is_used: true
+      max_steps: 5
+
+trajectory_planner:
+  constant_velocity_reparametrization:
+    axes_index_list: []
+    velocity_constraints: []
+  toppra_trajectory:
+    velocities:    [0.75, 0.75, 0.5, 100, 100, 0.75, 1.2, 1.2, 1.2, 1.2, 1.2, 0.75, 0.75, 0.5, 100, 100, 0.75, 1.2, 1.2, 1.2, 1.2]
+    accelerations: [0.50, 0.50, 0.5, 100, 100, 0.50, 1.2, 1.2, 1.2, 1.2, 1.2, 0.50, 0.50, 0.5, 100, 100, 0.50, 1.2, 1.2, 1.2, 1.2]
+    # This flag is important because it preconditiones angular values before 
+    # sending them to toppra trajectory. The problem is that toppra does not know
+    # for discontinuities at half circle (PI) and the planned trajectory will
+    # turn around the circle instead through discontinuity. This flag solves it
+    # by adding and subtracting k*2PI around the discontinuity.
+    is_angular: [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]
+    sampling_frequency: 100.0
+
+state_validity_checker:
+  type: "multiple_manipulators"
+
+  multiple_manipulators:
+    - # Wp manipulator
+      manipulator_link_dimensions: [[0.0340, 0.1225, 0.0285], [0.1365, 0.0340, 0.0285], [0.0755, 0.0285, 0.0340], [0.0725, 0.0285, 0.0340], [0.0453, 0.0285, 0.0340]]
+      manipulator_link_directions: ["y", "x", "x", "x", "x"]
+
+      base_dimensions: [0.7, 0.7, 0.4]
+      base_dof: 6
+      base_manipulator_transform: [0, 0, 0.075, 1.57079632679, 0, 3.14159265359]
+
+      checker_resolution:
+        manipulator: 0.01
+        base: 0.03
+
+      tool:
+        use_tool: true
+        dimensions: [0.3453, 0.01, 0.01]
+        direction: "x"
+
+      indexes:
+        start: 0
+        end: 10
+    -
+      # Asap manipulator 4r
+      manipulator_link_dimensions: [[0.17955, 0.0285, 0.0340], [0.1015, 0.0285, 0.0340], [0.151, 0.0285, 0.0340], [0.048, 0.0285, 0.0340]]
+      manipulator_link_directions: ["y", "x", "x", "x"]
+
+      base_dimensions: [0.7, 0.7, 0.4]
+      base_dof: 6
+      base_manipulator_transform: [0, 0, -0.2, 0, 0, 0]
+
+      checker_resolution:
+        manipulator: 0.01
+        base: 0.03
+
+      tool:
+        use_tool: true
+        dimensions: [0.3453, 0.01, 0.01]
+        direction: "x"
+
+      indexes:
+        start: 11
+        end: 20
+
+kinematics:
+  multiple_manipulators:
+    - 
+      type: "wp_manipulator"
+      degrees_of_freedom: 5
+      indexes: [6, 7, 8, 9, 10]
+      grasp_transform:
+        translation: [-0.15, 0, 0]
+        # If provided, the rotation matrix overrides rpy rotation
+        rotation: [3.14159265359, 0, 0]
+        rotation_matrix: [1, 0, 0, 
+                          0, -1, 0,
+                          0, 0, -1]
+      # The relative yaw angle between the uav body and the manipulated object
+      # This is required to properly set the uav body rotation, assuming roll
+      # and pitch angles are 0.
+      base_relative_yaw: 0.0
+      base_dof: 6
+      base_manipulator_transform: [0, 0, 0.075, 1.57079632679, 0, 3.14159265359]
+      robot_model_name: "wp_manipulator"
+      joint_group_name: "wp_manipulator_arm"
+      dh_parameters_file: "catkin_ws/src/aerial_manipulators/aerial_manipulators_control/config/wp_manipulator_dh_parameters.yaml"
+    -
+      type: "wp_manipulator"
+      degrees_of_freedom: 4
+      indexes: [17, 18, 19, 20]
+      grasp_transform:
+        translation: [0.15, 0, 0]
+        rotation: [1.57079632679, 0, 3.14159265359]
+        # If provided, the rotation matrix overrides rpy rotation
+        #rotation_matrix: [-1, 0, 0, 
+        #                  0, 1, 0,
+        #                  0, 0, -1]
+      base_relative_yaw: 3.14159265359
+      base_dof: 6
+      base_manipulator_transform: [0, 0, -0.2, 0, 0, 0]
+      robot_model_name: "asap_manipulator_4r"
+      joint_group_name: "asap_manipulator_4r_arm"
+      dh_parameters_file: "catkin_ws/src/aerial_manipulators/aerial_manipulators_control/config/asap_manipulator_4r_parameters.yaml"
+
+
+model_correction:
+  type: "multiple_manipulators"
+  multiple_manipulators:
+    -
+      type: "UavWpManipulator"
+      indexes:
+        start: 0
+        end: 10
+      t_body_manipulator:
+        translation: [0, 0, 0.075]
+        rotation: [1.57079632679, 0, 3.14159265359]
+      manipulator_dof: 5
+      alpha: 1.0
+      apply_roll_corrections: false
+      apply_pitch_corrections: true
+    - 
+      type: "UavWpManipulator"
+      indexes:
+        start: 11
+        end: 20
+      t_body_manipulator:
+        translation: [0, 0, -0.2]
+        rotation: [0, 0, 0]
+      manipulator_dof: 4
+      alpha: 1.0
+      apply_roll_corrections: false
+      apply_pitch_corrections: true
