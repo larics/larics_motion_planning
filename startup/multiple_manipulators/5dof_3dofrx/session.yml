@@ -20,16 +20,16 @@ windows:
           roslaunch mmuav_gazebo uav_attitude_position.launch start_gazebo:=false collision_bitmask:=1 name:="uav1" manipulator_type:="wp_manipulator" z:=0.5 manipulator_tool:="rod"
         - >
           waitForSimulation; 
-          sleep 6; 
+          sleep 8; 
           roslaunch mmuav_gazebo uav_attitude_position.launch start_gazebo:=false collision_bitmask:=1 name:="uav2" manipulator_type:="wp_manipulator_3rx" x:=1.0 z:=0.5
         - >
           waitForSimulation; 
-          sleep 9; 
+          sleep 13; 
           roslaunch mmuav_gazebo uav_attitude_position.launch start_gazebo:=false collision_bitmask:=2 name:="model_uav1" manipulator_type:="wp_manipulator" z:=0.5 manipulator_tool:="rod"
         - >
           waitForSimulation; 
-          sleep 12; 
-          roslaunch mmuav_gazebo uav_attitude_position.launch start_gazebo:=false collision_bitmask:=4 name:="model_uav2" manipulator_type:="wp_manipulator_3rx" x:=1.0 z:=0.5
+          sleep 18; 
+          roslaunch mmuav_gazebo uav_attitude_position.launch start_gazebo:=false collision_bitmask:=2 name:="model_uav2" manipulator_type:="wp_manipulator_3rx" x:=1.0 z:=0.5
   - planning:
       layout: tiled
       panes:
@@ -53,19 +53,14 @@ windows:
           effort: [0]
           time_from_start: {secs: 0, nsecs: 0}"
         - |
-          waitForSimulation; sleep 25; 
-          rostopic pub -1 /planner/go_to/reference/joint_trajectory_point trajectory_msgs/JointTrajectoryPoint "
-          positions: [0,0,1,0,0,0,0.785398, 0.785398, 0.785398, 1.5707963, 0.785398,1.045,0,1,0,0,3.141592654,0.785398, -1.5707963, 0.785398]
-          velocities: [0]
-          accelerations: [0]
-          effort: [0]
-          time_from_start: {secs: 0, nsecs: 0}";
-          rostopic pub -1 /model_planner/go_to/reference/joint_trajectory_point trajectory_msgs/JointTrajectoryPoint "
-          positions: [0,0,1,0,0,0,0.785398, 0.785398, 0.785398, 1.5707963, 0.785398,1.045,0,1,0,0,3.141592654,0.785398, -1.5707963, 0.785398]
-          velocities: [0]
-          accelerations: [0]
-          effort: [0]
-          time_from_start: {secs: 0, nsecs: 0}";
+          waitForSimulation; sleep 30; 
+          rostopic pub -1 /object/go_to/reference/multiarray std_msgs/Float64MultiArray "layout:
+            dim:
+            - label: ''
+              size: 0
+              stride: 0
+            data_offset: 0
+          data: [0, 0, 1, 0, 0, 0]" 
   - multiple_trajectories:
       layout: tiled
       panes:
@@ -152,17 +147,4 @@ windows:
           fi;
           cd ~/bags/model_corrections;
           history -s "rosbag record -a --chunksize=64 -x \"/(.*)(gazebo|camera|bias|joint_states|parameter_descriptions|parameter_updates)(.*)\" -o model_corrections";
-          history -s "rosbag record --chunksize=1  -e \"(.*)(go_to|end_effector_configuration|executing_trajectory|controller|reference_tracker|full_state|executing_model_trajectory)(.*)\" -x \"/(.*)(gazebo|camera|bias|joint_states|parameter_descriptions|parameter_updates)(.*)\" -o model_corrections"
-
-
-# Waypoints for trajectories
-# Old waypoints have one joint at -1.57 which is the limit.
-# The suspicion is that this does not allow the inverse kinematics to
-# correct properly. These waypoints are:
-# [0,0,1,0,0,0,0.785398, 0.785398, 0.785398, -1.5707963, 0.785398,1.045,0,1,0,0,3.141592654,0.785398, 0.785398, 0.785398, -1.5707963, 0.785398]
-# [-1.0,0,1,0,0,0,0.785398, 0.785398, 0.785398, -1.5707963, 0.785398,0.045,0,1,0,0,3.141592654,0.785398, 0.785398, 0.785398, -1.5707963, 0.785398]
-
-# New set of waypoints keeps the end-effector orientation the same as above,
-# but joints are a bit further away from their limits:
-# [-0.55,0.018,1,0,0,0,0.785398, 0.785398, 0.557, -0.861, 0.304, 0.553,-0.018,1,0,0,3.141592654,0.785398, 0.785398, 0.557, -0.861, 0.304]
-# [0.45,0.018,1,0,0,0,0.785398, 0.785398, 0.557, -0.861, 0.304, 1.553,-0.018,1,0,0,3.141592654,0.785398, 0.785398, 0.557, -0.861, 0.304]
+          history -s "rosbag record --chunksize=1  -e \"(.*)(go_to|end_effector_configuration|executing_trajectory|controller|reference_tracker|full_state|executing_model_trajectory)(.*)\" -x \"/(.*)(gazebo|camera|bias|joint_states|parameter_descriptions|parameter_updates)(.*)\" -o heterogeneous_5dof_3dof"

@@ -17,6 +17,7 @@
       <param name="global_planner_config_file" value="$(arg global_planner_config_file)" />
       <param name="model_uav_namespace" value="$(arg model_namespace)" />
       <param name="model_animation_dt_us" value="10" />
+      <param name="model_planning_user_confirmation_flag" value="false" />
 
       <!-- visualization parameters -->
       <param name="state_scale" value="0.05" />
