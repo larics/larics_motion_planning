@@ -142,9 +142,12 @@ Eigen::VectorXd WpManipulatorKinematics::calculateOptimalSingleManipulatorState(
   else if (robot_model_name_ == "wp_manipulator_3rx"){
     q = Eigen::VectorXd::Zero(3);
     q << -0.861 - rpy(1)/3, 0.557 - rpy(1)/3, 0.304 - rpy(1)/3;
+    //-0.861 0.557 0.304
   }
-
-  //-0.861 0.557 0.304
+  else if (robot_model_name_ == "asap_manipulator_4r"){
+    q = Eigen::VectorXd::Zero(4);
+    q << 0, -0.861 + rpy(1)/3, 0.557 + rpy(1)/3, 0.304 + rpy(1)/3;
+  }
   else{
     cout << "[WpManipulatorKinematics] No such manipulator robot model." << endl;
     cout << "  Your provided robot model is: " << robot_model_name_ << endl;
