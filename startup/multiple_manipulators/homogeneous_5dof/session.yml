@@ -193,6 +193,9 @@ windows:
   - logging:
       layout: tiled
       panes:
+        # Last command omits "controllers" topics. There is a lot of topics
+        # with "controller" in their name so they take up a lot of unnecessary
+        # space.
         - |
           if [ ! -d "$HOME/bags/model_corrections" ];
           then
@@ -200,7 +203,8 @@ windows:
           fi;
           cd ~/bags/model_corrections;
           history -s "rosbag record -a --chunksize=64 -x \"/(.*)(gazebo|camera|bias|joint_states|parameter_descriptions|parameter_updates)(.*)\" -o model_corrections";
-          history -s "rosbag record --chunksize=1  -e \"(.*)(go_to|end_effector_configuration|executing_trajectory|controller|reference_tracker|full_state|executing_model_trajectory)(.*)\" -x \"/(.*)(gazebo|camera|bias|joint_states|parameter_descriptions|parameter_updates)(.*)\" -o model_corrections"
+          history -s "rosbag record --chunksize=1  -e \"(.*)(go_to|end_effector_configuration|executing_trajectory|controller|reference_tracker|full_state|executing_model_trajectory)(.*)\" -x \"/(.*)(gazebo|camera|bias|joint_states|parameter_descriptions|parameter_updates)(.*)\" -o homogeneous_5dof";
+          history -s "rosbag record --chunksize=1  -e \"(.*)(go_to|end_effector_configuration|executing_trajectory|reference_tracker|full_state|executing_model_trajectory)(.*)\" -x \"/(.*)(gazebo|camera|bias|joint_states|parameter_descriptions|parameter_updates)(.*)\" -o homogeneous_5dof"
 
 
 # Waypoints for trajectories
