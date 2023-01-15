@@ -30,6 +30,37 @@ windows:
           waitForSimulation; 
           sleep 18; 
           roslaunch mmuav_gazebo uav_attitude_position.launch start_gazebo:=false collision_bitmask:=2 name:="model_uav2" manipulator_type:="asap_manipulator_4r" x:=1.0 z:=0.5
+  - planning:
+      layout: tiled
+      panes:
+        - |
+          waitForRos; 
+          roslaunch wp_manipulator planning_context.launch; 
+          roslaunch asap_manipulator_4r planning_context.launch;
+          roslaunch larics_motion_planning multiple_manipulators_heterogeneous_5dof_4dof_planner.launch
+        - |
+          waitForRos; sleep 8; rostopic pub -1 /planner/reference_tracker/set_current_trajectory_point trajectory_msgs/JointTrajectoryPoint "
+          positions: [0, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 1.0, 0, 0.5, 0, 0, 0, 0, 0, 0, 0]
+          velocities: [0]
+          accelerations: [0]
+          effort: [0]
+          time_from_start: {secs: 0, nsecs: 0}"
+        - |
+          waitForRos; sleep 8; rostopic pub -1 /model_planner/reference_tracker/set_current_trajectory_point trajectory_msgs/JointTrajectoryPoint "
+          positions: [0, 0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 1.0, 0, 0.5, 0, 0, 0, 0, 0, 0, 0]
+          velocities: [0]
+          accelerations: [0]
+          effort: [0]
+          time_from_start: {secs: 0, nsecs: 0}"
+        - |
+          waitForSimulation; sleep 30; 
+          rostopic pub -1 /object/go_to/reference/multiarray std_msgs/Float64MultiArray "layout:
+            dim:
+            - label: ''
+              size: 0
+              stride: 0
+            data_offset: 0
+          data: [0, 0, 1, 0, 0, 0]" 
   - multiple_trajectories:
       layout: tiled
       panes:
