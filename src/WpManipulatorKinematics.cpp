@@ -141,7 +141,32 @@ Eigen::VectorXd WpManipulatorKinematics::calculateOptimalSingleManipulatorState(
   }
   else if (robot_model_name_ == "wp_manipulator_3rx"){
     q = Eigen::VectorXd::Zero(3);
-    q << -0.861 - rpy(1)/3, 0.557 - rpy(1)/3, 0.304 - rpy(1)/3;
+    double sgn = signum(p_o_ee(2));
+    // Parameters from matlab analysis. The optimal parameters are lying on a
+    // line with discontinuity at the middle. That's why we have _neg and _pos
+    // line parameters. The line equation is q = m*pitch + c
+    Eigen::Vector3d m; m << 0.5622, -0.1140, 0.5517;
+    Eigen::Vector3d c_neg; c_neg << 0.9067, -0.5266, -0.3801;
+    Eigen::Vector3d c_pos; c_pos << -0.9067, 0.5266, 0.3801;
+    if (rpy(1) >= 0){
+      //q = sgn*m*rpy(1) + c_pos;
+      q = sgn*m*rpy(1) + c_pos;
+    }
+    else{
+      // It should be +c_neg but then manipulator moves down towards propellers
+      // Maybe the sensible thing is to approach this logically, having it this
+      // way will keep the manipulator above the propellers. If the manipulator
+      // is mounted below the center of gravity, it should be inverted for 180
+      // degrees to retain the same calculation.
+      //q = -sgn*m*rpy(1) - c_neg;
+      q = -sgn*m*rpy(1) - c_neg;
+    }
+    /*if (rpy(1) >= 0){
+      q << -0.861 + sgn*rpy(1)/3, 0.557 + sgn*rpy(1)/3, 0.304 + sgn*rpy(1)/3;
+    }
+    else {
+      q << -0.861 - sgn*rpy(1)/3, 0.557 - sgn*rpy(1)/3, 0.304 - sgn*rpy(1)/3;
+    }*/
     //-0.861 0.557 0.304
   }
   else if (robot_model_name_ == "asap_manipulator_4r"){
