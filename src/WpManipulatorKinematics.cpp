@@ -171,7 +171,22 @@ Eigen::VectorXd WpManipulatorKinematics::calculateOptimalSingleManipulatorState(
   }
   else if (robot_model_name_ == "asap_manipulator_4r"){
     q = Eigen::VectorXd::Zero(4);
-    q << 0, -0.861 + rpy(1)/3, 0.557 + rpy(1)/3, 0.304 + rpy(1)/3;
+    double sgn = signum(p_o_ee(2));
+    // Let's try the same thing as for the wp_manipulator_3rx. The computed
+    // line equations are a bit different, but the principle remains. The first
+    // joint is always 0 so both m and c are 0 for it.
+    Eigen::VectorXd m(4); m << 0, 0.6845, 0.0153, 0.3002;
+    Eigen::VectorXd c_neg(4); c_neg << 0, 0.8707, -0.6696, -0.2011;
+    Eigen::VectorXd c_pos(4); c_pos << 0, -0.8707, 0.6696, 0.2011;
+    if (rpy(1) <= 0){
+      //q = sgn*m*rpy(1) + c_pos;
+      q = sgn*m*rpy(1) + c_pos;
+    }
+    else{
+      q = -sgn*m*rpy(1) - c_neg;
+    }
+
+    //q << 0, -0.861 + rpy(1)/3, 0.557 + rpy(1)/3, 0.304 + rpy(1)/3;
   }
   else{
     cout << "[WpManipulatorKinematics] No such manipulator robot model." << endl;
