@@ -25,7 +25,7 @@ trajectory_handler:
     subscribers:
       uav_topic: "odometry"
       manipulator_topics: ["joint1_position_controller/state", "joint2_position_controller/state",
-        "joint3_position_controller/state", "joint4_position_controller/command"]
+        "joint3_position_controller/state", "joint4_position_controller/state"]
     indexes:
         start: 11
         end: 20
