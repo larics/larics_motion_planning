@@ -49,6 +49,9 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
       "multi_dof_trajectory", 1);
   // Path publisher
   cartesian_path_pub_ = nh_.advertise<nav_msgs::Path>("cartesian_path", 1);
+  // Path publisher as a joint trajectory message without velocity and acceleration
+  joint_trajectory_path_pub_ = nh_.advertise<trajectory_msgs::JointTrajectory>(
+    "path_as_joint_trajectory", 1);
   // Joint trajectory publisher
   bool latch_trajectory;
   nh_private.param("latch_trajectory", latch_trajectory, bool(false));
@@ -622,10 +625,10 @@ bool GlobalPlannerRosInterface::multipleManipulatorsObjectTrajectoryCallback(
     }
   }
 
-  // IMPORTANT!
   // This part of the code will call the function to get the full state.
   // If the call is here, then we can return something even if the path
-  // planning flag is set to false.
+  // planning flag is set to false, in which case only waypoints will be
+  // forwarded.
   shared_ptr<MultipleManipulatorsKinematics> kinematics;
   kinematics = dynamic_pointer_cast<MultipleManipulatorsKinematics>(
     global_planner_->getKinematicsInterface());
@@ -633,6 +636,11 @@ bool GlobalPlannerRosInterface::multipleManipulatorsObjectTrajectoryCallback(
   Eigen::MatrixXd full_state_path = kinematics->getFullSystemStateFromObjectState(
     object_path);
   res.path = this->eigenPathToJointTrajectory(full_state_path);
+
+  // Publish the object path if requested.
+  if (req.publish_path == true){
+    joint_trajectory_path_pub_.publish(this->eigenPathToJointTrajectory(object_path));
+  }
 
   // This does not publish anything, just returns the path.
   res.success = success;

@@ -88,7 +88,8 @@ class GlobalPlannerRosInterface
 
     // Publishers
     ros::Publisher multi_dof_trajectory_pub_, cartesian_path_pub_, 
-      joint_trajectory_pub_, parabolic_airdrop_info_pub_;
+      joint_trajectory_pub_, parabolic_airdrop_info_pub_,
+      joint_trajectory_path_pub_;
 
     // Service for model based correction of end-effector. We also need a
     // service client to execute initially planned trajectory in simulation.
