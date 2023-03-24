@@ -13,6 +13,7 @@
 
 #include <string>
 #include <Eigen/Eigen>
+#include <math.h>
 
 #include "yaml-cpp/yaml.h"
 
@@ -95,6 +96,32 @@ class MultipleManipulatorsKinematics : public KinematicsInterface
     /// \param id Manipulator index.
     void setSingleManipulatorJointPositions(Eigen::VectorXd q, int id);
 
+    /// \brief Based on the object state, get full aerial manipulator state
+    ///   under some assumptions. First is that the kinematics module of each
+    ///   manipulator can provide best fitting q_m for the given object state.
+    ///   Second is hovering assumption, or in case of static manipulator,
+    ///   that the base is in horizontal position.
+    /// \param object_q Object state that is 6-DoF.
+    /// \param id Manipulator index.
+    /// \return Full state of a single manipulator with base and joints.
+    Eigen::VectorXd getSingleManipulatorStateFromObjectState(
+      Eigen::VectorXd object_q, int id);
+
+    /// \brief Based on the object state, get full system state. Will call
+    ///   getSingleManipulatorStateFromObjectState() for each manipulator and
+    ///   create the full state.
+    /// \param object_q Object state that is 6-DoF.
+    /// \return Full state of the multiple manipulator system.
+    Eigen::VectorXd getFullSystemStateFromObjectState(
+      Eigen::VectorXd object_q);
+
+    /// \brief Based on the object state, get full system state for multiple
+    ///   waypoints.
+    /// \param object_q Matrix of object state that is 6-DoF.
+    /// \return Matrix of full state of the multiple manipulator system.
+    Eigen::MatrixXd getFullSystemStateFromObjectState(
+      Eigen::MatrixXd object_q);
+
   private:
     //ManipulatorControl manipulator_;
     // Container of multiple manipulators
@@ -107,10 +134,17 @@ class MultipleManipulatorsKinematics : public KinematicsInterface
     std::vector<int> n_dofs_;
     std::vector< std::vector<int> > dofs_indexes_;
 
+    // Transform from base to manipulator
+    std::vector<int> base_n_dofs_;
+    std::vector<Eigen::Affine3d> t_base_manipulator_vector_;
+    std::vector<double> base_relative_yaw_vector_;
+
     // Grasp transforms. The idea of this variable is to provide one
     // end-effector transform and get all manipulators transforms by multiplying
     // them with appropriate grasp transform.
     std::vector<Eigen::Affine3d> grasp_transforms_;
 };
+
+double wrapToPi(double x);
 
 #endif // MULTIPLE_MANIPULATORS_KINEMATICS_H

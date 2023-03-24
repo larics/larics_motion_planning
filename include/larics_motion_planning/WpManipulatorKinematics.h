@@ -12,6 +12,7 @@
 
 #include <string>
 #include <Eigen/Eigen>
+#include <math.h>
 
 #include "yaml-cpp/yaml.h"
 
@@ -69,8 +70,23 @@ class WpManipulatorKinematics : public KinematicsInterface
     /// \return Jacobian matrix.
     Eigen::MatrixXd getJacobian(Eigen::VectorXd q);
 
+    /// \brief This is intended to be used in the multiple manipulators setting
+    ///   where the idea is to plan from the perspective of the manipulated
+    ///   object. Based on object world transform and fixed grasp transform
+    ///   calculate the joint positions required to achieve that, with the
+    ///   internal assumption of multirotor hover.
+    /// \param T_w_t Transform of the tool in the world frame. This is required
+    ///   to obtain the roll and pitch of the end-effector.
+    /// \param object_state 6-DoF object state with appropriate angles.
+    /// \return Joint states for the required configuration.
+    Eigen::VectorXd calculateOptimalSingleManipulatorState(
+      Eigen::Affine3d grasp_transform, Eigen::VectorXd object_state);
+
   private:
     ManipulatorControl manipulator_;
+    string robot_model_name_;
 };
+
+double signum(double val);
 
 #endif // WP_MANIPULATOR_KINEMATICS_H

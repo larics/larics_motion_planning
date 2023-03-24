@@ -85,6 +85,12 @@ class GlobalPlanner
     Trajectory modelCorrectedTrajectory(
       Trajectory planned_trajectory, Trajectory executed_trajectory);
 
+    /// \brief Plans a path for the object manipulated by multiple aerial
+    ///   manipulators.
+    /// \param waypoints Two or more 6-DoF waypoints of the manipulated object.
+    /// \return Success if a collision free path is found.
+    bool planObjectPath(Eigen::MatrixXd waypoints);
+
     /// \brief Returns planned path.
     /// \return Planned path as Eigen matrix.
     Eigen::MatrixXd getPath();

@@ -14,6 +14,8 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
     string("/model_uav"));
   nh_private.param("model_animation_dt_us", model_animation_dt_, 
     int(10));
+  nh_private.param("model_animation_flag", model_animation_flag_,
+    bool(false));
 
   // Get the transform between the uav and manipulator as 6 parameters. The list
   // argument passing does not work with private params, but it should work with
@@ -47,6 +49,9 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
       "multi_dof_trajectory", 1);
   // Path publisher
   cartesian_path_pub_ = nh_.advertise<nav_msgs::Path>("cartesian_path", 1);
+  // Path publisher as a joint trajectory message without velocity and acceleration
+  joint_trajectory_path_pub_ = nh_.advertise<trajectory_msgs::JointTrajectory>(
+    "path_as_joint_trajectory", 1);
   // Joint trajectory publisher
   bool latch_trajectory;
   nh_private.param("latch_trajectory", latch_trajectory, bool(false));
@@ -66,6 +71,11 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
   multiple_manipulators_model_correction_service_server_ = nh_.advertiseService(
     "multiple_manipulators_model_correction_trajectory",
     &GlobalPlannerRosInterface::multipleManipulatorsModelCorrectedTrajectoryCallback,
+    this);
+  // Service for multiple manipulators object trajectory planning
+  multiple_manipulators_object_service_server_ = nh_.advertiseService(
+    "multiple_manipulators_object_trajectory",
+    &GlobalPlannerRosInterface::multipleManipulatorsObjectTrajectoryCallback,
     this);
   // Service client for executing model trajectory and recording it.
   if (model_uav_namespace.at(0) != '/'){
@@ -404,7 +414,7 @@ bool GlobalPlannerRosInterface::multipleManipulatorsModelCorrectedTrajectoryCall
       usleep(model_animation_dt_);
     }
     cout << "Animated uncompensated trajectory with roll and pitch estimated from compensation." << endl;
-    usleep(1000000);
+    usleep(100000);
 
     // Send this trajectory to Gazebo simulation and collect information about
     // the executed trajectory.
@@ -433,6 +443,7 @@ bool GlobalPlannerRosInterface::multipleManipulatorsModelCorrectedTrajectoryCall
     
     // Correcting the end-effector trajectory.
     Trajectory executed_trajectory;
+    /*
     Trajectory ext_init;
     executed_trajectory = jointTrajectoryToTrajectory(service.response.executed_trajectory);
     ext_init = jointTrajectoryToTrajectory(extended_initial_trajectory);
@@ -442,16 +453,33 @@ bool GlobalPlannerRosInterface::multipleManipulatorsModelCorrectedTrajectoryCall
       executed_trajectory.position.block(j,6+11,1,5) = ext_init.position.block(
         j,6+11,1,5);
     }
+    */
     corrected_trajectory = global_planner_->modelCorrectedTrajectory(
-      /*jointTrajectoryToTrajectory(extended_initial_trajectory),
-      jointTrajectoryToTrajectory(service.response.executed_trajectory)*/
-      ext_init, executed_trajectory);
+      jointTrajectoryToTrajectory(extended_initial_trajectory),
+      jointTrajectoryToTrajectory(service.response.executed_trajectory)
+      /*ext_init, executed_trajectory*/);
 
     // Try to do this iteratively. Start from i=1 because the first iteration
     // has already been done above.
-    int max_iter = 20;
+    int max_iter = 1;
     for (int i=1; i<max_iter; i++){
       cout << "Starting iteration: " << i << endl;
+
+      // Try planning a new toppra trajectory through corrected trajectory.
+      cout << "Replanning TOPP-RA trajectory with corrected trajectory." << endl;
+      publish_trajectory_temp = req.publish_trajectory;
+      larics_motion_planning::MultiDofTrajectory::Request& iterative_req = req;
+      larics_motion_planning::MultiDofTrajectory::Response& iterative_res = res;
+      iterative_req.waypoints = trajectoryToJointTrajectory(corrected_trajectory);
+      cout << "Corrected trajectory rows: " << corrected_trajectory.position.rows() << endl;
+      cout << "Waypoints size: " << iterative_req.waypoints.points.size() << endl;
+      iterative_req.publish_trajectory = false;
+      success = this->multiDofTrajectoryCallback(iterative_req, iterative_res);
+      cout << "Replanned trajectory success: " << success << endl;
+      cout << "Replanned trajectory number of points: ";
+      cout << iterative_res.trajectory.points.size() << endl;
+      req.publish_trajectory = publish_trajectory_temp;
+      
 
       // Create new service request from the current corrected trajectory
       service.request.waypoints = trajectoryToJointTrajectory(corrected_trajectory);
@@ -539,6 +567,86 @@ bool GlobalPlannerRosInterface::multipleManipulatorsModelCorrectedTrajectoryCall
     //cartesian_path_pub_.publish(res.path);
   }
 
+  return true;
+}
+
+bool GlobalPlannerRosInterface::multipleManipulatorsObjectTrajectoryCallback(
+  larics_motion_planning::MultiDofTrajectory::Request &req, 
+  larics_motion_planning::MultiDofTrajectory::Response &res)
+{
+  // The idea for this part of the planner is to generate a path for the
+  // manipulated object. Based on that path and the provided kinematics
+  // interface, compute each aerial manipulator state and return the final
+  // full state path. This is intended to be used with some external node that
+  // sends this path to the uav planner.
+  cout << "Starting the multiple manipulators object trajectory generation." << endl;
+
+  // If the planner finds a feasible path, this will become true.
+  bool success = false;
+
+  // Check the number of waypoints. Exit if there are less than two
+  if (req.waypoints.points.size() < 2){
+    cout << "At least two points required for generating trajectory." << endl;
+    res.success = success;
+    return true;
+  }
+
+  // Convert the input to Eigen waypoints
+  Eigen::MatrixXd waypoints = this->jointTrajectoryToEigenWaypoints(req.waypoints);
+  visualization_.setWaypoints(waypoints);
+
+  // This function only plans path, so no need to check the trajectory flags.
+  Eigen::MatrixXd object_path;
+  if (req.plan_path == true){
+    success = global_planner_->planObjectPath(waypoints);
+    res.path = this->eigenPathToJointTrajectory(global_planner_->getPath());
+    res.path_length = global_planner_->getPathLength();
+    visualization_.setPath(global_planner_->getPath());
+
+    object_path = global_planner_->getPath();
+    success = true;
+  }
+  else{
+    object_path = waypoints;
+    success = true;
+  }
+
+  if (model_animation_flag_ == true){
+    Trajectory visualization_trajectory;
+    bool temp_success = global_planner_->planTrajectory(object_path);
+    visualization_trajectory = global_planner_->getTrajectory();
+    cout << "Animating object planner path." << endl;
+    cout << "Visualization trajectory rows: " << visualization_trajectory.position.rows() << endl;
+    for (int i=0; i<visualization_trajectory.position.rows(); i++){
+      visualization_.setStatePoints(
+        global_planner_->getRobotStatePoints((visualization_trajectory.position.row(i)).transpose()));
+      visualization_.publishStatePoints();
+      usleep(model_animation_dt_);
+    }
+  }
+
+  // This part of the code will call the function to get the full state.
+  // If the call is here, then we can return something even if the path
+  // planning flag is set to false, in which case only waypoints will be
+  // forwarded.
+  shared_ptr<MultipleManipulatorsKinematics> kinematics;
+  kinematics = dynamic_pointer_cast<MultipleManipulatorsKinematics>(
+    global_planner_->getKinematicsInterface());
+
+  Eigen::MatrixXd full_state_path = kinematics->getFullSystemStateFromObjectState(
+    object_path);
+  res.path = this->eigenPathToJointTrajectory(full_state_path);
+
+  // Publish the object path if requested.
+  if (req.publish_path == true){
+    joint_trajectory_path_pub_.publish(this->eigenPathToJointTrajectory(object_path));
+  }
+
+  // This does not publish anything, just returns the path.
+  res.success = success;
+
+
+  cout << "Done with the the multiple manipulators object trajectory generation." << endl;
   return true;
 }
 
@@ -869,7 +977,8 @@ bool GlobalPlannerRosInterface::visualizeStateCallback(
   visualization_.setStatePoints(global_planner_->getRobotStatePoints(state));
   visualization_.publishStatePoints();
 
-
+  // Some tryout stuff
+  /*
   Eigen::Affine3d t_b_l0;
   t_b_l0 = Eigen::Affine3d::Identity();
   Eigen::Matrix3d rot_uav_manipulator;
@@ -916,6 +1025,7 @@ bool GlobalPlannerRosInterface::visualizeStateCallback(
   res.end_effector.orientation.y = quat.y();
   res.end_effector.orientation.z = quat.z();
   res.end_effector.orientation.w = quat.w();
+  */
 
   cout << req.state.data.size() << endl;
   return true;

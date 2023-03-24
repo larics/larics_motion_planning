@@ -371,3 +371,103 @@ plan_trajectory: true
 override_dynamic_constraints: false
 velocity_constraints: [0]
 acceleration_constraints: [0]"
+
+
+# Object trajectory stuff
+rosservice call /object/multiple_manipulators_object_trajectory "waypoints:
+  header:
+    seq: 0
+    stamp: {secs: 0, nsecs: 0}
+    frame_id: ''
+  joint_names: ['']
+  points:
+  - positions: [0, 0, 1, 0, 0, 0]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [3, 0, 1, 0, 0, 0]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+publish_path: false
+publish_trajectory: false
+plan_path: true
+plan_trajectory: false
+override_dynamic_constraints: false
+velocity_constraints: [0]
+acceleration_constraints: [0]"
+
+
+# Object trajectory stuff
+rosservice call /object/multiple_manipulators_object_trajectory "waypoints:
+  header:
+    seq: 0
+    stamp: {secs: 0, nsecs: 0}
+    frame_id: ''
+  joint_names: ['']
+  points:
+  - positions: [-1.3, -8, 1, 0, 0, 0]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [-1.3, 7, 1, 0, 0, 0]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+publish_path: false
+publish_trajectory: false
+plan_path: true
+plan_trajectory: false
+override_dynamic_constraints: false
+velocity_constraints: [0]
+acceleration_constraints: [0]"
+
+
+rosservice call /object/multiple_manipulators_object_trajectory "waypoints:
+  header:
+    seq: 0
+    stamp: {secs: 0, nsecs: 0}
+    frame_id: ''
+  joint_names: ['']
+  points:
+  - positions: [-1.3, 7, 1, 0, 0, 0]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+  - positions: [-1.3, -8, 1, 0, 0, 0]
+    velocities: [0]
+    accelerations: [0]
+    effort: [0]
+    time_from_start: {secs: 0, nsecs: 0}
+publish_path: false
+publish_trajectory: false
+plan_path: true
+plan_trajectory: false
+override_dynamic_constraints: false
+velocity_constraints: [0]
+acceleration_constraints: [0]"
+
+
+
+
+rostopic pub -1 /object/go_to/reference/multiarray std_msgs/Float64MultiArray "layout:
+  dim:
+  - label: ''
+    size: 0
+    stride: 0
+  data_offset: 0
+data: [1, 0, 1, 0, 0, 0]"
+
+
+rostopic pub -1 /object/generate_object_trajectory/config std_msgs/Float64MultiArray "layout:
+  dim:
+  - label: ''
+    size: 0
+    stride: 0
+  data_offset: 0
+data: [0, 0, 0, 1, 2.0, 0.2]"

@@ -1,0 +1,33 @@
+trajectory_handler:
+  -
+    type: "UavAndWpManipulatorHandler"
+    namespace: "model_uav1"
+    publishers:
+      uav_topic: "trajectory_point_ref"
+      manipulator_topics: ["joint1_position_controller/command", "joint2_position_controller/command",
+        "joint3_position_controller/command", "joint4_position_controller/command", 
+        "joint5_position_controller/command"]
+    subscribers:
+      uav_topic: "odometry"
+      manipulator_topics: ["joint1_position_controller/state", "joint2_position_controller/state",
+        "joint3_position_controller/state", "joint4_position_controller/state", 
+        "joint5_position_controller/state"]
+    indexes:
+        start: 0
+        end: 10
+  -
+    type: "UavAndWpManipulatorHandler"
+    namespace: "model_uav2"
+    publishers:
+      uav_topic: "trajectory_point_ref"
+      manipulator_topics: ["joint1_position_controller/command", "joint2_position_controller/command",
+        "joint3_position_controller/command", "joint4_position_controller/command", 
+        "joint5_position_controller/command"]
+    subscribers:
+      uav_topic: "odometry"
+      manipulator_topics: ["joint1_position_controller/state", "joint2_position_controller/state",
+        "joint3_position_controller/state", "joint4_position_controller/state", 
+        "joint5_position_controller/state"]
+    indexes:
+        start: 11
+        end: 21

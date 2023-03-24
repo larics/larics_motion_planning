@@ -81,13 +81,15 @@ class GlobalPlannerRosInterface
     int rate_;
     // Model based planning animation sleep
     int model_animation_dt_;
+    bool model_animation_flag_;
 
     // ROS stuff. First node handle for accessing topics and services.
     ros::NodeHandle nh_;
 
     // Publishers
     ros::Publisher multi_dof_trajectory_pub_, cartesian_path_pub_, 
-      joint_trajectory_pub_, parabolic_airdrop_info_pub_;
+      joint_trajectory_pub_, parabolic_airdrop_info_pub_,
+      joint_trajectory_path_pub_;
 
     // Service for model based correction of end-effector. We also need a
     // service client to execute initially planned trajectory in simulation.
@@ -99,6 +101,11 @@ class GlobalPlannerRosInterface
     // Service server for multiple manipulators model correction trajectory
     ros::ServiceServer multiple_manipulators_model_correction_service_server_;
     bool multipleManipulatorsModelCorrectedTrajectoryCallback(
+      larics_motion_planning::MultiDofTrajectory::Request &req, 
+      larics_motion_planning::MultiDofTrajectory::Response &res);
+    // Service server for multiple manipulators through object planner
+    ros::ServiceServer multiple_manipulators_object_service_server_;
+    bool multipleManipulatorsObjectTrajectoryCallback(
       larics_motion_planning::MultiDofTrajectory::Request &req, 
       larics_motion_planning::MultiDofTrajectory::Response &res);
 

@@ -24,18 +24,22 @@ bool MultipleManipulatorsStateValidityChecker::configureFromFile(
 
   // Open yaml file with configuration
   YAML::Node config = YAML::LoadFile(config_filename);
+  string username = "/home/";
+  username = username + getenv("USER") + "/";
+  string kinematics_config_filename = username + config["global_planner"]["kinematics_config_file"].as<string>();
+  YAML::Node kinematics_config = YAML::LoadFile(kinematics_config_filename);
   
   // Get the number of manipulators. This should be the same number as in 
   // kinematics interface.
   n_manipulators_ = config["state_validity_checker"]["multiple_manipulators"].size();
   // Check if there is the same number of manipulators in both state validity
   // checker and kinematics
-  if (n_manipulators_ != config["kinematics"]["multiple_manipulators"].size()){
+  if (n_manipulators_ != kinematics_config["kinematics"]["multiple_manipulators"].size()){
     cout << "ERROR: Number of manipulators is different in kinematics." << endl;
     cout << "  This occured in MultipleManipulatorsStateValidityChecker." << endl;
     cout << "  Number of manipulators in state validity checker: " << n_manipulators_ << endl;
     cout << "  Number of manipulators in kinematics: ";
-    cout << config["kinematics"]["multiple_manipulators"].size() << endl;
+    cout << kinematics_config["kinematics"]["multiple_manipulators"].size() << endl;
     exit(0);
   }
 
@@ -138,6 +142,28 @@ bool MultipleManipulatorsStateValidityChecker::configureFromFile(
     int base_dof;
     base_dof = config["state_validity_checker"]["multiple_manipulators"][i]["base_dof"].as<int>();
     base_dof_.push_back(base_dof);
+  }
+
+  // If the object planner is selected, load it.
+  try{
+    object_planner_is_used_ = config["state_validity_checker"]["object_checker"]["is_used"].as<bool>();
+    // Object will be a prism with resolution from config
+    object_planner_resolution_ = config["state_validity_checker"]["object_checker"]["resolution"].as<double>();
+    // Object dimensions
+    std::vector<double> object_dimensions_config;
+    object_dimensions_config = config["state_validity_checker"]["object_checker"]["dimensions"].as< std::vector<double> >();
+    for (int i=0; i<3; i++){
+      object_dimensions_(i) = object_dimensions_config[i];
+    }
+  }
+  catch (...){
+    string ys = "\033[0;33m";
+    string ye = "\033[0m";
+    cout << ys << "[MultipleManipulatorsStateValidityChecker] Object config." << ye << endl;
+    cout << ys << "  Something wrong or missing in the state_validity_checker:object_checker config." << ye << endl;
+    cout << ys << "  Not using object planner." << ye << endl;
+    cout << ys << "  Ignore this message if you are not using multiple manipulators." << ye << endl;
+    object_planner_is_used_ = false;
   }
 }
 
@@ -259,11 +285,37 @@ Eigen::MatrixXd MultipleManipulatorsStateValidityChecker::generateValidityPoints
   Eigen::VectorXd state)
 {
   points_ = Eigen::MatrixXd(0,3);
+
+  Eigen::VectorXd full_state;
+
+  // If object is used, first generate its points.
+  if (object_planner_is_used_ == true){
+    points_ = generateObjectValidityPoints(state);
+
+    // IMPORTANT!!!
+    // After generating object points, full state of the manipulator is required
+    // and then the rest of this function can be called. The remainder of this function can add 
+    // the additional points, if the full state is properly computed.
+    for (int i=0; i<n_manipulators_; i++){
+      Eigen::VectorXd current_q;
+      current_q = kinematics_->getSingleManipulatorStateFromObjectState(state, i);
+      full_state.conservativeResize(full_state.rows() + current_q.rows(), 1);
+      full_state.block(full_state.rows() - current_q.rows(), 0, 
+        current_q.rows(), 1) = current_q;
+    }
+  }
+  else{
+    full_state = state;
+  }
+  //cout << full_state << endl;
+  //full_state << -0.55,0.018,-0.166,0,0,0,0.785398, 0.785398, 0.557, -0.861, 0.304, 0.553,-0.018,-0.166,0,0,3.141592654,0.785398, 0.785398, 0.557, -0.861, 0.304;
+  //cout << full_state << endl;
+
   for (int i=0; i<n_manipulators_; i++){
     // Extract current manipulator state based on indexes provided in the
     // config file.
     Eigen::VectorXd current_state(end_indexes_[i]-start_indexes_[i]+1);
-    current_state = state.block(
+    current_state = full_state.block(
       start_indexes_[i], 0, end_indexes_[i]-start_indexes_[i]+1, 1);//end_indexes_[i]-start_indexes_[i]);
 
     // Generate points based on the current manipulator state and concatenate
@@ -276,6 +328,31 @@ Eigen::MatrixXd MultipleManipulatorsStateValidityChecker::generateValidityPoints
     points_.block(points_.rows()-current_manipulator_points.rows(), 0, 
       current_manipulator_points.rows() , 3) = current_manipulator_points;
   }
+  return points_;
+}
+
+Eigen::MatrixXd MultipleManipulatorsStateValidityChecker::generateObjectValidityPoints(
+  Eigen::VectorXd state)
+{
+  // First generate object points in a coordinate system at its center.
+  points_ = Eigen::MatrixXd(0,3);
+  points_ = generateObject(object_dimensions_, object_planner_resolution_);
+
+  // Next, transform points to state, which is in world frame.
+  Eigen::Affine3d t_world_object(Eigen::Affine3d::Identity());
+  t_world_object.translate(Eigen::Vector3d(state(0), state(1), state(2)));
+  Eigen::Matrix3d rot_object;
+  rot_object = Eigen::AngleAxisd(state(5), Eigen::Vector3d::UnitZ())
+    * Eigen::AngleAxisd(state(4),  Eigen::Vector3d::UnitY())
+    * Eigen::AngleAxisd(state(3), Eigen::Vector3d::UnitX());
+  t_world_object.rotate(rot_object);
+
+  for (int i=0; i<points_.rows(); i++){
+    Eigen::Affine3d current_point(Eigen::Affine3d::Identity());
+    current_point.translate(Eigen::Vector3d((points_.row(i)).transpose()));
+    points_.row(i) = ((t_world_object*current_point).translation()).transpose();
+  }
+
   return points_;
 }
 
@@ -320,6 +397,41 @@ Eigen::MatrixXd MultipleManipulatorsStateValidityChecker::generatePrism(
   }
 
   //points.col(1).swap(points.col(2));
+
+  return points;
+}
+
+Eigen::MatrixXd MultipleManipulatorsStateValidityChecker::generateObject(
+  Eigen::Vector3d dimensions, double resolution)
+{
+  double x = dimensions(0);
+  double y = dimensions(1);
+  double z = dimensions(2);
+
+  // First get number of points which define the prism after sampling.
+  int px = x/resolution;
+  int py = y/resolution;
+  int pz = z/resolution;
+
+  // Get total number of points. Expand this part by one point because
+  //  otherwise we won't get edge points.
+  int p = (px+1)*(py+1)*(pz+1);
+  // Allocate memory for matrix defining prism.
+  Eigen::MatrixXd points(p, 3);
+
+  // Go through all combinations and sample prism along all dimensions.
+  int index = 0;
+  for (int i=0; i<px+1; i++){
+    for (int j=0; j<py+1; j++){
+      for (int k=0; k<pz+1; k++){
+        // Offset x and y axes in order to "center" the prism.
+        points(index, 0) = double(i)*x/double(px) - x/2.0;
+        points(index, 1) = double(j)*y/double(py) - y/2.0;
+        points(index, 2) = double(k)*z/double(pz) - z/2.0;
+        index++;
+      }
+    }
+  }
 
   return points;
 }

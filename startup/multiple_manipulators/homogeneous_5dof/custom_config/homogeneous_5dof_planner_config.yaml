@@ -1,10 +1,10 @@
 global_planner:
-  map_config_file: "catkin_ws/src/larics_motion_planning/config/cooperative_transport_uav_wp_manipulator.yaml"
-  trajectory_config_file: "catkin_ws/src/larics_motion_planning/config/cooperative_transport_uav_wp_manipulator.yaml"
-  path_planner_config_file: "catkin_ws/src/larics_motion_planning/config/cooperative_transport_uav_wp_manipulator.yaml"
-  state_validity_checker_config_file: "catkin_ws/src/larics_motion_planning/config/cooperative_transport_uav_wp_manipulator.yaml"
-  kinematics_config_file: "catkin_ws/src/larics_motion_planning/config/cooperative_transport_uav_wp_manipulator.yaml"
-  model_correction_file: "catkin_ws/src/larics_motion_planning/config/cooperative_transport_uav_wp_manipulator.yaml"
+  map_config_file: "catkin_ws/src/larics_motion_planning/startup/multiple_manipulators/homogeneous_5dof/custom_config/homogeneous_5dof_planner_config.yaml"
+  trajectory_config_file: "catkin_ws/src/larics_motion_planning/startup/multiple_manipulators/homogeneous_5dof/custom_config/homogeneous_5dof_planner_config.yaml"
+  path_planner_config_file: "catkin_ws/src/larics_motion_planning/startup/multiple_manipulators/homogeneous_5dof/custom_config/homogeneous_5dof_planner_config.yaml"
+  state_validity_checker_config_file: "catkin_ws/src/larics_motion_planning/startup/multiple_manipulators/homogeneous_5dof/custom_config/homogeneous_5dof_planner_config.yaml"
+  kinematics_config_file: "catkin_ws/src/larics_motion_planning/startup/multiple_manipulators/homogeneous_5dof/custom_config/homogeneous_5dof_planner_config.yaml"
+  model_correction_file: "catkin_ws/src/larics_motion_planning/startup/multiple_manipulators/homogeneous_5dof/custom_config/homogeneous_5dof_planner_config.yaml"
 
   trajectory:
     restarts: 5
@@ -118,8 +118,12 @@ trajectory_planner:
     axes_index_list: []
     velocity_constraints: []
   toppra_trajectory:
-    velocities: [0.8, 0.8, 0.5, 100, 100, 1.0, 5.0, 5.0, 5.0, 5.0, 5.0, 0.8, 0.8, 0.5, 100, 100, 1.0, 5.0, 5.0, 5.0, 5.0, 5.0]
-    accelerations: [0.4, 0.4, 0.4, 100, 100, 1.0, 75.0, 75.0, 75.0, 75.0, 75.0, 0.4, 0.4, 0.4, 100, 100, 1.0, 75.0, 75.0, 75.0, 75.0, 75.0]
+    # Slower trajectory
+    velocities:    [0.75, 0.75, 0.5, 100, 100, 0.75, 1.2, 1.2, 1.2, 1.2, 1.2, 0.75, 0.75, 0.5, 100, 100, 0.75, 1.2, 1.2, 1.2, 1.2, 1.2]
+    accelerations: [0.50, 0.50, 0.5, 100, 100, 0.50, 1.2, 1.2, 1.2, 1.2, 1.2, 0.50, 0.50, 0.5, 100, 100, 0.50, 1.2, 1.2, 1.2, 1.2, 1.2]
+    # Faster trajectory
+    #velocities:    [1.00, 1.00, 0.5, 100, 100, 0.75, 1.2, 1.2, 1.2, 1.2, 1.2, 1.00, 1.00, 0.5, 100, 100, 0.75, 1.2, 1.2, 1.2, 1.2, 1.2]
+    #accelerations: [0.75, 0.75, 0.5, 100, 100, 0.50, 1.2, 1.2, 1.2, 1.2, 1.2, 0.75, 0.75, 0.5, 100, 100, 0.50, 1.2, 1.2, 1.2, 1.2, 1.2]
     # This flag is important because it preconditiones angular values before 
     # sending them to toppra trajectory. The problem is that toppra does not know
     # for discontinuities at half circle (PI) and the planned trajectory will
@@ -180,8 +184,18 @@ kinematics:
       degrees_of_freedom: 5
       indexes: [6, 7, 8, 9, 10]
       grasp_transform:
-        translation: [0, -0.15, 0]
-        rotation: [0, 0, 1.57079632679]
+        translation: [-0.15, 0, 0]
+        # If provided, the rotation matrix overrides rpy rotation
+        rotation: [3.14159265359, 0, 0]
+        rotation_matrix: [1, 0, 0, 
+                          0, -1, 0,
+                          0, 0, -1]
+      # The relative yaw angle between the uav body and the manipulated object
+      # This is required to properly set the uav body rotation, assuming roll
+      # and pitch angles are 0.
+      base_relative_yaw: 0.0
+      base_dof: 6
+      base_manipulator_transform: [0, 0, 0.075, 1.57079632679, 0, 3.14159265359]
       robot_model_name: "wp_manipulator"
       joint_group_name: "wp_manipulator_arm"
       dh_parameters_file: "catkin_ws/src/aerial_manipulators/aerial_manipulators_control/config/wp_manipulator_dh_parameters.yaml"
@@ -189,9 +203,19 @@ kinematics:
       type: "wp_manipulator"
       degrees_of_freedom: 5
       indexes: [17, 18, 19, 20, 21]
+      # The relative yaw angle between the uav body and the manipulated object
+      # This is required to properly set the uav body rotation, assuming roll
+      # and pitch angles are 0.
+      base_relative_yaw: 3.14159265359
+      base_dof: 6
+      base_manipulator_transform: [0, 0, 0.075, 1.57079632679, 0, 3.14159265359]
       grasp_transform:
-        translation: [0, 0.15, 0]
-        rotation: [0, 0, -1.57079632679]
+        translation: [0.15, 0, 0]
+        rotation: [1.57079632679, 3.14159265359, 3.14159265359]
+        # If provided, the rotation matrix overrides rpy rotation
+        rotation_matrix: [-1, 0, 0, 
+                          0, 1, 0,
+                          0, 0, -1]
       robot_model_name: "wp_manipulator"
       joint_group_name: "wp_manipulator_arm"
       dh_parameters_file: "catkin_ws/src/aerial_manipulators/aerial_manipulators_control/config/wp_manipulator_dh_parameters.yaml"
@@ -210,7 +234,7 @@ model_correction:
         rotation: [1.57079632679, 0, 3.14159265359]
       manipulator_dof: 5
       alpha: 1.0
-      apply_roll_corrections: true
+      apply_roll_corrections: false
       apply_pitch_corrections: true
     - 
       type: "UavWpManipulator"
@@ -222,5 +246,5 @@ model_correction:
         rotation: [1.57079632679, 0, 3.14159265359]
       manipulator_dof: 5
       alpha: 1.0
-      apply_roll_corrections: true
+      apply_roll_corrections: false
       apply_pitch_corrections: true

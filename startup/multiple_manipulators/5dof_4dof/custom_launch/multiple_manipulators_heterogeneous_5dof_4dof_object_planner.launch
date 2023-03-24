@@ -1,0 +1,39 @@
+<launch>
+  <arg name="planner_rate" default="10" />
+  <arg name="namespace" default="object" />
+  <arg name="global_planner_config_file" default="$(find larics_motion_planning)/startup/multiple_manipulators/5dof_4dof/custom_config/heterogeneous_5dof_4dof_object_planner_config.yaml" />
+
+  <!-- Before launching this file you need to launch planning context-->
+  <!-- roslaunch wp_manipulator planning_context.launch -->
+
+  <group ns="$(arg namespace)">
+    <!-- Global planner generates path and/or trajectory based on desired waypoints.-->
+    <node name="global_planner" pkg="larics_motion_planning" type="global_planner_node" output="screen">
+      <param name="rate" value="$(arg planner_rate)" />
+      <param name="global_planner_config_file" value="$(arg global_planner_config_file)" />
+      <param name="model_uav_namespace" value="none" />
+      <param name="model_animation_dt_us" value="2000" />
+      <param name="model_animation_flag" value="false" />
+      <param name="model_planning_user_confirmation_flag" value="false" />
+
+      <!-- visualization parameters -->
+      <param name="state_scale" value="0.05" />
+      <param name="waypoints_scale" value="0.5" />
+    </node>
+
+    <node name="generate_toppra_trajectory" pkg="topp_ros" type="generate_toppra_trajectory.py" output="screen" />
+
+    <node name="go_to_object_config" pkg="larics_motion_planning" type="go_to_object_config.py" output="screen">
+      <param name="planner_ns" value="planner"/>
+      <param name="model_planner_ns" value="model_planner"/>
+    </node>
+
+    <node name="full_state_trajectory_from_object" pkg="larics_motion_planning" type="full_state_trajectory_from_object.py" output="screen">
+      <param name="planner_ns" value="planner"/>
+    </node>
+
+    <node name="generate_object_trajectory" pkg="larics_motion_planning" type="generate_object_trajectory.py" output="screen">
+    </node>
+  </group>
+
+</launch>

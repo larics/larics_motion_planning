@@ -1,0 +1,161 @@
+name: 3dofrx_4dof
+root: ./
+startup_window: roscore
+pre_window: cd ~/; export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:$HOME/uav_ws/src/larics_gazebo_worlds/models
+windows:
+  - roscore_gazebo:
+      layout: tiled
+      panes:
+        - roscore
+        - waitForRos; roslaunch gazebo_ros empty_world.launch use_sim_time:=true paused:=false
+        # Optional world elements
+        - >
+          waitForSimulation; history -s "roslaunch larics_gazebo_worlds spawn_storage_racking.launch"
+  - uavs:
+      layout: tiled
+      panes:
+        - >
+          waitForSimulation; 
+          sleep 3; 
+          roslaunch mmuav_gazebo uav_attitude_position.launch start_gazebo:=false collision_bitmask:=1 name:="uav1" manipulator_type:="wp_manipulator_3rx" z:=0.5 manipulator_tool:="rod"
+        - >
+          waitForSimulation; 
+          sleep 8; 
+          roslaunch mmuav_gazebo uav_attitude_position.launch start_gazebo:=false collision_bitmask:=1 name:="uav2" manipulator_type:="asap_manipulator_4r" x:=1.0 z:=0.5
+        - >
+          waitForSimulation; 
+          sleep 13; 
+          roslaunch mmuav_gazebo uav_attitude_position.launch start_gazebo:=false collision_bitmask:=2 name:="model_uav1" manipulator_type:="wp_manipulator_3rx" z:=0.5 manipulator_tool:="rod"
+        - >
+          waitForSimulation; 
+          sleep 18; 
+          roslaunch mmuav_gazebo uav_attitude_position.launch start_gazebo:=false collision_bitmask:=2 name:="model_uav2" manipulator_type:="asap_manipulator_4r" x:=1.0 z:=0.5
+  - planning:
+      layout: tiled
+      panes:
+        - |
+          waitForRos; 
+          roslaunch wp_manipulator_3rx planning_context.launch; 
+          roslaunch asap_manipulator_4r planning_context.launch;
+          roslaunch larics_motion_planning multiple_manipulators_heterogeneous_3dofrx_4dof_planner.launch
+        - |
+          waitForRos; sleep 8; rostopic pub -1 /planner/reference_tracker/set_current_trajectory_point trajectory_msgs/JointTrajectoryPoint "
+          positions: [0, 0, 0.5, 0, 0, 0, 0, 0, 0, 1.0, 0, 0.5, 0, 0, 0, 0, 0, 0, 0]
+          velocities: [0]
+          accelerations: [0]
+          effort: [0]
+          time_from_start: {secs: 0, nsecs: 0}"
+        - |
+          waitForRos; sleep 8; rostopic pub -1 /model_planner/reference_tracker/set_current_trajectory_point trajectory_msgs/JointTrajectoryPoint "
+          positions: [0, 0, 0.5, 0, 0, 0, 0, 0, 0, 1.0, 0, 0.5, 0, 0, 0, 0, 0, 0, 0]
+          velocities: [0]
+          accelerations: [0]
+          effort: [0]
+          time_from_start: {secs: 0, nsecs: 0}"
+        - |
+          waitForSimulation; sleep 30; 
+          rostopic pub -1 /object/go_to/reference/multiarray std_msgs/Float64MultiArray "layout:
+            dim:
+            - label: ''
+              size: 0
+              stride: 0
+            data_offset: 0
+          data: [0, 0, 1, 0, 0, 0]" 
+  - multiple_trajectories:
+      layout: tiled
+      panes:
+        - history -s "rosrun larics_motion_planning execute_multiple_object_trajectories.sh -n 20 -t straight"
+        - history -s "rosrun larics_motion_planning execute_multiple_object_trajectories.sh -n 20 -t square"
+        - history -s "rosrun larics_motion_planning execute_multiple_object_trajectories.sh -n 20 -t circle"
+        - history -s "rosrun larics_motion_planning execute_multiple_object_trajectories.sh -n 10 -t warehouse"
+  - warehouse_common:
+      # common trajectory for warehouse
+      layout: tiled
+      panes:
+        - history -s "rosrun larics_motion_planning execute_multiple_object_trajectories_from_bag.py __ns:=object"
+        - |
+          history -s "rostopic pub -1 /object/go_to/reference/multiarray std_msgs/Float64MultiArray \"layout:
+            dim:
+            - label: ''
+              size: 0
+              stride: 0
+            data_offset: 0
+          data: [-1.3, 7, 1, 0, 0, 0]\""
+  - object_planning:
+      layout: main-vertical
+      panes:
+        - |
+          waitForRos;
+          roslaunch wp_manipulator_3rx planning_context.launch;
+          roslaunch asap_manipulator_4r planning_context.launch;
+          roslaunch larics_motion_planning multiple_manipulators_heterogeneous_3dofrx_4dof_object_planner.launch
+        - |
+          roscd larics_gazebo_worlds/models/storage_racking;
+          history -s "rosrun octomap_server octomap_server_node storage_racking.binvox.bt __ns:=object"
+        # Demonstration service calls only for the object planner. Use together
+        # with the octomap to visualize planned trajectory states.
+        - |
+          history -s "rosservice call /object/multiple_manipulators_object_trajectory \"waypoints:
+            header:
+              seq: 0
+              stamp: {secs: 0, nsecs: 0}
+              frame_id: ''
+            joint_names: ['']
+            points:
+            - positions: [-1.3, -8, 1, 0, 0, 0]
+              velocities: [0]
+              accelerations: [0]
+              effort: [0]
+              time_from_start: {secs: 0, nsecs: 0}
+            - positions: [-1.3, 7, 1, 0, 0, 0]
+              velocities: [0]
+              accelerations: [0]
+              effort: [0]
+              time_from_start: {secs: 0, nsecs: 0}
+          publish_path: false
+          publish_trajectory: false
+          plan_path: true
+          plan_trajectory: false
+          override_dynamic_constraints: false
+          velocity_constraints: [0]
+          acceleration_constraints: [0]\""
+        - |
+          history -s "rosservice call /object/multiple_manipulators_object_trajectory \"waypoints:
+            header:
+              seq: 0
+              stamp: {secs: 0, nsecs: 0}
+              frame_id: ''
+            joint_names: ['']
+            points:
+            - positions: [-1.3, 7, 1, 0, 0, 0]
+              velocities: [0]
+              accelerations: [0]
+              effort: [0]
+              time_from_start: {secs: 0, nsecs: 0}
+            - positions: [-1.3, -8, 1, 0, 0, 0]
+              velocities: [0]
+              accelerations: [0]
+              effort: [0]
+              time_from_start: {secs: 0, nsecs: 0}
+          publish_path: false
+          publish_trajectory: false
+          plan_path: true
+          plan_trajectory: false
+          override_dynamic_constraints: false
+          velocity_constraints: [0]
+          acceleration_constraints: [0]\""
+  - logging:
+      layout: tiled
+      panes:
+        # Last command omits "controllers" topics. There is a lot of topics
+        # with "controller" in their name so they take up a lot of unnecessary
+        # space.
+        - |
+          if [ ! -d "$HOME/bags/model_corrections" ];
+          then
+            mkdir $HOME/bags/model_corrections;
+          fi;
+          cd ~/bags/model_corrections;
+          history -s "rosbag record -a --chunksize=64 -x \"/(.*)(gazebo|camera|bias|joint_states|parameter_descriptions|parameter_updates)(.*)\" -o model_corrections";
+          history -s "rosbag record --chunksize=1  -e \"(.*)(go_to|end_effector_configuration|executing_trajectory|controller|reference_tracker|full_state|executing_model_trajectory)(.*)\" -x \"/(.*)(gazebo|camera|bias|joint_states|parameter_descriptions|parameter_updates)(.*)\" -o heterogeneous_3dofrx_4dof";
+          history -s "rosbag record --chunksize=1  -e \"(.*)(go_to|end_effector_configuration|executing_trajectory|reference_tracker|full_state|executing_model_trajectory)(.*)\" -x \"/(.*)(gazebo|camera|bias|joint_states|parameter_descriptions|parameter_updates)(.*)\" -o heterogeneous_3dofrx_4dof"

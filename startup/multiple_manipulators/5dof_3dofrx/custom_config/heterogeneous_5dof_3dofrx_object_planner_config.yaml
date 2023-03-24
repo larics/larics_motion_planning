@@ -1,10 +1,12 @@
 global_planner:
-  map_config_file: "catkin_ws/src/larics_motion_planning/config/cooperative_transport_uav_wp_manipulator.yaml"
-  trajectory_config_file: "catkin_ws/src/larics_motion_planning/config/cooperative_transport_uav_wp_manipulator.yaml"
-  path_planner_config_file: "catkin_ws/src/larics_motion_planning/config/cooperative_transport_uav_wp_manipulator.yaml"
-  state_validity_checker_config_file: "catkin_ws/src/larics_motion_planning/config/cooperative_transport_uav_wp_manipulator.yaml"
-  kinematics_config_file: "catkin_ws/src/larics_motion_planning/config/cooperative_transport_uav_wp_manipulator.yaml"
-  model_correction_file: "catkin_ws/src/larics_motion_planning/config/cooperative_transport_uav_wp_manipulator.yaml"
+  map_config_file: "catkin_ws/src/larics_motion_planning/startup/multiple_manipulators/5dof_3dofrx/custom_config/heterogeneous_5dof_3dofrx_object_planner_config.yaml"
+  trajectory_config_file: "catkin_ws/src/larics_motion_planning/startup/multiple_manipulators/5dof_3dofrx/custom_config/heterogeneous_5dof_3dofrx_object_planner_config.yaml"
+  path_planner_config_file: "catkin_ws/src/larics_motion_planning/startup/multiple_manipulators/5dof_3dofrx/custom_config/heterogeneous_5dof_3dofrx_object_planner_config.yaml"
+  state_validity_checker_config_file: "catkin_ws/src/larics_motion_planning/startup/multiple_manipulators/5dof_3dofrx/custom_config/heterogeneous_5dof_3dofrx_object_planner_config.yaml"
+  # Kinematics and model corrections are within the
+  # uav planner file
+  kinematics_config_file: "catkin_ws/src/larics_motion_planning/startup/multiple_manipulators/5dof_3dofrx/custom_config/heterogeneous_5dof_3dofrx_planner_config.yaml"
+  model_correction_file: "catkin_ws/src/larics_motion_planning/startup/multiple_manipulators/5dof_3dofrx/custom_config/heterogeneous_5dof_3dofrx_planner_config.yaml"
 
   trajectory:
     restarts: 5
@@ -60,26 +62,26 @@ global_planner:
 
 octomap:
   path_to_file: "catkin_ws/src/larics_motion_planning/config/empty_map.binvox.bt"
-  search_depth: 16
+  search_depth: 14
 
 path_planner:
   spaces:
-    number: 6
-    # UAV [x,y,z,roll,pitch], UAV [yaw], [manipulator] -> x2
-    dimensions: [5, 1, 5, 5, 1, 5]
-    weights: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-    types: ["RealVector", "SO2", "RealVector", "RealVector", "SO2", "RealVector"]
-    bounds: [[[-10, 10.0], [-10.0, 10.0], [0.2, 10.0], [0.0, 0.0], [0.0, 0.0]], [[-3.15, 3.15]], [[-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57]], [[-10, 10.0], [-10.0, 10.0], [0.2, 10.0], [0.0, 0.0], [0.0, 0.0]], [[-3.15, 3.15]], [[-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57], [-1.57, 1.57]]]
+    number: 2
+    # Object [x,y,z,roll,pitch], Object [yaw], [manipulator] -> x2
+    dimensions: [5, 1]
+    weights: [1.0, 0.1]
+    types: ["RealVector", "SO2"]
+    bounds: [[[-3, 1.0], [-10.0, 10.0], [0.2, 3.0], [0.0, 0.0], [-0.2, 0.2]], [[-3.15, 3.15]]]
   longest_valid_segment:
     is_used: true
     is_metric: true
-    value: 0.01
+    value: 0.5
   goal_bias:
     is_used: true
     value: 0.05
   range:
     is_used: true
-    value: 0.5
+    value: 0.25
   rewire_factor:
     is_used: false
     value: 1.1
@@ -100,8 +102,8 @@ path_planner:
     value: true
   solve_time:
     is_incremental: true
-    time: 1.0
-    increment: 0.25
+    time: 5.0
+    increment: 1.0
   path_simplifier:
     reduce_vertices:
       is_used: true
@@ -118,25 +120,31 @@ trajectory_planner:
     axes_index_list: []
     velocity_constraints: []
   toppra_trajectory:
-    velocities: [0.8, 0.8, 0.5, 100, 100, 1.0, 5.0, 5.0, 5.0, 5.0, 5.0, 0.8, 0.8, 0.5, 100, 100, 1.0, 5.0, 5.0, 5.0, 5.0, 5.0]
-    accelerations: [0.4, 0.4, 0.4, 100, 100, 1.0, 75.0, 75.0, 75.0, 75.0, 75.0, 0.4, 0.4, 0.4, 100, 100, 1.0, 75.0, 75.0, 75.0, 75.0, 75.0]
+    velocities:    [0.2, 0.2, 0.2, 0.2, 0.2, 0.2]
+    accelerations: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
     # This flag is important because it preconditiones angular values before 
     # sending them to toppra trajectory. The problem is that toppra does not know
     # for discontinuities at half circle (PI) and the planned trajectory will
     # turn around the circle instead through discontinuity. This flag solves it
     # by adding and subtracting k*2PI around the discontinuity.
-    is_angular: [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
+    is_angular: [0, 0, 0, 0, 0, 1]
     sampling_frequency: 100.0
 
 state_validity_checker:
   type: "multiple_manipulators"
+  object_checker:
+    is_used: true
+    resolution: 0.025
+    # Object will be considered a prism for now.
+    dimensions: [0.3, 0.05, 0.05]
+
 
   multiple_manipulators:
-    -
+    - # Wp manipulator
       manipulator_link_dimensions: [[0.0340, 0.1225, 0.0285], [0.1365, 0.0340, 0.0285], [0.0755, 0.0285, 0.0340], [0.0725, 0.0285, 0.0340], [0.0453, 0.0285, 0.0340]]
       manipulator_link_directions: ["y", "x", "x", "x", "x"]
 
-      base_dimensions: [0.4, 0.4, 0.17]
+      base_dimensions: [0.7, 0.7, 0.4]
       base_dof: 6
       base_manipulator_transform: [0, 0, 0.075, 1.57079632679, 0, 3.14159265359]
 
@@ -145,7 +153,7 @@ state_validity_checker:
         base: 0.03
 
       tool:
-        use_tool: true
+        use_tool: false
         dimensions: [0.3453, 0.01, 0.01]
         direction: "x"
 
@@ -153,74 +161,22 @@ state_validity_checker:
         start: 0
         end: 10
     -
-      manipulator_link_dimensions: [[0.0340, 0.1225, 0.0285], [0.1365, 0.0340, 0.0285], [0.0755, 0.0285, 0.0340], [0.0725, 0.0285, 0.0340], [0.0453, 0.0285, 0.0340]]
-      manipulator_link_directions: ["y", "x", "x", "x", "x"]
+      manipulator_link_dimensions: [[0.0755, 0.0285, 0.0340], [0.0725, 0.0285, 0.0340], [0.0453, 0.0285, 0.0340]]
+      manipulator_link_directions: ["x", "x", "x"]
 
-      base_dimensions: [0.4, 0.4, 0.17]
+      base_dimensions: [0.7, 0.7, 0.4]
       base_dof: 6
-      base_manipulator_transform: [0, 0, 0.075, 1.57079632679, 0, 3.14159265359]
+      base_manipulator_transform: [0, 0, 0.2, 0, 0, 0]
 
       checker_resolution:
         manipulator: 0.01
         base: 0.03
 
       tool:
-        use_tool: true
+        use_tool: false
         dimensions: [0.3453, 0.01, 0.01]
         direction: "x"
 
       indexes:
         start: 11
-        end: 21
-
-kinematics:
-  multiple_manipulators:
-    - 
-      type: "wp_manipulator"
-      degrees_of_freedom: 5
-      indexes: [6, 7, 8, 9, 10]
-      grasp_transform:
-        translation: [0, -0.15, 0]
-        rotation: [0, 0, 1.57079632679]
-      robot_model_name: "wp_manipulator"
-      joint_group_name: "wp_manipulator_arm"
-      dh_parameters_file: "catkin_ws/src/aerial_manipulators/aerial_manipulators_control/config/wp_manipulator_dh_parameters.yaml"
-    -
-      type: "wp_manipulator"
-      degrees_of_freedom: 5
-      indexes: [17, 18, 19, 20, 21]
-      grasp_transform:
-        translation: [0, 0.15, 0]
-        rotation: [0, 0, -1.57079632679]
-      robot_model_name: "wp_manipulator"
-      joint_group_name: "wp_manipulator_arm"
-      dh_parameters_file: "catkin_ws/src/aerial_manipulators/aerial_manipulators_control/config/wp_manipulator_dh_parameters.yaml"
-
-
-model_correction:
-  type: "multiple_manipulators"
-  multiple_manipulators:
-    -
-      type: "UavWpManipulator"
-      indexes:
-        start: 0
-        end: 10
-      t_body_manipulator:
-        translation: [0, 0, 0.075]
-        rotation: [1.57079632679, 0, 3.14159265359]
-      manipulator_dof: 5
-      alpha: 1.0
-      apply_roll_corrections: true
-      apply_pitch_corrections: true
-    - 
-      type: "UavWpManipulator"
-      indexes:
-        start: 11
-        end: 21
-      t_body_manipulator:
-        translation: [0, 0, 0.075]
-        rotation: [1.57079632679, 0, 3.14159265359]
-      manipulator_dof: 5
-      alpha: 1.0
-      apply_roll_corrections: true
-      apply_pitch_corrections: true
+        end: 19

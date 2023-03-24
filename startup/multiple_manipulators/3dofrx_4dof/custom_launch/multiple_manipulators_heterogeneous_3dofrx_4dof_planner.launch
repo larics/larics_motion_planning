@@ -1,0 +1,115 @@
+<launch>
+  <arg name="planner_rate" default="10" />
+  <arg name="namespace" default="planner" />
+  <arg name="model_namespace" default="model_planner" />
+  <arg name="global_planner_config_file" default="$(find larics_motion_planning)/startup/multiple_manipulators/3dofrx_4dof/custom_config/heterogeneous_3dofrx_4dof_planner_config.yaml" />
+  <!-- Trajectory handlers -->
+  <arg name="uav_trajectory_handler" default="$(find larics_motion_planning)/startup/multiple_manipulators/3dofrx_4dof/custom_config/trajectory_handler_3dofrx_4dof.yaml" />
+  <arg name="model_trajectory_handler" default="$(find larics_motion_planning)/startup/multiple_manipulators/3dofrx_4dof/custom_config/trajectory_handler_model_3dofrx_4dof.yaml" />
+
+  <!-- Before launching this file you need to launch planning context-->
+  <!-- roslaunch wp_manipulator planning_context.launch -->
+
+  <group ns="$(arg namespace)">
+    <!-- Global planner generates path and/or trajectory based on desired waypoints.-->
+    <node name="global_planner" pkg="larics_motion_planning" type="global_planner_node" output="screen">
+      <param name="rate" value="$(arg planner_rate)" />
+      <param name="global_planner_config_file" value="$(arg global_planner_config_file)" />
+      <param name="model_uav_namespace" value="$(arg model_namespace)" />
+      <param name="model_animation_dt_us" value="10" />
+      <param name="model_planning_user_confirmation_flag" value="false" />
+
+      <!-- visualization parameters -->
+      <param name="state_scale" value="0.05" />
+      <param name="waypoints_scale" value="0.5" />
+    </node>
+
+    <!-- Simple tracker that receives trajectory and sends it to the UAV. It also publishes current vehicle state.-->
+    <node name="joint_trajectory_reference_tracker" pkg="larics_motion_planning" type="joint_trajectory_reference_tracker.py" output="screen">
+      <!--remap from="reference_tracker/joint_trajectory_point" to="aerial_manipulator_control/trajectory_ref_input" /-->
+      <remap from="reference_tracker/joint_trajectory" to="joint_trajectory" />
+    </node>
+
+    <!-- Node that plans a straight trajectory to the end point upon request. -->
+    <node name="go_to_reference" pkg="larics_motion_planning" type="go_to_reference.py" output="screen">
+      <remap from="go_to/trajectory_request" to="multi_dof_trajectory" />
+      <remap from="go_to/joint_trajectory" to="joint_trajectory" />
+      <remap from="go_to/current_state" to="reference_tracker/current_reference" />
+    </node>
+
+    <!-- End effector configuration publisher -->
+    <node name="end_effector_configuration_node" pkg="larics_motion_planning" type="end_effector_configuration_node" output="screen">
+      <param name="global_planner_config_file" value="$(arg global_planner_config_file)" />
+      <param name="trajectory_handler_config_file" value="$(arg uav_trajectory_handler)" />
+
+      <remap from="end_effector_configuration/state" to="multiple_manipulators_joint_trajectory_handler/full_state" />
+      <remap from="end_effector_configuration/reference" to="reference_tracker/current_reference" />
+    </node>
+
+    <!-- Trajectory decomposition to multiple manipulators -->
+    <node name="multiple_manipulators_joint_trajectory_handler" pkg="larics_motion_planning" type="multiple_manipulators_joint_trajectory_handler.py" output="screen">
+      <param name="config_file" value="$(arg uav_trajectory_handler)" />
+
+      <remap from="multiple_manipulators_joint_trajectory_handler/joint_trajectory_point_in" to="reference_tracker/joint_trajectory_point" />
+    </node>
+
+    <node name="generate_toppra_trajectory" pkg="topp_ros" type="generate_toppra_trajectory.py" output="screen" />
+
+    <!--node name="octomap_server_node" pkg="octomap_server" type="octomap_server_node" args="$(find larics_gazebo_worlds)/models/greenhouse_row/greenhouse_row.binvox.bt" output="screen">
+      <param name="frame_id" value="world" />
+    </node-->
+
+    <node name="map_to_world_transform_publisher" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 world map 10" />
+
+  </group>
+
+  <!-- This is the part where we get corrections based on model -->
+  <group ns="$(arg model_namespace)">
+    <node name="global_planner" pkg="larics_motion_planning" type="global_planner_node" output="screen">
+      <param name="rate" value="$(arg planner_rate)" />
+      <param name="global_planner_config_file" value="$(arg global_planner_config_file)" />
+      <param name="model_uav_namespace" value="/none" />
+
+      <!-- visualization parameters -->
+      <param name="state_scale" value="0.05" />
+      <param name="waypoints_scale" value="0.5" />
+    </node>
+
+    <node name="joint_trajectory_reference_tracker" pkg="larics_motion_planning" type="joint_trajectory_reference_tracker.py" output="screen">
+      <!--remap from="reference_tracker/joint_trajectory_point" to="aerial_manipulator_control/trajectory_ref_input" /-->
+      <remap from="reference_tracker/joint_trajectory" to="joint_trajectory" />
+    </node>
+
+    <!-- End effector configuration publisher -->
+    <node name="end_effector_configuration_node" pkg="larics_motion_planning" type="end_effector_configuration_node" output="screen">
+      <param name="global_planner_config_file" value="$(arg global_planner_config_file)" />
+      <param name="trajectory_handler_config_file" value="$(arg model_trajectory_handler)" />
+
+      <remap from="end_effector_configuration/state" to="multiple_manipulators_joint_trajectory_handler/full_state" />
+      <remap from="end_effector_configuration/reference" to="reference_tracker/current_reference" />
+    </node>
+
+    <node name="go_to_reference" pkg="larics_motion_planning" type="go_to_reference.py" output="screen">
+      <remap from="go_to/trajectory_request" to="multi_dof_trajectory" />
+      <remap from="go_to/joint_trajectory" to="joint_trajectory" />
+      <remap from="go_to/current_state" to="reference_tracker/current_reference" />
+    </node>
+
+    <!-- Trajectory decomposition to multiple manipulators -->
+    <node name="multiple_manipulators_joint_trajectory_handler" pkg="larics_motion_planning" type="multiple_manipulators_joint_trajectory_handler.py" output="screen">
+      <param name="config_file" value="$(arg model_trajectory_handler)" />
+
+      <remap from="multiple_manipulators_joint_trajectory_handler/joint_trajectory_point_in" to="reference_tracker/joint_trajectory_point" />
+    </node>
+
+    <!-- Node for executing model trajectory and returning the executed trajectory through service -->
+    <node name="multiple_manipulators_model_trajectory_handler" pkg="larics_motion_planning" type="multiple_manipulators_model_trajectory_handler.py" output="screen">
+      <param name="record_termination/timer" value="2.0" />
+      <remap from="multiple_manipulators_model_trajectory_handler/joint_trajectory_point" to="reference_tracker/joint_trajectory_point" />
+    </node>
+
+    <node name="generate_toppra_trajectory" pkg="topp_ros" type="generate_toppra_trajectory.py" output="screen" />
+
+  </group>
+
+</launch>
