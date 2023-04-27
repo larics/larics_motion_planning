@@ -1,39 +1,28 @@
 #!/usr/bin/env python
 
 import rospy, math
-from math import sin, cos, sqrt
-from geometry_msgs.msg import Twist, Transform, Pose, PoseStamped, TwistStamped
+from math import sin, cos
+from geometry_msgs.msg import Twist, Transform
 from nav_msgs.msg import Odometry
 from std_msgs.msg import Float64, Empty, Int32, Float32
 from trajectory_msgs.msg import MultiDOFJointTrajectoryPoint, \
-    MultiDOFJointTrajectory, JointTrajectory, JointTrajectoryPoint
-import copy
+    MultiDOFJointTrajectory, JointTrajectory
 
 class JointTrajectoryToMultiDofTrajectory:
 
     def __init__(self):
+        self.frame_id = rospy.get_param('~frame_id', 'world')
+        
         # UAV publishers for trajectory
         self.uav_trajectory_pub = rospy.Publisher('trajectory_ref', 
             MultiDOFJointTrajectory, queue_size=1)
-        self.executing_trajectory_pub = rospy.Publisher('executing_trajectory', 
-            Int32, queue_size=1)
-        self.executing_trajectory_flag = False
-        self.joint_trajectory = JointTrajectory()
-        self.current_trajectory_point = JointTrajectoryPoint()
-        self.uav_current_trajectory_point = MultiDOFJointTrajectoryPoint()
-        self.uav_current_trajectory = MultiDOFJointTrajectory()
-        self.frame_id = rospy.get_param('~frame_id', 'world')
-
         rospy.Subscriber('joint_trajectory', JointTrajectory, 
             self.jointTrajectoryCallback, queue_size=1)
 
     def jointTrajectoryCallback(self, msg):
-        print ("Received a joint trajectory.")
         # Create and publish multi dof trajectory       
         uav_current_trajectory = self.JointTrajectoryToMultiDofTrajectory(msg) 
         self.uav_trajectory_pub.publish(uav_current_trajectory)
-        self.executing_trajectory_flag = True
-        print ("Currently executing a trajectory.")
 
     def JointTrajectoryToMultiDofTrajectory(self, joint_trajectory):
         multi_dof_trajectory = MultiDOFJointTrajectory()
