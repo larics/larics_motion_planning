@@ -49,7 +49,85 @@ windows:
           accelerations: [0]
           effort: [0]
           time_from_start: {secs: 0, nsecs: 0}"
-        - waitForSimulation; sleep 5; rosrun rqt_gui rqt_gui
+        - waitForSimulation; sleep 5; history -s "rosrun rqt_gui rqt_gui"
+  - running:
+      layout: tiled
+      panes:
+        - |
+          echo "HORIZONTAL CONTACT"; history -s "rosservice call /uav/model_correction_trajectory \"waypoints:
+            header:
+              seq: 0
+              stamp: {secs: 0, nsecs: 0}
+              frame_id: ''
+            joint_names: ['']
+            points:
+            - positions: [1.37, 2.2, 2.0, 0.0, 0.0, 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+              velocities: [0]
+              accelerations: [0]
+              effort: [0]
+              time_from_start: {secs: 0, nsecs: 0}
+            - positions: [6, 0, 3.14571, 0.0, 0.0, 3.14159, -0.443, 0.907, -0.463, 0, 0, 0, 0, 0, 0, 1]
+              velocities: [0]
+              accelerations: [0]
+              effort: [0]
+              time_from_start: {secs: 0, nsecs: 0}
+            - positions: [4, 0, 3.14571, 0.0, 0.0, 3.14159, -0.443, 0.907, -0.463, 0, 0, 0, 0, 0, 0, 1]
+              velocities: [0]
+              accelerations: [0]
+              effort: [0]
+              time_from_start: {secs: 0, nsecs: 0}
+            - positions: [3.405, 0, 3.14571, 0.0, 0.0, 3.14159, -0.443, 0.907, -0.463, -0.5, 0, 0, 0, 0, 0, 0.5]
+              velocities: [0]
+              accelerations: [0]
+              effort: [0]
+              time_from_start: {secs: 0, nsecs: 0}
+          publish_path: false
+          publish_trajectory: true
+          plan_path: false
+          plan_trajectory: true\""
+        - |
+          echo "INCLINED CONTACT"; history -s "rosservice call /uav/model_correction_trajectory \"waypoints:
+            header:
+              seq: 0
+              stamp: {secs: 0, nsecs: 0}
+              frame_id: ''
+            joint_names: ['']
+            points:
+            - positions: [1.37, 2.2, 2.0, 0.0, 0.0, 0.0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+              velocities: [0]
+              accelerations: [0]
+              effort: [0]
+              time_from_start: {secs: 0, nsecs: 0}
+            - positions: [5.0, 0, 1.5, 0.0, 0.0, 3.14159, -0.443, 0.907, -0.463, 0, 0, 0, 0, 0, 0, 1]
+              velocities: [0]
+              accelerations: [0]
+              effort: [0]
+              time_from_start: {secs: 0, nsecs: 0}
+            - positions: [3.3, 0, 1.5, 0.0, 0.0, 3.14159, -0.833, 0.517, -0.853, -0.1918, 0, 0.4618, 0, 0, 0, 1]
+              velocities: [0]
+              accelerations: [0]
+              effort: [0]
+              time_from_start: {secs: 0, nsecs: 0}
+            - positions: [3.1, 0, 1.9867, 0.0, 0.0, 3.14159, -0.833, 0.517, -0.853, -0.1918, 0, 0.4618, 0, 0, 0, 1]
+              velocities: [0]
+              accelerations: [0]
+              effort: [0]
+              time_from_start: {secs: 0, nsecs: 0}
+            - positions: [2.918, 0, 2.425, 0.0, 0.0, 3.14159, -0.833, 0.517, -0.853, -0.1918, 0, 0.4618, 0, 0, 0, 1]
+              velocities: [0]
+              accelerations: [0]
+              effort: [0]
+              time_from_start: {secs: 0, nsecs: 0}
+          publish_path: false
+          publish_trajectory: true
+          plan_path: false
+          plan_trajectory: true\""
+  - recording:
+      layout: tiled
+      panes:
+        - |
+          history -s "roslaunch larics_gazebo_worlds spawn_simple_camera.launch x:=5 y:=-6 z:=4 yaw:=1.9 pitch:=0.3"
+        - history -s "rosrun image_view video_recorder image:=/cam_ns/camera/image_raw _fps:=30"
   - logging:
       layout: tiled
       panes:
