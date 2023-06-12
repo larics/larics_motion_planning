@@ -75,6 +75,12 @@ windows:
         - history -s "rosrun larics_motion_planning execute_multiple_trajectories_pipe1.sh 5"
         - history -s "rosrun larics_motion_planning execute_multiple_trajectories_pipe2.sh 5"
         - history -s "rosrun larics_motion_planning execute_multiple_trajectories_pipe3.sh 5"
+  - recording:
+      layout: tiled
+      panes:
+        - |
+          history -s "roslaunch larics_gazebo_worlds spawn_simple_camera.launch x:=1 y:=-7 z:=1 yaw:=1.57 pitch:=0.0"
+        - history -s "rosrun image_view video_recorder image:=/cam_ns/camera/image_raw _fps:=30"
   - exp_pipes:
       layout: tiled
       panes:

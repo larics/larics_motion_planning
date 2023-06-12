@@ -10,7 +10,7 @@ windows:
         - waitForRos; roslaunch gazebo_ros empty_world.launch use_sim_time:=true paused:=false
         # Optional world elements
         - >
-          waitForSimulation; history -s "roslaunch larics_gazebo_worlds spawn_storage_racking.launch"
+          waitForSimulation; history -s "roslaunch larics_gazebo_worlds spawn_storage_racking.launch collision_bitmask:=4"
   - uavs:
       layout: tiled
       panes:
@@ -68,6 +68,12 @@ windows:
         - history -s "rosrun larics_motion_planning execute_multiple_object_trajectories.sh -n 20 -t square"
         - history -s "rosrun larics_motion_planning execute_multiple_object_trajectories.sh -n 20 -t circle"
         - history -s "rosrun larics_motion_planning execute_multiple_object_trajectories.sh -n 10 -t warehouse"
+  - recording:
+      layout: tiled
+      panes:
+        - history -s "roslaunch larics_gazebo_worlds spawn_simple_camera.launch x:=1 y:=-7 z:=1 yaw:=1.57 pitch:=0.0" # For straight trajectory recording
+        - history -s "roslaunch larics_gazebo_worlds spawn_simple_camera.launch x:=-1 y:=1 z:=18 yaw:=0 pitch:=1.57" # For warehouse trajectory recording
+        - history -s "rosrun image_view video_recorder image:=/cam_ns/camera/image_raw _fps:=30"
   - warehouse_common:
       # common trajectory for warehouse
       layout: tiled
