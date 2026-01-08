@@ -8,8 +8,6 @@
 #include <larics_motion_planning/MapInterface.h>
 #include <larics_motion_planning/OctomapMap.h>
 #include <larics_motion_planning/KinematicsInterface.h>
-#include <larics_motion_planning/WpManipulatorKinematics.h>
-#include <larics_motion_planning/MultipleManipulatorsKinematics.h>
 #include <larics_motion_planning/PathPlanningInterface.h>
 #include <larics_motion_planning/RrtPathPlanner.h>
 #include <larics_motion_planning/TrajectoryInterface.h>
@@ -17,11 +15,8 @@
 #include <larics_motion_planning/StateValidityCheckerInterface.h>
 #include <larics_motion_planning/PointStateValidityChecker.h>
 #include <larics_motion_planning/SimpleStateValidityCheckers.h>
-#include <larics_motion_planning/UavWpManipulatorStateValidityChecker.h>
-#include <larics_motion_planning/MultipleManipulatorsStateValidityChecker.h>
 
 #include <larics_motion_planning/ModelCorrectionInterface.h>
-#include <larics_motion_planning/MultipleManipulatorsModelCorrection.h>
 
 #include <eigen3/Eigen/Eigen>
 

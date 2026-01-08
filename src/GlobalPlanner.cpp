@@ -61,74 +61,13 @@ bool GlobalPlanner::configureFromFile(string config_filename)
       map_interface_, state_validity_checker_type_);
     cout << "State validity checker type is: " << state_validity_checker_type_ << endl;
   }
-  else if (state_validity_checker_type_ == "uav_and_wp_manipulator"){
-    // First set up kinematics for wp manipulator.
-    auto kinematics_config_filename = motion_util::loadPathOrThrow(
-        [&]() { return config["global_planner"]["kinematics_config_file"].as<string>();},
-        "KINEMATICS_CONFIG",
-        "global_planner/kinematics_config_file"
-    );
-    kinematics_interface_ = make_shared<WpManipulatorKinematics>(
-      kinematics_config_filename);
-    // Set up validity checker for uav and wp manipulator
-    state_validity_checker_interface_ = make_shared<UavWpManipulatorStateValidityChecker>(
-      state_validity_config_filename,
-      map_interface_, kinematics_interface_);
-    cout << "State validity checker type is: uav_and_wp_manipulator" << endl;
-  }
-  else if (state_validity_checker_type_ == "multiple_manipulators"){
-    // First set up kinematics for multiple manipulators
-    auto kinematics_config_filename = motion_util::loadPathOrThrow(
-        [&]() { return config["global_planner"]["kinematics_config_file"].as<string>();},
-        "KINEMATICS_CONFIG",
-        "global_planner/kinematics_config_file"
-    );
-    kinematics_interface_ = make_shared<MultipleManipulatorsKinematics>(
-      kinematics_config_filename);
-    // Set up validity checker for multiple manipulators.
-    // TODO: switch to multiple manipulators state validity checker.
-    // TODO: neka svaki manipulator ima svoju bazu neke velicine, pa makar ta baza
-    //  bila nepokretna.
-    state_validity_checker_interface_ = make_shared<MultipleManipulatorsStateValidityChecker>(
-      state_validity_config_filename,
-      map_interface_, kinematics_interface_);
-    cout << "State validity checker type is: multiple_manipulators" << endl;
-  }
   else{
     cout << "State validity checker type is: " << state_validity_checker_type_ << endl;
     cout << "  This type is not supported!" << endl;
     exit(0);
   }
 
-  // Set up model correction interface
-  const auto model_correction_filename =  
-    motion_util::loadPathOrThrow(
-      [&](){ return config["global_planner"]["model_correction_file"].as<string>(); },
-      "MODEL_CORRECTION_CONFIG",
-      "global_planner/model_correction_file"
-    );
-
-  std::cout << "Loading model correction config with filename:\n" 
-    << motion_util::getUserPrefix() + model_correction_filename << "\n";
-  YAML::Node model_config = YAML::LoadFile(
-    motion_util::getUserPrefix() + model_correction_filename);
-  
-  string model_correction_type = model_config["model_correction"]["type"].as<string>();
-  if (model_correction_type == "multiple_manipulators"){
-    // Kinematics interface has been set up for state validity checker. 
-    // It is same here so we do not need to initialize it.
-    // Set up model corrections interface
-    model_correction_interface_ = make_shared<MultipleManipulatorsModelCorrection>(
-      model_correction_filename,
-      kinematics_interface_);
-    cout << "Model correction type is: multiple manipulators." << endl;
-  }
-  else{
-    cout << "Model correction type is: " << model_correction_type << endl;
-    cout << "  This type is not supported!" << endl;
-    exit(0);
-  }
-
+  // Model correction interface disabled - aerial_manipulators_control dependency removed
   // Set up path planning interface
   path_planner_interface_ = make_shared<RrtPathPlanner>(
     motion_util::loadPathOrThrow(

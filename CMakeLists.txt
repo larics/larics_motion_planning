@@ -17,7 +17,6 @@ find_package(catkin REQUIRED COMPONENTS
     eigen_conversions
     message_generation
     ompl
-    aerial_manipulators_control
 )
 
 find_package(Eigen3 REQUIRED NO_MODULE)
@@ -71,24 +70,11 @@ set(MAP_SOURCES src/MapInterface.cpp src/OctomapMap.cpp)
 add_library(map ${MAP_SOURCES})
 target_link_libraries(map ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES})
 
-set(KINEMATICS_SOURCES src/KinematicsInterface.cpp 
-  src/WpManipulatorKinematics.cpp 
-  src/MultipleManipulatorsKinematics.cpp)
-add_library(kinematics ${KINEMATICS_SOURCES})
-target_link_libraries(kinematics ${catkin_LIBRARIES})
-
-set(MODEL_CORRECTION_SOURCES src/MultipleManipulatorsModelCorrection.cpp
-  src/UavWpManipulatorModelCorrection.cpp)
-add_library(model_correction ${MODEL_CORRECTION_SOURCES})
-target_link_libraries(model_correction kinematics ${catkin_LIBRARIES})
-
 set(STATE_VALIDITY_CHECKING_SOURCES src/StateValidityCheckerInterface.cpp 
   src/PointStateValidityChecker.cpp
-  src/UavWpManipulatorStateValidityChecker.cpp
-  src/SimpleStateValidityCheckers.cpp
-  src/MultipleManipulatorsStateValidityChecker.cpp)
+  src/SimpleStateValidityCheckers.cpp)
 add_library(state_validity_checking ${STATE_VALIDITY_CHECKING_SOURCES})
-target_link_libraries(state_validity_checking map kinematics 
+target_link_libraries(state_validity_checking map 
   ${catkin_LIBRARIES})
 
 set(PATH_PLANNING_SOURCES src/PathPlanningInterface.cpp 
@@ -105,31 +91,28 @@ set(GLOBAL_PLANNER_SOURCES src/GlobalPlanner.cpp
   src/GlobalPlannerRosInterface.cpp src/ParabolicAirdropPlanner.cpp)
 add_library(global_planner ${GLOBAL_PLANNER_SOURCES})
 target_link_libraries(global_planner trajectory map path_planning 
-  kinematics model_correction ${catkin_LIBRARIES} ${Eigen_LIBRARIES})
+  ${catkin_LIBRARIES} ${Eigen_LIBRARIES})
 
 set(LOCAL_PLANNER_SOURCES src/LocalPlanner.cpp)
 add_library(local_planner ${LOCAL_PLANNER_SOURCES})
 target_link_libraries(local_planner trajectory map path_planning 
-  kinematics ${catkin_LIBRARIES} ${Eigen_LIBRARIES})
+  ${catkin_LIBRARIES} ${Eigen_LIBRARIES})
 
 add_library(larics_motion_planning ${TRAJECTORY_SOURCES} ${MAP_SOURCES}
   ${PATH_PLANNING_SOURCES} ${VISUALIZATION_SOURCES} ${GLOBAL_PLANNER_SOURCES}
   ${LOCAL_PLANNER_SOURCES})
-target_link_libraries(larics_motion_planning trajectory map kinematics path_planning 
+target_link_libraries(larics_motion_planning trajectory map path_planning 
   visualization global_planner local_planner ${catkin_LIBRARIES} ${Eigen_LIBRARIES} 
-  yaml-cpp)
+  ${OMPL_LIBRARIES} yaml-cpp)
 
 add_executable(testing_node src/test.cpp)
-target_link_libraries(testing_node larics_motion_planning)
+target_link_libraries(testing_node larics_motion_planning ${OMPL_LIBRARIES})
 
 add_executable(global_planner_node src/global_planner_node)
-target_link_libraries(global_planner_node larics_motion_planning)
+target_link_libraries(global_planner_node larics_motion_planning ${OMPL_LIBRARIES})
 
 add_executable(local_planner_node src/local_planner_node)
-target_link_libraries(local_planner_node larics_motion_planning)
-
-add_executable(end_effector_configuration_node src/end_effector_configuration_node)
-target_link_libraries(end_effector_configuration_node larics_motion_planning)
+target_link_libraries(local_planner_node larics_motion_planning ${OMPL_LIBRARIES})
 
 add_executable(binvox2bt src/binvox2bt.cpp)
 target_link_libraries(binvox2bt larics_motion_planning)

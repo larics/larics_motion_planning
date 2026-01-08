@@ -23,14 +23,12 @@
 #include <larics_motion_planning/MapInterface.h>
 #include <larics_motion_planning/OctomapMap.h>
 #include <larics_motion_planning/KinematicsInterface.h>
-#include <larics_motion_planning/WpManipulatorKinematics.h>
 #include <larics_motion_planning/PathPlanningInterface.h>
 #include <larics_motion_planning/RrtPathPlanner.h>
 #include <larics_motion_planning/TrajectoryInterface.h>
 #include <larics_motion_planning/ToppraTrajectory.h>
 #include <larics_motion_planning/StateValidityCheckerInterface.h>
 #include <larics_motion_planning/PointStateValidityChecker.h>
-#include <larics_motion_planning/UavWpManipulatorStateValidityChecker.h>
 
 #include <eigen3/Eigen/Eigen>
 #include <cmath>

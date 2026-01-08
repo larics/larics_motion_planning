@@ -6,10 +6,6 @@
 
 #include <larics_motion_planning/MotionPlanningDatatypes.h>
 #include <larics_motion_planning/KinematicsInterface.h>
-#include <larics_motion_planning/WpManipulatorKinematics.h>
-
-// Include for direct and inverse kinematics.
-#include <aerial_manipulators_control/ManipulatorControl.h>
 
 #include <string>
 #include <Eigen/Eigen>

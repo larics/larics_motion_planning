@@ -574,79 +574,9 @@ bool GlobalPlannerRosInterface::multipleManipulatorsObjectTrajectoryCallback(
   larics_motion_planning::MultiDofTrajectory::Request &req, 
   larics_motion_planning::MultiDofTrajectory::Response &res)
 {
-  // The idea for this part of the planner is to generate a path for the
-  // manipulated object. Based on that path and the provided kinematics
-  // interface, compute each aerial manipulator state and return the final
-  // full state path. This is intended to be used with some external node that
-  // sends this path to the uav planner.
-  cout << "Starting the multiple manipulators object trajectory generation." << endl;
-
-  // If the planner finds a feasible path, this will become true.
-  bool success = false;
-
-  // Check the number of waypoints. Exit if there are less than two
-  if (req.waypoints.points.size() < 2){
-    cout << "At least two points required for generating trajectory." << endl;
-    res.success = success;
-    return true;
-  }
-
-  // Convert the input to Eigen waypoints
-  Eigen::MatrixXd waypoints = this->jointTrajectoryToEigenWaypoints(req.waypoints);
-  visualization_.setWaypoints(waypoints);
-
-  // This function only plans path, so no need to check the trajectory flags.
-  Eigen::MatrixXd object_path;
-  if (req.plan_path == true){
-    success = global_planner_->planObjectPath(waypoints);
-    res.path = this->eigenPathToJointTrajectory(global_planner_->getPath());
-    res.path_length = global_planner_->getPathLength();
-    visualization_.setPath(global_planner_->getPath());
-
-    object_path = global_planner_->getPath();
-    success = true;
-  }
-  else{
-    object_path = waypoints;
-    success = true;
-  }
-
-  if (model_animation_flag_ == true){
-    Trajectory visualization_trajectory;
-    bool temp_success = global_planner_->planTrajectory(object_path);
-    visualization_trajectory = global_planner_->getTrajectory();
-    cout << "Animating object planner path." << endl;
-    cout << "Visualization trajectory rows: " << visualization_trajectory.position.rows() << endl;
-    for (int i=0; i<visualization_trajectory.position.rows(); i++){
-      visualization_.setStatePoints(
-        global_planner_->getRobotStatePoints((visualization_trajectory.position.row(i)).transpose()));
-      visualization_.publishStatePoints();
-      usleep(model_animation_dt_);
-    }
-  }
-
-  // This part of the code will call the function to get the full state.
-  // If the call is here, then we can return something even if the path
-  // planning flag is set to false, in which case only waypoints will be
-  // forwarded.
-  shared_ptr<MultipleManipulatorsKinematics> kinematics;
-  kinematics = dynamic_pointer_cast<MultipleManipulatorsKinematics>(
-    global_planner_->getKinematicsInterface());
-
-  Eigen::MatrixXd full_state_path = kinematics->getFullSystemStateFromObjectState(
-    object_path);
-  res.path = this->eigenPathToJointTrajectory(full_state_path);
-
-  // Publish the object path if requested.
-  if (req.publish_path == true){
-    joint_trajectory_path_pub_.publish(this->eigenPathToJointTrajectory(object_path));
-  }
-
-  // This does not publish anything, just returns the path.
-  res.success = success;
-
-
-  cout << "Done with the the multiple manipulators object trajectory generation." << endl;
+  // This functionality is disabled due to removal of aerial_manipulators_control dependency
+  cout << "Multiple manipulators object trajectory generation is not supported after removing aerial_manipulators_control dependency." << endl;
+  res.success = false;
   return true;
 }
 
