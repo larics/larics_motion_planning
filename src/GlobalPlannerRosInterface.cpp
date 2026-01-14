@@ -16,10 +16,16 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
     int(10));
   nh_private.param("model_animation_flag", model_animation_flag_,
     bool(false));
-
+  
   // Get the transform between the uav and manipulator as 6 parameters. The list
   // argument passing does not work with private params, but it should work with
   // global parameters.
+  std::ifstream config(global_planner_config_file_);
+  if (!config.is_open()) {
+      ROS_ERROR_STREAM("Cannot open config file: " << global_planner_config_file_);
+      return;
+  }
+
   double man_x, man_y, man_z, man_r, man_p, man_yaw;
   nh_private.param("t_uav_man/x", man_x, 0.0); transform_uav_manipulator_.push_back(man_x);
   nh_private.param("t_uav_man/y", man_y, 0.0); transform_uav_manipulator_.push_back(man_y);
@@ -34,7 +40,6 @@ GlobalPlannerRosInterface::GlobalPlannerRosInterface()
     cout << transform_uav_manipulator_[i] << ", ";
   }
   cout << endl << endl;
-
   // Global planner config
   //global_planner_ = make_shared<GlobalPlanner>(global_planner_config_file_);
   global_planner_ = make_shared<ParabolicAirdropPlanner>(global_planner_config_file_);

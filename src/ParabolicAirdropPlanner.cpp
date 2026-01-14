@@ -32,7 +32,7 @@ bool ParabolicAirdropPlanner::configureParabolicAirdropFromFile(
   cout << "Additional configuration of parabolic airdrop params from file: " << endl;
   cout << "  " << config_filename << endl;
 
-  YAML::Node config = YAML::LoadFile(config_filename_);
+  YAML::Node config = YAML::LoadFile(config_filename);
 
   dx_ = config["global_planner"]["parabolic_airdrop"]["d"].as<std::vector<double> >();
   v_ = config["global_planner"]["parabolic_airdrop"]["v"].as<std::vector<double> >();

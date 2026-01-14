@@ -27,8 +27,14 @@ inline std::string getUserPrefix()
     return {};
   }
 
+  const char* user = getenv("USER");
+  if (user == nullptr)
+  {
+    return {};
+  }
+
   std::string username = "/home/";
-  username = username + getenv("USER") + "/";
+  username = username + user + "/";
   return username;
 }
 
